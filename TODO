@@ -3,26 +3,6 @@ TODO
 
 <Acapnotic> Tv: The use of callback and errback is handled by for you by the broker, so instead of "if callback: callback(bleh)", you can just have your methods do "return bleh"
 
-* dj <--pb--> turntable: 
-   <moshez> Tv: that's not the problem
-   <moshez> Tv: the problem is that pb assumes a bi-directional pipe
-   <Tv> Ah.
-   <moshez> Tv: well, pb assumes a transport
-   <Tv> Nothing a socketpair() couldn't fix :)
-   <moshez> Tv: and FileDescriptor assumes by-directionality
-   <moshez> Tv: dunno socketpair()
-   <moshez> Tv: given that you have a bidirectional FD, create a
-   	FileDescriptor
-   <moshez> Tv: then, thake the BrokerFactory and call .buildProtocol()
-   <Tv> python doesn't expose socketpair(2)
-   <moshez> Tv: on the protocol you get call
-   	.makeConnection(fileDescriptorYouCreated)
-   <itamar> write a C module I guess
-   <moshez> Tv: and voila
-   <moshez> Tv: what's wrong with unix sockets?
-   <itamar> or make a transport that pretends to be bi-directional but
-   	uses two pipes
-
 * nice shutdown procedure
 
 * caching isn't as important as it was back then, I got myself

@@ -15,19 +15,19 @@ class AudioDevice:
         
         # A horrible, ugly kludge. These values are from
         # linux/soundcard.h, extracted with
-"""
-#include <stdio.h>
-#include <linux/soundcard.h>
-int main(void) {
-  printf("%d\n%d\n%d\n%u\n%u\n",
-    SNDCTL_DSP_SAMPLESIZE,
-    SNDCTL_DSP_SPEED,
-    SNDCTL_DSP_STEREO,
-    AFMT_S16_LE,
-    AFMT_S16_BE);
-  return 0;
-}
-"""
+        """
+        #include <stdio.h>
+        #include <linux/soundcard.h>
+        int main(void) {
+          printf("%d\n%d\n%d\n%u\n%u\n",
+            SNDCTL_DSP_SAMPLESIZE,
+            SNDCTL_DSP_SPEED,
+            SNDCTL_DSP_STEREO,
+            AFMT_S16_LE,
+            AFMT_S16_BE);
+          return 0;
+        }
+        """
 
         SNDCTL_DSP_SAMPLESIZE = -1073459195
         SNDCTL_DSP_SPEED = -1073459198

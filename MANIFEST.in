@@ -1,6 +1,5 @@
 include MANIFEST.in
 include TODO
 include bin/mc-foo
-include libbin/turntable
 recursive-include lib *.dot
 recursive-include debian *

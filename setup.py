@@ -30,6 +30,6 @@ everything works yet.
     "McFoo.commands", "McFoo.gui", "McFoo.server",
     "McFoo.tap",
     ],
-      scripts=["bin/mc-foo", "libbin/turntable"],
+      scripts=["bin/mc-foo"],
       data_files=[('lib/python2.1/site-packages/McFoo', ["lib/McFoo/plugins.tml"])],
       )
