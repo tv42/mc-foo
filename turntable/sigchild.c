@@ -1,10 +1,10 @@
-#include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "error.h"
+#include "sigchild.h"
 
 /*
  * If we'd do the real action in the signal handler, we'd need
