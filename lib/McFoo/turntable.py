@@ -6,7 +6,7 @@ import sys
 import time
 
 import asyncore
-import asyncreadline
+import McFoo.asyncreadline
 
 import McFoo.backend.file
 
