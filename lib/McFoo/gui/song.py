@@ -12,7 +12,7 @@ class GuiSong(UserDict.UserDict):
            and filter(lambda x: x!="", self.data['comment']['TITLE'])!=[]:
             return str(filter(lambda x: x!="", self.data['comment']['ARTIST'])[0]) \
                    +': '+str(filter(lambda x: x!="", self.data['comment']['TITLE'])[0])
-        elif self.data.has_key('name'):
-            return self.data['name']
+        elif self.data.has_key('filename'):
+            return self.data['filename']
         else:
             return repr(self)
