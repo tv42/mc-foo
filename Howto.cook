@@ -1,25 +1,28 @@
 /*
- * $Id: Howto.cook,v 1.3 1999/11/28 17:32:09 tv42 Exp $
+ * $Id: Howto.cook,v 1.4 1999/11/28 18:34:44 tv42 Exp $
  */
 
 source_files_latte = index.latte authors.latte faq.latte
   architecture.latte data-structures.latte links.latte;
-source_files = [source_files_latte];
-
 html = [fromto %.latte %.html [source_files_latte]];
-files = [html];
+
+source_files_fig = process-overview.fig;
+fig_png = [fromto %.fig %.fig.png [source_files_fig]];
+
+source_files = [source_files_latte] [source_files_fig];
+
+files = [html] [fig_png];
 
 all: [files];
 
 clobber: clean
 {
 	rm -f [files];
-
 }
 
 clean:
 {
-  rm -f *.tmp *.d; /* only remove intermediary files */
+  rm -f *.tmp *.tmp.gif *.d; /* only remove intermediary files */
 }
 
 test: [html]
@@ -33,6 +36,17 @@ install: [files]
 }
 
 extra_latte_path = latte-include;
+
+/*** Fig cookbook */
+
+%0%.fig.png: %0%.fig
+{
+  fig2dev -L ps %0%.fig %0%.fig.eps.tmp;
+  convert "eps:%0%.fig.eps.tmp" "png:%0%.fig.png.tmp";
+  mv %0%.fig.png.tmp %0%.fig.png;
+}
+
+/*** END Fig cookbook */
 
 /*** Latte cookbook */
 
@@ -63,11 +77,10 @@ if [not [defined latte_path]] then
   mv %0%.html.tmp %0%.html;
 }
 
-object_files = [fromto %0%.latte %0%.html [source_files]];
-dependency_files = [fromto %0%.latte %0%.latte.d [source_files]];
+dependency_files = [fromto %0%.latte %0%.latte.d [source_files_latte]];
 #include-cooked [dependency_files]
 
-/*** END cookbook */
+/*** END Latte cookbook */
 
 
 /*
