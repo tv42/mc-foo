@@ -9,4 +9,4 @@ if [ "$1" = "usage" ]; then
     exit 0
 fi
 
-echo "addqueue $@"|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"
+echo "addqueue $1 $2 $(echo "$3"|tr -c a-zA-Z0-9 _) $4"|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"
