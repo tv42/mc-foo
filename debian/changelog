@@ -1,11 +1,20 @@
 mc-foo (0.0.7) unstable; urgency=low
 
-  * Twisted packaging changes, now depend on python2.1-twisted.
   * No longer use mpg321, python-hip is a python lib to decode mp3s.
+    The turntable subprocess is gone, it's all in one process now.
+  * No longer use ao, it couldn't provide the non-blocking interface I
+    want. Aiming for a pure-python solution, currently have to hardcode
+    a few ioctl(2) values.
+  * For songs where the decoding library can provide timing information
+    and seeking (oggs), the tap file now remembers the exact location
+    in the song.
   * "mc-foo addqueue" now takes multiple song names, priority
     is now an optional flag.
+  * Twisted API changes, reactors etc.
+  * Twisted packaging changes, now depend on python2.1-twisted.
+  * Some minor bugfixes.
 
- -- Tommi Virtanen <tv@debian.org>  Tue, 18 Jun 2002 20:08:13 +0300
+ -- Tommi Virtanen <tv@debian.org>  Fri, 21 Jun 2002 11:57:01 +0300
 
 mc-foo (0.0.6) unstable; urgency=low
 
