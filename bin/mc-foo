@@ -14,11 +14,17 @@ class Options(usage.Options):
 
     synopsis = "Usage: %s [options] cmd [cmdoptions]" % os.path.basename(sys.argv[0])
 
+    def __init__(self):
+        usage.Options.__init__(self)
+        self.opts['help']=0
+
     def parseArgs(self, *a):
         self.args = a
 
     def postOptions(self):
         if self.args:
+            if self.opts['help']:
+                self.args = self.args+('--help',)
             cmd=self.args[0]
             if cmd not in McFoo.commands.__all__:
                 raise UnknownCommand, ("unknown command: %s" % cmd)
@@ -27,14 +33,13 @@ class Options(usage.Options):
                 cmd_config=m.Options()
                 cmd_config.parseOptions(self.args[1:])
         else:
-            self.opt_help()
+            usage.Options.opt_help(self)
 
     def opt_help(self):
         """display this help and exit"""
-        if not self.args:
-            usage.Options.opt_help(self)
-        else:
-            self.args=self.args+("--help",)
+        self._generic_flag('help')
+
+    opt_h = opt_help
 
     def opt_host(self, hostname):
         """host that runs the dj server"""
@@ -54,8 +59,6 @@ class Options(usage.Options):
         m=__import__("McFoo.commands."+cmd,
                      globals(), locals(), names)
         return m
-        
-    opt_h = opt_help
 
     def opt_version(self):
         """output version information and exit"""
