@@ -139,7 +139,6 @@ class Turntable:
         self.status=TurntableStatus(fdsocket(sys.stdout.fileno()))
 
     def process(self, cmd, args):
-        print "turntable got command", cmd
         if cmd=='play' and args:
             try:
                 print "opening file %s"%args
