@@ -1,18 +1,18 @@
-
 dj -> turntable
 ===============
 
 PLAY id path/to/mp3
 STOP
 PAUSE
-CONTINUE
-WIND <seconds>
+CONT
+(WIND <[+-]seconds>)
 
 turntable -> dj
 ===============
 
 PLAYING id
-PAUSED (id)
-END id
-STOP
-
+STOPPED
+PAUSED
+CONTINUING
+END
+NOTFOUND id

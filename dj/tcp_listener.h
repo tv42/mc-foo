@@ -5,5 +5,6 @@
 #include "playqueue.h"
 
 int init_tcp_listener(struct playqueue *pq, struct poll_struct *ps);
+int shutdown_tcp(void);
 
 #endif

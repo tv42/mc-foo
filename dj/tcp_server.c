@@ -1,6 +1,7 @@
 #include "poller.h"
 #include "child-bearer.h"
 #include "song_output.h"
+#include "tcp_listener.h"
 
 #include <unistd.h>
 #include <assert.h>
@@ -60,6 +61,7 @@ enum fd_callback_returns read_from_socket(struct poll_struct *ps,
 int tcp_server_quit(const char *line, 
                           size_t len, 
                           struct tcp_server_state *state) {
+  shutdown_tcp();
   exit(1); //TODO close listening socket, kill children, etc..
 }
 

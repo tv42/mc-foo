@@ -5,5 +5,6 @@
 
 void errexit(const char *fmt, ...);
 void debug(const char *fmt, ...);
+void perrorexit(const char *fmt, ...);
 
 #endif

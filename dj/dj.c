@@ -41,11 +41,13 @@ int main(void) {
 
   while(1) {
     request_song_input(&queue);
+    fprintf(stderr, "request song output\n");
     request_song_output(&queue);
     if (do_poll(&polls, -1)==-1) {
       perror("dj: poll");
       exit(1);
     }
   }
+  shutdown_tcp();
   exit(0);
 }

@@ -52,10 +52,10 @@ int continue_song_output(struct playqueue *pq) {
     return -1;
 
   if (pq->paused) {
-    fprintf(stderr, "dj->turntable: CONTINUE\n");
+    fprintf(stderr, "dj->turntable: CONT\n");
     if (write_to_child(pq->song_output, 
-                       "CONTINUE\n", 
-                       strlen("CONTINUE\n")) ==-1) {
+                       "CONT\n", 
+                       strlen("CONT\n")) ==-1) {
       perror("dj: write_to_child");
     }
   }
@@ -95,17 +95,19 @@ int song_output(const char *line, size_t len, void **data) {
     fprintf(stderr, "turntable is playing song\n");
     pq->paused=0;
     pq->playing=1;
-  } else if (strncmp(line, "PAUSED ", strlen("PAUSED "))==0) {
+  } else if (strncmp(line, "PAUSED", strlen("PAUSED"))==0) {
     fprintf(stderr, "turntable is paused\n");
     pq->paused=1;
+  } else if (strncmp(line, "CONTINUING", strlen("CONTINUING"))==0) {
+    fprintf(stderr, "turntable is no longer paused\n");
+    pq->paused=0;
   } else if (strncmp(line, "NOTFOUND ", strlen("NOTFOUND "))==0) {
     //TODO read id, etc..?
     fprintf(stderr, "turntable did not find song\n");
     remove_song(pq, pq->head);
     request_playing(pq);
-  } else if (strncmp(line, "STOP", strlen("STOP"))==0
-             || strncmp(line, "END ", strlen("END "))==0) {
-    //TODO read id..
+  } else if (strncmp(line, "STOPPED", strlen("STOPPED"))==0
+             || strncmp(line, "END", strlen("END"))==0) {
     fprintf(stderr, "turntable finished song\n");
     pq->playing=0;
     remove_song(pq, pq->head);

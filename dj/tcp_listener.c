@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
 #include <sys/poll.h>
@@ -64,6 +65,7 @@ enum fd_callback_returns tcp_listener_cb(struct poll_struct *ps,
 int init_tcp(void) {
   int fd;
   struct sockaddr_in addr;
+  int true=1;
 
   if ((fd=socket(PF_INET, SOCK_STREAM, IPPROTO_IP)) ==-1) {
     perror("dj: socket");
@@ -77,6 +79,11 @@ int init_tcp(void) {
     perror("dj: bind");
     exit(1);
   }
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, 
+                 &true, sizeof(true)) == -1) {
+    perror("dj: setsockopt");
+    exit(1);
+  }
   if (listen(fd, 5) ==-1) {
     perror("dj: listen");
     exit(1);
@@ -88,18 +95,25 @@ int init_tcp(void) {
   return fd;
 }
 
+int tcp_fd=-1;
 int init_tcp_listener(struct playqueue *pq, struct poll_struct *ps) {
   struct tcp_listener_state *state;
+
   state=calloc(1, sizeof(struct tcp_listener_state));
   if (state==NULL)
     return -1;
   state->connections=0;
   state->pq=pq;
-  if (register_poll_fd(ps, init_tcp(),
+  tcp_fd=init_tcp();
+  if (register_poll_fd(ps, tcp_fd,
                        POLLIN,
                        tcp_listener_cb, (void*)state) <0) {
     free(state);
     return -1;
   }
   return 0;
+}
+
+int shutdown_tcp(void) {
+  return close(tcp_fd);
 }
