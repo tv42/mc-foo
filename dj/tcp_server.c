@@ -193,13 +193,12 @@ int tcp_server_list_queue(char *line,
      *  foo: bar
      *  baz: quux
      */
-    tmp=snprintf(buf, 20, "%lu", qe->id);
+    tmp=snprintf(buf, 20, "%lu ", qe->id);
     if (tmp==-1 || tmp>=20) {
       perror("dj: snprintf of id");
       exit(1);
     }
     write(state->fd, buf, strlen(buf));
-    write(state->fd, " ", 1);
     write(state->fd, 
           qe->song.media->backend->name,
           strlen(qe->song.media->backend->name));
