@@ -2,7 +2,6 @@
 
 import McFoo.client
 import sys, os.path
-import twisted.internet.main
 from twisted.python import usage
 
 class Options(usage.Options):
