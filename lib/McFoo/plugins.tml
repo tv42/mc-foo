@@ -1,0 +1,6 @@
+#!python
+
+register("McFoo Automated TAP builder",
+         "McFoo.tap.dj",
+         description="automated TAP building",
+         type="tap")

@@ -28,7 +28,8 @@ everything works yet.
       packages=[
     "McFoo", "McFoo.backend",
     "McFoo.commands", "McFoo.gui", "McFoo.server",
-    "twisted.tap",
+    "McFoo.tap",
     ],
       scripts=["bin/mc-foo", "libbin/turntable"],
+      data_files=[('lib/python2.1/site-packages/McFoo', ["lib/McFoo/plugins.tml"])],
       )
