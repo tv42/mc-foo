@@ -17,7 +17,7 @@ SOURCE:=lib/child-bearer.c lib/poller.c lib/nonblock.c lib/split_to_lines.c \
 	dj/cache.c dj/dj.c dj/playqueue.c \
 	dj/tcp_server.c dj/tcp_listener.c \
 	dj/song_input.c dj/song_output.c \
-	file-cache/cacher.c \
+	file-cache/cacher.c dj/prof_write.c dj/prof_read.c \
 	dj/playqueue.h dj/prof_write.h dj/prof_read.h dj/tcp_listener.h \
 	dj/tcp_server.h dj/song_input.h dj/song_output.h dj/cache.h \
 	lib/split_to_lines.h lib/poller.h lib/child-bearer.h lib/nonblock.h
