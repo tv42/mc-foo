@@ -11,7 +11,7 @@ playqueue = McFoo.playqueue.PlayQueue()
 dj = McFoo.dj.Dj()
 inputsong = McFoo.inputsong.InputSong(playqueue)
 
-Listen = McFoo.server.tcp.server(dj)
+Listen = McFoo.server.tcp.server(dj, playqueue)
 Listen.start_listen()
 
 import asyncore
@@ -22,8 +22,14 @@ while 1:
             pass
         else:
             dj.set_next(next)
+
     if len(playqueue) < 100:
     	inputsong.wakeup()
 	asyncore.poll(0.001)
     else:
 	asyncore.poll(1)
+
+    if McFoo.server.tcp.stop:
+        break
+
+Listen.close()
