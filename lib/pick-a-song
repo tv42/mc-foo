@@ -16,6 +16,8 @@ sub usage() {
   exit(1);
 }
 
+sub fail(@) { die "pick-a-song: @_\n" }
+
 usage() if @ARGV>1;
 my $num = $ARGV[0] || 10;
 $num =~ /^\d+$/ or usage();
@@ -35,7 +37,7 @@ sub dir(&$) {
 }
 
 sub get_medias() {
-  my @backends=dir {1} 'media';
+  my @backends=dir {1} "$MCFOODATA/media";
   my @medias;
   foreach my $backend (@backends) {
     push @medias, map {"$backend/$_"}
@@ -82,9 +84,11 @@ sub freshen($$@) {
 sub song_path($$;) {
   my ($media, $num) = @_;
   my %m;
-  tie %m, 'CDB_File', "$MCFOODATA/media/$media/current" or die;
+  tie %m, 'CDB_File', "$MCFOODATA/media/$media/current"
+    or fail "Cannot open $MCFOODATA/media/$media/current: $!";
   exists $m{$num} or return undef;
-  my $path=readlink("$MCFOODATA/media/$media/path") or die;
+  my $path=readlink("$MCFOODATA/media/$media/path")
+    or fail "Cannot read $MCFOODATA/media/$media/path: $!";
   return $path.'/'.$m{$num};
 }
 
@@ -96,7 +100,7 @@ sub song_path($$;) {
     my ($profiles) = @_;
     my @medias=get_medias() or return undef;
     $mediaprofs=freshen($mediaprofs, \&openmediaprofile, @medias);
-    %$mediaprofs or die "No medias";
+    %$mediaprofs or fail "No medias";
 
     my $weights=0;
     for my $med (@medias) {
@@ -135,7 +139,7 @@ sub song_path($$;) {
       $n++;
     }
     # Err. Something was off in the rand if we get here.
-    die "Bad things in suggestions; $rand\n";
+    fail "Bad things in suggestions; $rand";
   }
 }
 
@@ -147,7 +151,7 @@ sub main($) {
     $profiles=freshen($profiles, \&openweight, split ' ');
     for(1..$num) {
       my $tmp=suggestions($profiles)
-        or die "pick-a-song: suggestions failed\n";
+        or fail "suggestions failed";
       print join(' ', @$tmp), "\n";
     }
   }
