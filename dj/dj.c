@@ -10,11 +10,24 @@
 #include <unistd.h>
 #include <signal.h>
 
-int main(void) {
+int main(int argc, char *argv[]) {
   struct poll_struct polls=init_poll_struct();
   struct playqueue queue;
   struct write_profile wprof;
   struct read_profile rprof;
+
+  if (argc>1) {
+    if (!strcmp(argv[1], "help")) {
+      printf("dj - play some music\n");
+      exit(0);
+    }
+    if (!strcmp(argv[1], "usage")) {
+      printf("dj\n");
+      exit(0);
+    }
+    fprintf(stderr, "unknown argument %s\n", argv[1]);
+    exit(1);
+  }
 
   if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
     perror("dj: signal");
