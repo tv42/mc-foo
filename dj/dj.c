@@ -1,6 +1,7 @@
 #include "poller.h"
 #include "tcp_listener.h"
 #include "song_input.h"
+#include "song_output.h"
 #include "playqueue.h"
 
 #include <stdio.h>
@@ -33,8 +34,14 @@ int main(void) {
     exit(1);
   }
 
+  if (init_song_output(&polls, &queue) ==-1) {
+    perror("dj: song output initialization");
+    exit(1);
+  }
+
   while(1) {
     request_song_input(&queue);
+    request_song_output(&queue);
     if (do_poll(&polls, -1)==-1) {
       perror("dj: poll");
       exit(1);

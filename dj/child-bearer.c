@@ -13,7 +13,6 @@
 
 #define BUFSIZE 1024
 
-//remember to install the signal handler to ignore SIGPIPE
 ssize_t write_to_child(struct child_bearing *child, 
                        const void *buf, 
                        size_t count) {
@@ -61,7 +60,7 @@ enum fd_callback_returns read_from_child(struct poll_struct *ps,
 
   child=(struct child_bearing*) *data;
   if (flags&POLL_FLAGS_SHUTDOWN) {
-    //cleanup, close pipe to child, hope it will die.
+    /* cleanup, close pipe to child, hope it will die. */
     close(child->to_fd);
     child->to_fd=-1;
     return fdcb_ok;

@@ -26,8 +26,7 @@ enum fd_callback_returns read_from_socket(struct poll_struct *ps,
   assert(events!=NULL);
   assert(fd>=0);
 
-  if (flags&POLL_FLAGS_SHUTDOWN) {
-    //cleanup, close socket
+  if (flags&POLL_FLAGS_SHUTDOWN) { /* cleanup, close socket */
     close(fd);
     return fdcb_remove;
   } else {

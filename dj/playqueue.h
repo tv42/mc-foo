@@ -5,6 +5,7 @@
 #include "child-bearer.h"
 
 typedef unsigned int bitflag;
+typedef unsigned long songid_t;
 
 struct song {
   struct media *media;
@@ -37,6 +38,7 @@ struct media {
 struct queue_entry {
   struct queue_entry *next, *prev;
   struct priority_pointer *priority;
+  songid_t id;
   struct {
     enum cache_state {
       not_requested,
@@ -58,8 +60,12 @@ struct playqueue {
   struct priority_pointer *priorities;
   struct priority_pointer *priority_tail;
   struct child_bearing *song_input;
+  struct child_bearing *song_output;
   struct backend *backends;
   unsigned int songs;
+  
+  unsigned int playing: 1;
+  unsigned int paused: 1;
 };
 
 int find_priority(struct playqueue *queue, 
@@ -102,5 +108,8 @@ int add_song_media_and_backend(struct playqueue *queue,
 struct backend *add_backend(struct playqueue *pq,
                             struct poll_struct *ps,
                             const char *name);
+
+songid_t new_id(void);
+struct queue_entry *find_id(struct playqueue *pq, songid_t id);
 
 #endif

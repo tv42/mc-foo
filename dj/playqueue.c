@@ -145,6 +145,7 @@ int add_song(struct playqueue *queue,
   if (qe->prev!=NULL)
     qe->prev->next=qe;
   queue->songs++;
+  qe->id=new_id();
   return 0;
 }
 
@@ -198,6 +199,7 @@ void remove_song(struct playqueue *queue, struct queue_entry *qe) {
   } else {
     /* currently playing one, if playback is on */
     //TODO stop playing and move to next?
+    
     queue->head=qe->next;
   }
 
@@ -347,8 +349,11 @@ void playqueue_init(struct playqueue *pq) {
   pq->head=pq->tail=NULL;
   pq->priorities=pq->priority_tail=NULL;
   pq->song_input=NULL;
+  pq->song_output=NULL;
   pq->songs=0;
   pq->backends=NULL;
+  pq->playing=0;
+  pq->paused=0;
 }
 
 struct backend *add_backend(struct playqueue *pq,
@@ -483,4 +488,20 @@ int add_song_media_and_backend(struct playqueue *queue,
     return -1;
   }
   return 0;
+}
+
+songid_t new_id(void) {
+  static songid_t last_id=0;
+
+  return last_id++;
+}
+
+struct queue_entry *find_id(struct playqueue *pq, songid_t id) {
+  struct queue_entry *qe;
+
+  qe=pq->head;
+  while (qe!=NULL && qe->id!=id) {
+    qe=qe->next;
+  }
+  return qe;
 }
