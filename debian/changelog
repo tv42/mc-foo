@@ -1,3 +1,11 @@
+mc-foo (0.0.12) unstable; urgency=low
+
+  * Correct the path to plugins.tml (Closes: #165990).
+  * If the mixer has no PCM channel, fall back to using master volume
+    (Closes: #129175).
+
+ -- Tommi Virtanen <tv@debian.org>  Thu, 13 Feb 2003 19:42:41 +0200
+
 mc-foo (0.0.11) unstable; urgency=low
 
   * Cleanups and fixes to make it work better with python2.2 

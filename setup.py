@@ -30,5 +30,5 @@ everything works yet.
     "McFoo.tap",
     ],
       scripts=["bin/mc-foo"],
-      data_files=[('lib/python2.1/site-packages/McFoo', ["lib/McFoo/plugins.tml"])],
+      data_files=[('lib/python2.2/site-packages/McFoo', ["lib/McFoo/plugins.tml"])],
       )
