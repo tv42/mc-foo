@@ -19,5 +19,3 @@ TODO
 * replace Python's silly threading with something that really
   helps file IO
 
-* jump to certain place in song
-
