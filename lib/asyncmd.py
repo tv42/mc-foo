@@ -184,12 +184,17 @@ class async_cmd:
 			col=cmds_per_line
 			for cmd in cmds:
 				if col==0: self.say()
-				self.say(("%-"+`cmdlen`+"s") % cmd)
+				self.say_snippet(("%-"+`cmdlen`+"s") % cmd)
                                 col = (col+1) % cmds_per_line
 			self.say("\n")
 
         def say(self, *args):
-            print args
+		apply(self.say_snippet, args)
+		print
+
+        def say_snippet(self, *args):
+		for s in args:
+			print s,
 
 #    If the prompt argument is present, it is written to standard
 #    output without a trailing newline. The function then reads a line
