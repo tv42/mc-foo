@@ -23,10 +23,25 @@ int songid;
 void sigchld_handler(int signal) {
   if (pid_player) {
     printf("END %i\n", songid);
+    fflush(NULL);
     pid_player = 0;
   }
 }
 
+/* well, kill and wait */
+int kill_player(void) {
+  int ret;
+
+  if (pid_player == 0)
+    return -1;
+
+  ret = kill(pid_player, SIGTERM);
+  if (ret == 0) {
+    pid_player = 0;
+    waitpid(pid_player, NULL, 0);
+  }
+  return ret;
+}
 
 int ttplay(const char *cmdline) {
   #define SONGIDX 3
@@ -38,12 +53,13 @@ int ttplay(const char *cmdline) {
     0
   };
   char *songpath;
-  int id, pid, childstatus;
+  int id, pid;
   struct stat statbuf;
 
   if (pid_player) {
-    /* already playing */
-    return -1;
+    /* already playing; stop old */
+    if (kill_player() == -1)
+      perror("turntable: kill_player");
   }
   
   /* cmdline: "PLAY id /path/to/song.mp3" */
@@ -57,7 +73,8 @@ int ttplay(const char *cmdline) {
   if (stat(songpath,&statbuf) == -1) {
     /* song does not exist */
     perror(songpath);
-    return -4; 
+    printf("NOTFOUND %u %s\n", id, songpath);
+    return 0;
   }
 
   /* debug("I'm gonna play %s", songpath); */
@@ -74,6 +91,7 @@ int ttplay(const char *cmdline) {
     pid_player = pid;
     songid = id;
     printf("PLAYING %i\n", songid);
+    fflush(NULL);
   } else {
     /* child */
     /* close stdout and stderr fd's */
@@ -90,12 +108,12 @@ int ttstop(const char *cmdline) {
   if (pid_player == 0)
     return -1;
 
-  ret = kill(pid_player, SIGTERM);
+  ret = kill_player();
   if (ret == -1)
-    perror("kill");
+    perror("turntable: kill_player");
   if (ret == 0) {
-    pid_player = 0;
     printf("STOP\n");
+    fflush(NULL);
   }
   return ret;
 }
@@ -120,6 +138,7 @@ int ttpause(const char *cmdline) {
   }
 
   printf("PAUSED %i\n", songid);
+  fflush(NULL);
   return 0;
 }
 
@@ -136,6 +155,7 @@ int ttcontinue(const char *cmdline) {
   signal(SIGCHLD, sigchld_handler);
 
   printf("PLAYING %i\n", songid);  
+  fflush(NULL);
   return 0;
 }
 
@@ -170,12 +190,13 @@ int readcmd() {
       /* command is valid */
       ret = commands[i].action(cmd);
       if (ret != 0) {
-	errexit("Error executing command: %s", cmd);
+	errexit("Error executing command, got %d: %s", ret, cmd);
       }
       return 0;
     }
   }
   errexit("Invalid command: %s", cmd);
+  return -1;
 }
 
 

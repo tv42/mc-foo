@@ -22,7 +22,7 @@ int main(void) {
     exit(1);
   }
 
-  if (init_tcp_listener(&polls) ==-1) {
+  if (init_tcp_listener(&queue, &polls) ==-1) {
     perror("dj: tcp listener initialization");
     exit(1);
   }

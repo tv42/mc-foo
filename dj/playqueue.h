@@ -65,6 +65,7 @@ struct playqueue {
   unsigned int songs;
   
   unsigned int playing: 1;
+  unsigned int wantplaying: 1;
   unsigned int paused: 1;
 };
 
@@ -87,7 +88,7 @@ struct media *add_media(struct backend *backend,
                         bitflag caching_mandatory);
 void remove_song(struct playqueue *queue, struct queue_entry *qe);
 void remove_media(struct playqueue *queue, struct media *media);
-void move_song(struct playqueue *queue,
+int move_song(struct playqueue *queue,
               struct queue_entry *qe,
               signed int count);
 

@@ -15,6 +15,7 @@
 
 struct tcp_listener_state {
   unsigned int connections;
+  struct playqueue *pq;
 };
 
 enum fd_callback_returns tcp_listener_cb(struct poll_struct *ps,
@@ -49,11 +50,11 @@ enum fd_callback_returns tcp_listener_cb(struct poll_struct *ps,
       fprintf(stderr, "dj: incoming connection from %s port %d\n",
               inet_ntoa(addr.sin_addr),
               ntohs(addr.sin_port));
-      if (make_nonblock(sock) ==-1) {
-        perror("dj: make_nonblock");
-        close(sock);
-      }
-      if (init_tcp_server(ps, sock)==-1)
+      // if (make_nonblock(sock) ==-1) {
+      //   perror("dj: make_nonblock");
+      //   close(sock);
+      // }
+      if (init_tcp_server(state->pq, ps, sock)==-1)
         close(sock);
     }
     return fdcb_ok;
@@ -70,7 +71,7 @@ int init_tcp(void) {
   }
 
   addr.sin_family=AF_INET;
-  addr.sin_port=htons(4243);
+  addr.sin_port=htons(25706);   /* "dj" */
   addr.sin_addr.s_addr=INADDR_ANY;
   if (bind(fd, &addr, sizeof(addr)) ==-1) {
     perror("dj: bind");
@@ -87,12 +88,13 @@ int init_tcp(void) {
   return fd;
 }
 
-int init_tcp_listener(struct poll_struct *ps) {
+int init_tcp_listener(struct playqueue *pq, struct poll_struct *ps) {
   struct tcp_listener_state *state;
   state=calloc(1, sizeof(struct tcp_listener_state));
   if (state==NULL)
     return -1;
   state->connections=0;
+  state->pq=pq;
   if (register_poll_fd(ps, init_tcp(),
                        POLLIN,
                        tcp_listener_cb, (void*)state) <0) {

@@ -193,7 +193,8 @@ void remove_song(struct playqueue *queue, struct queue_entry *qe) {
   if (queue->tail==qe)
     queue->tail=qe->prev;
 
-  qe->next->prev=qe->prev;
+  if (qe->next!=NULL)
+    qe->next->prev=qe->prev;
   if (qe->prev!=NULL) {
     qe->prev->next=qe->next;
   } else {
@@ -266,7 +267,7 @@ void remove_media(struct playqueue *queue, struct media *media) {
   free(media);
 }
 
-void move_song(struct playqueue *queue,
+int move_song(struct playqueue *queue,
               struct queue_entry *qe,
               signed int count) {
   struct queue_entry *cur;
@@ -275,11 +276,16 @@ void move_song(struct playqueue *queue,
   assert(queue!=NULL);
   assert(qe!=NULL);
 
+  /* queue->head is magical, you can't move thing above it
+     (as it is there to keep record on what is playing currently */
+  if (qe==queue->head)
+    return -1;
+
   cur=qe;
 
   //TODO running out of queue..
   if (count<=0) {
-    while (count<=0 && cur!=NULL) {          /* move closer to head */
+    while (count<=0 && cur->prev!=NULL) {          /* move closer to head */
       cur=cur->prev;
       count++;
       for (pri=qe->priority; pri!=NULL; pri=pri->prev) {
@@ -299,6 +305,7 @@ void move_song(struct playqueue *queue,
       }
     }
   }
+  assert(cur!=NULL);
 
   /* remove qe from old location */
   if (qe->next!=NULL) {
@@ -306,25 +313,19 @@ void move_song(struct playqueue *queue,
   } else {
     queue->tail=qe->prev;
   }
-  if (qe->prev!=NULL) {
-    qe->prev->next=qe->next;
-  } else {
-    queue->head=qe->next;
-  }
+  assert(qe->prev!=NULL);
+  qe->prev->next=qe->next;
 
-  /* add below cur, or at the head if cur NULL */
+  /* add below cur */
   qe->prev=cur;
-  qe->next= (cur!=NULL ? cur->next : queue->head);
+  qe->next=cur->next;
   if (qe->next!=NULL) {
     qe->next->prev=qe;
   } else {
     queue->tail=qe;
   }
-  if (qe->prev!=NULL) {
-    qe->prev->next=qe;
-  } else {
-    queue->head=qe;
-  }
+  qe->prev->next=qe;
+  return 0;
 }
 
 int request_song_input(struct playqueue *queue) {
@@ -332,7 +333,7 @@ int request_song_input(struct playqueue *queue) {
   static time_t last_time=0;
 
   if (queue->songs >= 20
-      || last_time > time(NULL)-2)
+      || (last_time!=0 && last_time > time(NULL)-2))
     return 0;
 
   last_time=time(NULL);
@@ -353,6 +354,7 @@ void playqueue_init(struct playqueue *pq) {
   pq->songs=0;
   pq->backends=NULL;
   pq->playing=0;
+  pq->wantplaying=1;
   pq->paused=0;
 }
 

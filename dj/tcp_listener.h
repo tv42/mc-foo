@@ -2,7 +2,8 @@
 #define TCP_LISTENER_H
 
 #include "poller.h"
+#include "playqueue.h"
 
-int init_tcp_listener(struct poll_struct *ps);
+int init_tcp_listener(struct playqueue *pq, struct poll_struct *ps);
 
 #endif
