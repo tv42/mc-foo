@@ -59,17 +59,11 @@ class Ogg:
 class Mp3:
     def __init__(self, filename):
         self.filename=filename
-        import hip
+        import mad
         try:
-            self.hf = hip.hip(filename)
+            self.mf = mad.MadFile(filename)
         except IOError, e:
             if e.errno == ENOENT:
-                raise McFooBackendFileDoesNotExist
-            else:
-                raise
-        except hip.HIPError, e:
-            if str(e) == "Error opening file: Data is not MPEG data.":
-                # well, it exists but its unusable -> remove from list
                 raise McFooBackendFileDoesNotExist
             else:
                 raise
@@ -87,7 +81,8 @@ class Mp3:
     def start_play(self):
         pass
     def read(self, size):
-        return self.hf.read(size)
+        buf=self.mf.read(size)
+        return (buf, len(buf), 0)
     def comment(self):
         try:
             id3=ID3.ID3(self.filename)
