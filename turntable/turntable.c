@@ -56,7 +56,7 @@ void start_player(const char *file) {
     fflush(NULL);
   } else {                      /* child */
     close(1);
-    execlp("esddsp", "esddsp", "mpg123", "-b", "1024", file, NULL);
+    execlp("esddsp", "esddsp", "mpg123", "-q", "-b", "256", file, NULL);
     perrorexit("turntable(child): exec");
   }
 }
