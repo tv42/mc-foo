@@ -67,6 +67,12 @@ enum fd_callback_returns read_from_child(struct poll_struct *ps,
   } else {
     tmp=read(fd, buf, sizeof(buf));
     if (tmp==-1 || tmp==0) {
+      printf("dj: restarting child\n");
+      child->pid=child->starter(child);
+      if (child->pid==-1) {
+	perror("dj: child won't start");
+	exit(1);
+      }
       close(fd);
       return fdcb_remove;
     } else {
@@ -74,8 +80,8 @@ enum fd_callback_returns read_from_child(struct poll_struct *ps,
         close(fd);
         return fdcb_remove;
       } else {
-        return fdcb_ok;
-      }      
+	return fdcb_ok;
+      }
     }
   }
 }
