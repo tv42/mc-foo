@@ -1,0 +1,10 @@
+mc-foo (0.0.1-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Tommi Virtanen <tv@debian.org>  Thu, 27 Jan 2000 21:52:30 +0200
+
+Local variables:
+mode: debian-changelog
+add-log-mailing-address: "tv@debian.org"
+End:

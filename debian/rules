@@ -1,0 +1,49 @@
+#!/usr/bin/make -f
+
+PACKAGE	:= mc-foo
+
+build: build-stamp
+build-stamp:
+	test -e debian/control
+	$(MAKE) CFLAGS="-Wall -g -O2"
+	touch build-stamp
+
+clean:
+	test -e debian/control
+	test root = "`whoami`" || (echo need root priviledges; exit 1)
+	rm -f build-stamp install-stamp
+	$(MAKE) clean
+	rm -rf debian/substvars debian/files debian/tmp
+
+binary-indep: build
+
+binary-arch: build
+	test -e debian/control
+	test root = "`whoami`" || (echo need root priviledges; exit 1)
+	rm -rf debian/substvars debian/tmp
+	install -d --mode=0755 debian/tmp
+	$(MAKE) DESTDIR=debian/tmp install
+	install -d --mode=0755 "debian/tmp/usr/share/doc/$(PACKAGE)"
+	install --mode=0644 debian/copyright \
+		"debian/tmp/usr/share/doc/$(PACKAGE)"
+#	gzip -9 debian/tmp/usr/share/man/man1/*
+	install --mode=0644 debian/changelog \
+		"debian/tmp/usr/share/doc/$(PACKAGE)/changelog.Debian"
+	gzip -9 debian/tmp/usr/share/doc/"$(PACKAGE)"/changelog.Debian
+	strip --remove-section=.comment --remove-section=.note \
+		debian/tmp/usr/lib/mc-foo/commands/dj \
+		debian/tmp/usr/lib/mc-foo/lib/turntable
+	install -d --mode=0755 debian/tmp/DEBIAN
+	install --mode=0755 debian/postinst debian/prerm debian/postrm \
+		debian/tmp/DEBIAN
+	dpkg-shlibdeps \
+		debian/tmp/usr/lib/mc-foo/commands/dj \
+		debian/tmp/usr/lib/mc-foo/lib/turntable
+	dpkg-gencontrol
+	dpkg --build debian/tmp ..
+
+source diff:                                                                  
+	@echo >&2 'source and diff are obsolete - use dpkg-source -b'; false
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary

@@ -1,0 +1,21 @@
+#!/bin/sh -e
+
+PACKAGE=mc-foo
+if [ "$1" = "configure" ]; then
+	if [ -d /usr/doc -a ! -e /usr/doc/$PACKAGE \
+            -a -d /usr/share/doc/$PACKAGE ]; then
+		ln -sf ../share/doc/$PACKAGE /usr/doc/$PACKAGE
+	fi
+fi
+
+if [ "$1" = "configure" -a "$2" = "" ]; then
+    addgroup mcfoo
+    chgrp -R mcfoo /var/cache/mc-foo/mediaprofiles \
+	/var/cache/mc-foo/weights \
+	/var/lib/mc-foo/media \
+	/var/lib/mc-foo/profiles
+    chmod -R g+s /var/cache/mc-foo/mediaprofiles \
+	/var/cache/mc-foo/weights \
+	/var/lib/mc-foo/media \
+	/var/lib/mc-foo/profiles
+fi

@@ -1,0 +1,23 @@
+Source: mc-foo
+Section: sound
+Priority: optional
+Maintainer: Tommi Virtanen <tv@debian.org>
+Standards-Version: 3.0.0
+Build-Depends: 
+
+Package: mc-foo
+Architecture: any
+Depends: ${shlibs:Depends}, esound, mpg123, libcdb-file-perl, libmpeg-mp3info-perl, netcat
+Description: an advanced, learning, mp3 jukebox
+ MC Foo is an advanced, adaptive and learning mp3 jukebox server.
+ .
+   -continuous music playing
+   -learns what music you like and dislike
+   -no static playlists; uses a playqueue you can view and alter
+   -can be controlled from any hosts and even with 
+    infrared remote controllers
+   -allows multiple user/preference profiles,
+    according to whose listening and his or her mood
+ .
+ Note that MC Foo is in the early stages of development, and not
+ everything works yet.
