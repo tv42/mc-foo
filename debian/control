@@ -3,11 +3,11 @@ Section: sound
 Priority: optional
 Maintainer: Tommi Virtanen <tv@debian.org>
 Standards-Version: 3.5.6
-Build-Depends-Indep: python2.1-dev
+Build-Depends-Indep: python2.2-dev
 
 Package: mc-foo
 Architecture: all
-Depends: python (>= 2.1), python (<< 2.2), python-pyvorbis, python-tk, python-pmw (>= 0.8.5-3), python-oss, python2.1-twisted, python-id3, python-hip
+Depends: python (>= 2.2), python (<< 2.3), python-pyvorbis, python-tk, python-pmw (>= 0.8.5-3), python-oss, python2.2-twisted, python-id3, python-hip
 Description: an advanced, learning, Ogg/MP3 jukebox
  MC Foo is an advanced, adaptive and learning Ogg/MP3 jukebox server.
  .

@@ -1,3 +1,10 @@
+mc-foo (0.0.10) unstable; urgency=low
+
+  * Python 2.2 is now default (Closes: #161559).
+  * No more /usr/doc.
+
+ -- Tommi Virtanen <tv@debian.org>  Sun, 13 Oct 2002 13:19:30 +0300
+
 mc-foo (0.0.9) unstable; urgency=low
 
   * New command "mc-foo grep" to search the songs.

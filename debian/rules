@@ -2,7 +2,7 @@
 
 PACKAGE := mc-foo
 DEBTMP := debian/tmp.$(PACKAGE)
-PYTHONBIN := /usr/bin/python2.1
+PYTHONBIN := /usr/bin/python2.2
 
 build:
 	test -e debian/control
@@ -45,8 +45,6 @@ binary-arch: build install
 	install -d "$(DEBTMP)/usr/share/man/man1"
 	ln -sf ../man7/undocumented.7.gz "$(DEBTMP)/usr/share/man/man1/mc-foo.1.gz"
 	install -d --mode=0755 $(DEBTMP)/DEBIAN
-	install --mode=0755 debian/postinst debian/prerm \
-		$(DEBTMP)/DEBIAN
 	dpkg-gencontrol -isp -P"$(DEBTMP)"
 	dpkg --build $(DEBTMP) ..
 
