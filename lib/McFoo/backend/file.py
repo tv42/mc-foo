@@ -55,34 +55,17 @@ class Mp3:
                 pass
             else:
                 raise
-        except NameError, e:
-            print "EXCEPT: ", e
-            raise
-
+        c['TITLE']=[string.strip(id3.title)]
+        c['ARTIST']=[string.strip(id3.artist)]
+        c['ALBUM']=[string.strip(id3.album)]
+        c['YEAR']=[string.strip(id3.year)]
+        genre=id3.genre
         try:
-            c['TITLE']=[string.strip(id3.title)]
-        except NameError:
-            pass
-        try:
-            c['ARTIST']=[string.strip(id3.artist)]
-        except NameError:
-            pass
-        try:
-            c['ALBUM']=[string.strip(id3.album)]
-        except NameError:
-            pass
-        try:
-            c['YEAR']=[string.strip(id3.year)]
-        except NameError:
-            pass
-        try:
-            c['GENRE']=[id3.genres[id3.genre]]
-        except NameError:
-            pass
-        try:
-            c['COMMENT']=[string.strip(id3.comment)]
-        except NameError:
-            pass
+            genre=id3.genres[genre]
+        except IndexError:
+            genre=str(genre)
+        c['GENRE']=genre
+        c['COMMENT']=[string.strip(id3.comment)]
         for key in c.keys():
             if len(c[key])==1 and c[key][0]=='':
                 del c[key]
