@@ -129,5 +129,8 @@ class Dj(twisted.internet.process.Process,
                                        'change',
                                        at)
 
+    def unobserve(self, callback):
+        self.observers.remove(callback)
+
     def handleError(self, text):
         print "turntable:", text,

@@ -75,3 +75,6 @@ class VolumeControl:
         self.observers.append_and_call(callback,
                                        'change',
                                        l, r)
+
+    def unobserve(self, callback):
+        self.observers.remove(callback)

@@ -12,12 +12,22 @@ def maybeTraceback(tb):
     if tb!=pb.PB_CONNECTION_LOST:
         pb.printTraceback(tb)
 
+class CallMeLater:
+    def __init__(self, callback, *a, **kw):
+        self.callback=callback
+        self.a=a
+        self.kw=kw
+
+    def __call__(self):
+        return apply(self.callback, self.a, self.kw)
+
 class DjPerspective(pb.Perspective):
     def __init__(self, perspectiveName, service, identityName, dj, playqueue, volume):
         pb.Perspective.__init__(self, perspectiveName, service, identityName)
         self.dj = dj
         self.playqueue = playqueue
         self.volume = volume
+        self.onDetach = []
 
     def perspective_list(self):
         return self.playqueue.as_data()
@@ -88,16 +98,25 @@ class DjPerspective(pb.Perspective):
 
     def perspective_observe_volume(self, callback):
         self.volume.observe(callback)
-        
+        self.onDetach.append(CallMeLater(self.volume.unobserve, callback))
+
     def perspective_observe_location(self, callback):
         self.dj.observe(callback)
+        self.onDetach.append(CallMeLater(self.dj.unobserve, callback))
         
     def perspective_observe_playqueue(self, callback):
         self.playqueue.observe(callback)
+        self.onDetach.append(CallMeLater(self.playqueue.unobserve, callback))
 
     def perspective_observe_history(self, callback):
         self.playqueue.history.observe(callback)
+        self.onDetach.append(CallMeLater(self.playqueue.history.unobserve, callback))
 
+    def detached(self, reference, identity):
+        for f in self.onDetach:
+            f()
+        self.onDetach=[]
+        return pb.Perspective.detached(self, reference, identity)
 
 class server(pb.Service):
     def __init__(self, app, dj, playqueue, volume):

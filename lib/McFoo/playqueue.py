@@ -67,7 +67,9 @@ class PlayHistory(UserList.UserList):
     def observe(self, callback):
         self.observers.append_and_call(callback, 'snapshot', self.as_data())
 
-#TODO protect threads from eachother
+    def unobserve(self, callback):
+        self.observers.remove(callback)
+
 class PlayQueue(UserList.UserList):
     filler=None
 
@@ -79,6 +81,9 @@ class PlayQueue(UserList.UserList):
 
     def observe(self, callback):
         self.observers.append_and_call(callback, 'snapshot', self.as_data())
+
+    def unobserve(self, callback):
+        self.observers.remove(callback)
 
     def insert_point(self, pri):
 	smallest=0
