@@ -2,20 +2,15 @@
 
 PACKAGE := mc-foo
 DEBTMP := debian/tmp.$(PACKAGE)
-BUILD := debian/build.$(PACKAGE)
 
-build: build-stamp
-build-stamp:
+build:
 	test -e debian/control
-	install -d "$(BUILD)"
-	$(MAKE) -C "$(BUILD)" -f "$(CURDIR)/Makefile" src="$(CURDIR)"
-	touch build-stamp
+	$(MAKE)
 
 clean:
 	test -e debian/control
 	test root = "`whoami`" || (echo need root priviledges; exit 1)
-	rm -f build-stamp install-stamp
-	rm -rf "$(BUILD)"
+	$(MAKE) clean
 	rm -rf debian/substvars debian/files $(DEBTMP)
 
 binary-indep: build
@@ -25,8 +20,7 @@ binary-arch: build
 	test root = "`whoami`" || (echo need root priviledges; exit 1)
 	rm -rf debian/substvars $(DEBTMP)
 	install -d --mode=0755 $(DEBTMP)
-	$(MAKE) -C "$(BUILD)" -f "$(CURDIR)/Makefile" src="$(CURDIR)" \
-		DESTDIR="$(CURDIR)/$(DEBTMP)" install
+	$(MAKE) DESTDIR="$(CURDIR)/$(DEBTMP)" install
 	install -d --mode=0755 "$(DEBTMP)/usr/share/doc/$(PACKAGE)"
 	install --mode=0644 debian/copyright \
 		"$(DEBTMP)/usr/share/doc/$(PACKAGE)"
@@ -34,20 +28,11 @@ binary-arch: build
 	install --mode=0644 debian/changelog \
 		"$(DEBTMP)/usr/share/doc/$(PACKAGE)/changelog"
 	gzip -9 "$(DEBTMP)/usr/share/doc/$(PACKAGE)/changelog"
-	strip --remove-section=.comment --remove-section=.note \
-		$(DEBTMP)/usr/lib/mc-foo/commands/dj
-#		$(DEBTMP)/usr/lib/mc-foo/lib/turntable
 	install -d --mode=0755 $(DEBTMP)/DEBIAN
 	install --mode=0755 debian/postinst debian/prerm debian/postrm \
 		$(DEBTMP)/DEBIAN
-	dpkg-shlibdeps \
-		$(DEBTMP)/usr/lib/mc-foo/commands/dj
-#		$(DEBTMP)/usr/lib/mc-foo/lib/turntable
 	dpkg-gencontrol -isp -P"$(DEBTMP)"
 	dpkg --build $(DEBTMP) ..
-
-source diff:
-	@echo >&2 'source and diff are obsolete - use dpkg-source -b'; false
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary

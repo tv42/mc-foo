@@ -7,8 +7,8 @@ Build-Depends:
 
 Package: mc-foo
 Architecture: any
-Depends: ${shlibs:Depends}, mpg123, libcdb-file-perl, libmpeg-mp3info-perl, netcat, iselect
-Conflicts: mpg123 (<< 0.59r)
+Depends: python, pyao, pyvorbis, libcdb-file-perl, libmpeg-mp3info-perl, netcat, iselect
+Recommends: mpg123
 Description: an advanced, learning, mp3 jukebox
  MC Foo is an advanced, adaptive and learning mp3 jukebox server.
  .
