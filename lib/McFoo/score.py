@@ -64,11 +64,19 @@ class UserProfile(UserDict.UserDict):
         self.def_read=['default']
         self.def_write=['default']
 
+    def as_data(self):
+        d={}
+        for k,v in self.data.items():
+            d[k]=v.as_data()
+        return d
+
     def incScore(self, filename, inc=1):
         profileName=self.def_write[0]
         del self.def_write[0]
         self.def_write.append(profileName)
 
+        if not self.has_key(profileName):
+            self[profileName]=Profile()
         print "profile %s=%s"%(profileName, repr(self[profileName]))
         self[profileName].incScore(filename, inc)
 

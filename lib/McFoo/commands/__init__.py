@@ -14,4 +14,11 @@ __all__ = [
     "vol-dec",
     "vol-inc",
     "mousecontrol",
+    "getscores",
+    "getwriteprofiles",
+    "setwriteprofiles",
+    "getreadprofiles",
+    "setreadprofiles",
+    "hate",
+    "dislike",
     ]

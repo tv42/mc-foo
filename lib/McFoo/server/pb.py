@@ -35,6 +35,41 @@ class DjPerspective(pb.Perspective):
         user=self.profileTable.adduser(self.identityName)
         user.incScore(self.playqueue.history[0].filename)
 
+    def perspective_dislike(self):
+        user=self.profileTable.adduser(self.identityName)
+        user.incScore(self.playqueue.history[0].filename, -1)
+
+    def perspective_hate(self):
+        user=self.profileTable.adduser(self.identityName)
+        user.incScore(self.playqueue.history[0].filename, -100)
+
+    def perspective_getReadProfiles(self):
+        user=self.profileTable.adduser(self.identityName)
+        return user.def_read
+
+    def perspective_setReadProfiles(self, l):
+        user=self.profileTable.adduser(self.identityName)
+        user.def_read=list(l)
+
+    def perspective_getWriteProfiles(self):
+        user=self.profileTable.adduser(self.identityName)
+        return user.def_write
+
+    def perspective_setWriteProfiles(self, l):
+        user=self.profileTable.adduser(self.identityName)
+        user.def_write=list(l)
+
+    def perspective_getScores(self):
+        user=self.profileTable.adduser(self.identityName)
+        return user.as_data()
+
+    def perspective_setScores(self, d):
+        raise NotImplementedError #TODO
+
+    def perspective_setscores(self, newScores):
+        user=self.profileTable.adduser(self.identityName)
+        return user.update(newScores)
+
     def perspective_list(self):
         return self.playqueue.as_data()
 
