@@ -1,72 +1,94 @@
-import McFoo.backend.file
 import os
+import sys
+import string
 
-class Dj:
-    def _player(self):
-        while 1:
+import asynchat
+import socket_pty
+
+import McFoo.backend.file
+
+class Dj(asynchat.async_chat):
+    def __init__(self, playqueue):
+	asynchat.async_chat.__init__(self, socket_pty.socket_pty())
+	self.set_terminator('\n')
+	self.command = ''
+        self.playqueue=playqueue
+
+        self.player_state=None
+        self.player_songlength=None
+        self.player_at=None
+
+        self.ensure_connect()
+        self.missing_a_song=1
+
+    def ensure_music(self):
+        if (self.missing_a_song
+            and (self.player_state==None
+                 or self.player_state=='waiting'
+                 or self.player_state=='waiting_paused')):
+            self.start_next_song()
+
+    def start_next_song(self):
+        next=self.playqueue.pop()
+        if next:
+            self.send("play %s\n"%next.filename)
+            self.missing_a_song=0
+
+    def handle_connect(self):
+	pass
+
+    def log(self, message):
+        sys.stderr.write("dj log: "+message+"\n")
+
+    def ensure_connect(self):
+	if not self.socket.connected:
+	    self.connect(("/usr/lib/mc-foo/lib/turntable", ["turntable"]))
+	
+    def collect_incoming_data(self, data):
+	self.command = self.command + data
+
+    def found_terminator(self):
+	if self.command[-1]=='\015':
+	    self.command = self.command[:-1]
+	if self.command != '':
+	    list = string.split(self.command, ' ', 2)
+            cmd=list[0]
+            args=list[1:]
+            if args:
+                args=args[0]
             try:
-                self._playable.wait()
-                self._playfile(self._song.filename)
-                self._song=None
-                self._playable.clear()
-                os.write(self._pipe_fd, "\n")
-            except KeyboardInterrupt:
+                func=getattr(self, 'do_'+cmd)
+            except AttributeError:
+                print "dj: turntable said:", self.command
                 pass
+            else:
+                func(args)
+	    self.command = ''
 
-    def __init__(self, pipe_fd):
-        import ao
-        from threading import Thread, Event
-        self._audio_id = ao.get_driver_id('oss')
-        self._audio_dev = ao.AudioDevice(self._audio_id)
-        self._playable=Event()
-        self._song=None
-        self._command=None
-        self._pipe_fd=pipe_fd
-        playerthread=Thread(target=self._player, name="McFooDj")
-        playerthread.setDaemon(1)
-        playerthread.start()
+    def do_state(self, args):
+        self.player_state=args
+        if self.player_state=='waiting':
+            self.missing_a_song=1
+        self.ensure_music()
 
-    def _playfile(self, filename):
-	SIZE = 4096
+    def do_length(self, args):
+        self.player_songlength=float(args)
 
-	file = McFoo.backend.file.audiofilechooser(filename)
-        file.start_play()
-	while 1:
-	    (buff, bytes, bit) = file.read(SIZE)
-	    if bytes == 0: break
-	    self._audio_dev.play(buff, bytes)
-	    while self._command != None:
-		if self._command == "next":
-		    self._command=None
-		    return
-		elif self._command == "pause":
-		    while self._command == "pause":
-			pass
-		elif self._command == "play":
-		    self._command=None
-		    pass
-		else:
-		    raise "ugly"
-
-    def set_next(self, song):
-        # must not call unless .isdone() is true
-        self._song=song
-        self._playable.set()
-
-    def isdone(self):
-        return not self._playable.isSet()
+    def do_at(self, args):
+        self.player_at=args
 
     def next(self):
-        self._command="next"
-
+        self.start_next_song()
+        
     def pause(self):
-        self._command="pause"
+        self.send("pause\n")
 
     def play(self):
-        self._command="play"
+        self.send("continue\n")
 
     def pauseorplay(self):
-        if self._command=="pause":
-            self._command="play"
-        elif self._command==None:
-            self._command="pause"
+        self.send("toggle_pause\n")
+
+    def fileno(self):
+        self.ensure_connect()
+        return self.socket.fileno()

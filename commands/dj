@@ -13,10 +13,10 @@ import os
 
 from errno import EINTR
 
-def poll (rpcserver, inputsong, pipe_read, timeout=None):
+def poll (rpcserver, inputsong, wakeup, timeout=None):
     (r,w,e) = rpcserver.activeFds()
-    r.append(pipe_read)
-    e_append = [pipe_read]
+    r.append(wakeup)
+    e_append = [wakeup]
     if inputsong.readable():
         r.append(inputsong)
         e_append = [inputsong]
@@ -52,8 +52,7 @@ def poll (rpcserver, inputsong, pipe_read, timeout=None):
 
 def main():
     playqueue = McFoo.playqueue.PlayQueue()
-    (pipe_r, pipe_w) = os.pipe()
-    dj = McFoo.dj.Dj(pipe_w)
+    dj = McFoo.dj.Dj(playqueue)
     inputsong = McFoo.inputsong.InputSong(playqueue)
     volume = McFoo.volume.VolumeControl()
 
@@ -61,18 +60,12 @@ def main():
     XMLRPC.start_listen()
 
     while 1:
-        if dj.isdone():
-            next = playqueue.pop()
-            if next==None:
-                pass
-            else:
-                dj.set_next(next)
-
+        dj.ensure_music()
         if len(playqueue) < 100:
             inputsong.wakeup()
-            poll(XMLRPC, inputsong, pipe_r, 0.01)
+            poll(XMLRPC, inputsong, dj, 0.01)
         else:
-            poll(XMLRPC, inputsong, pipe_r, 10.0)
+            poll(XMLRPC, inputsong, dj, 10.0)
 
         if McFoo.server.xrpc.stop:
             break
