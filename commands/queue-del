@@ -1,9 +1,10 @@
 #!/bin/sh -e
-IDS=$(echo list|nc 0 dj\
+IDS=$(echo list|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}" \
         |sed '/^MULTI /d;/^\.$/d;s/^\([0-9]\+\) /<s:\1>\1 /g'\
         |iselect --exit-no-select --multi-line \
                 --name='Select songs to remove' \
                 --title='MC Foo')
 if [ "$IDS" ]; then
-        echo "$IDS"|sed 's/^/delete /g'|nc 0 dj
+        echo "$IDS"|sed 's/^/delete /g' \
+        |nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"
 fi
