@@ -29,7 +29,7 @@ class McFooClientNext(McFoo.client.McFooClientSimple):
         elif self.dislike:
             d=self.remote.callRemote("dislike")
         else:
-            d=defer.succeed()
+            d=defer.succeed(None)
         d.addCallback(self._next)
 
     def _next(self, foo):
