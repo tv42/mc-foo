@@ -1,3 +1,13 @@
+mc-foo (0.0.4) unstable; urgency=low
+
+  * Nearly a complete rewrite, using Twisted.
+  * There is no automation to clean up after older
+    versions when upgrading;
+    run "rm -rf /var/cache/mc-foo /var/lib/mc-foo"
+    and "groupdel mcfoo"
+
+ -- Tommi Virtanen <tv@debian.org>  Wed, 19 Dec 2001 20:22:23 +0200
+
 mc-foo (0.0.3) unstable; urgency=low
 
   * It took me three days to learn Python and rewrite most of MC Foo in
