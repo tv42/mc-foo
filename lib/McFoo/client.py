@@ -9,8 +9,14 @@ class McFooClientExitWhenDone(twisted.spread.pb.Referenced):
         twisted.internet.main.shutDown()
 
 class McFooClientSimple:
-    def __init__(self, user='guest', password='guest',
+    stopping = 0
+
+    def __init__(self, user=None, password=None,
                  host=None, port=None):
+        if user==None:
+            user='guest'
+        if password==None:
+            password='guest'
         if host==None:
             try:
                 host=os.environ['MCFOOHOST']
@@ -28,14 +34,16 @@ class McFooClientSimple:
                                   self.handle_login,
                                   self.handle_loginfailure)
         broker.notifyOnDisconnect(self.handle_disconnect)
-        twisted.internet.tcp.Client(host, port, broker)
+        self.tcp=twisted.internet.tcp.Client(host, port, broker)
 
     def handle_disconnect(self):
-        print "Disconnected."
-        twisted.internet.main.shutDown()
+        if not self.stopping:
+            print "Disconnected."
+            twisted.internet.main.shutDown()
 
     def handle_loginfailure(self):
         print "Authentication failed."
+        self.stopping = 1
         twisted.internet.main.shutDown()
 
     def handle_login(self, perspective):
