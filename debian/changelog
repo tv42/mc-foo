@@ -1,3 +1,11 @@
+mc-foo (0.0.9) unstable; urgency=low
+
+  * New command "mc-foo grep" to search the songs.
+  * Pretty-print "mc-foo getscores" output.
+  * Bugfix, missing argument made "mc-foo next" fail.
+
+ -- Tommi Virtanen <tv@debian.org>  Wed, 10 Jul 2002 15:27:00 +0300
+
 mc-foo (0.0.8) unstable; urgency=low
 
   * New command "mc-foo pauseorplay" toggles playback.
