@@ -3,9 +3,9 @@
 from distutils.core import setup
 
 setup(name="mc-foo",
-      description="an advanced, learning, mp3 jukebox",
+      description="an advanced, learning, Ogg/MP3 jukebox",
       long_description="""
-MC Foo is an advanced, adaptive and learning mp3 jukebox server.
+MC Foo is an advanced, adaptive and learning Ogg/MP3 jukebox server.
 
   -continuous music playing
   -learns what music you like and dislike

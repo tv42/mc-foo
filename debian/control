@@ -8,8 +8,8 @@ Build-Depends-Indep: python2.1-dev
 Package: mc-foo
 Architecture: all
 Depends: python (>= 2.1), python (<< 2.2), python-pyvorbis, python-tk, python-pmw (>= 0.8.5-3), python-oss, python2.1-twisted, python-id3, python-hip
-Description: an advanced, learning, mp3 jukebox
- MC Foo is an advanced, adaptive and learning mp3 jukebox server.
+Description: an advanced, learning, Ogg/MP3 jukebox
+ MC Foo is an advanced, adaptive and learning Ogg/MP3 jukebox server.
  .
    -continuous music playing
    -learns what music you like and dislike
