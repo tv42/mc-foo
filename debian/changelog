@@ -1,3 +1,9 @@
+mc-foo (0.0.4.cvs) unstable; urgency=low
+
+  * CVS snapshot
+
+ -- Tommi Virtanen <tv@debian.org>  Thu, 20 Dec 2001 18:58:17 +0200
+
 mc-foo (0.0.4) unstable; urgency=low
 
   * Nearly a complete rewrite, using Twisted.
