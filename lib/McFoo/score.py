@@ -14,30 +14,28 @@ class TagProfile(UserDict.UserDict):
         if self.data[tagname]=={}:
             del self.data[tagname]
 
+    def getScore(self, filename):
+        #TODO
+        return 0
+
     def as_data(self):
         return self.data
 
 class SongProfile(UserDict.UserDict):
-    def opinion_on_song(self, song, adjust):
-        if not self.data.has_key(song.backend):
-            self.data[song.backend]={}
-        if not self.data[song.backend].has_key(song.media):
-            self.data[song.backend][song.media]={}
-        if not self.data[song.backend][song.media].has_key(song.name):
-            self.data[song.backend][song.media][song.name]=0
+    def incScore(self, filename, inc=1):
+        if not self.data.has_key(filename):
+            self.data[filename]=0
 
-        self.data[song.backend][song.media][song.name]=self.data[song.backend][song.media][song.name]+adjust
+        self.data[filename]+=inc
 
-        if self.data[song.backend][song.media][song.name]==0:
-            del self.data[song.backend][song.media][song.name]
-        if self.data[song.backend][song.media]=={}:
-            del self.data[song.backend][song.media]
-        if self.data[song.backend]=={}:
-            del self.data[song.backend]
+        if self.data[filename]==0:
+            del self.data[filename]
 
     def as_data(self):
         return self.data
 
+    def getScore(self, filename):
+        return self.get(filename, 0)
 
 class Profile:
     def __init__(self):
@@ -50,20 +48,40 @@ class Profile:
                 'songs': self.songs.as_data(),
                 'tags': self.tags.as_data()}
 
+    def getScore(self, filename):
+        return self.songs.getScore(filename) + self.tags.getScore(filename)
+
+    def incScore(self, filename, inc=1):
+        self.songs.incScore(filename, inc)
+
     def __repr__(self):
         return repr(self.as_data())
 
 class UserProfile(UserDict.UserDict):
     def __init__(self):
         UserDict.UserDict.__init__(self)
-        self.data['default']={}
-        self.def_read=[]
-        self.def_write=[]
+        self.data['default']=Profile()
+        self.def_read=['default']
+        self.def_write=['default']
+
+    def incScore(self, filename, inc=1):
+        profileName=self.def_write[0]
+        del self.def_write[0]
+        self.def_write.append(profileName)
+
+        print "profile %s=%s"%(profileName, repr(self[profileName]))
+        self[profileName].incScore(filename, inc)
 
     def addprofile(self, profilename):
         if not self.data.has_key(profilename):
             self.data[profilename]=Profile()
         return self.data[profilename]
+
+    def getScore(self, filename):
+        sum=0
+        for profileName in self.def_read:
+            sum+=self[profileName].getScore(filename)
+        return sum
 
 class ProfileTable(UserDict.UserDict):
     def __init__(self):
@@ -73,3 +91,10 @@ class ProfileTable(UserDict.UserDict):
         if not self.data.has_key(user):
             self.data[user]=UserProfile()
         return self.data[user]
+
+    def getScore(self, filename):
+        sum=0
+        for user, profile in self.items():
+            sum+=profile.getScore(filename)
+        print repr(self)
+        return sum
