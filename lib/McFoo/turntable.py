@@ -81,7 +81,7 @@ class TurntableInput(asyncreadline.asyncreadline):
         return 0
 
     def handle_write(self):
-        raise "handle_read on a read-only fd"
+        raise "handle_write on a read-only fd"
 
     def process(self, line):
 	if line and line[-1]=='\015':
@@ -145,6 +145,9 @@ class Turntable:
                 self.file=McFoo.backend.file.audiofilechooser(args)
             except McFoo.backend.file.McFooBackendFileUnknownFormat:
                 print "unknown format"
+                self.file=None
+            except McFoo.backend.file.McFooBackendFileDoesNotExist:
+                print "file does not exist"
                 self.file=None
             else:
                 print "old state: %s"%self.state
