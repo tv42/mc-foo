@@ -8,14 +8,26 @@ if [ "$1" = "configure" ]; then
 	fi
 fi
 
-if [ "$1" = "configure" -a "$2" = "" ]; then
-    addgroup mcfoo
-    chgrp -R mcfoo /var/cache/mc-foo/mediaprofiles \
-	/var/cache/mc-foo/weights \
-	/var/lib/mc-foo/media \
-	/var/lib/mc-foo/profiles
-    chmod -R g+ws /var/cache/mc-foo/mediaprofiles \
-	/var/cache/mc-foo/weights \
-	/var/lib/mc-foo/media \
-	/var/lib/mc-foo/profiles
+if [ "$1" = "configure" ]; then
+    if [ "$2" = "" ]; then
+	addgroup mcfoo
+	chgrp -R mcfoo \
+	    /var/cache/mc-foo/mediaprofiles \
+	    /var/cache/mc-foo/weights \
+	    /var/lib/mc-foo/media \
+	    /var/lib/mc-foo/profiles
+	chmod -R g+ws \
+	    /var/cache/mc-foo/mediaprofiles \
+	    /var/cache/mc-foo/weights \
+	    /var/lib/mc-foo/media \
+	    /var/lib/mc-foo/profiles
+    fi
+    if dpkg --compare-versions "$2" lt 0.0.2; then
+	chgrp -R mcfoo \
+	    /var/cache/mc-foo/file \
+	    /var/cache/mc-foo/file.tmp
+	chmod -R g+ws \
+	    /var/cache/mc-foo/file \
+	    /var/cache/mc-foo/file.tmp
+    fi
 fi

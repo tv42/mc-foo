@@ -153,9 +153,7 @@ int add_song(struct playqueue *queue,
 }
 
 struct media *add_media(struct backend *backend,
-                        char *name,
-                        bitflag caching_optional,
-                        bitflag caching_mandatory) {
+                        char *name) {
   struct media *media;
   if (backend==NULL
       || name==NULL
@@ -171,10 +169,10 @@ struct media *add_media(struct backend *backend,
   }
 
   strcpy(media->name, name); /* yes, it is safe. See the malloc above */
-  if (caching_optional)
-    media->cache.caching_optional=1;
-  if (caching_mandatory)
-    media->cache.caching_mandatory=1;
+  if (backend->cache.flags.optional)
+    media->cache.flags.optional=1;
+  if (backend->cache.flags.mandatory)
+    media->cache.flags.mandatory=1;
   media->backend=backend;
 
   if (backend->medias==NULL) {
@@ -219,14 +217,15 @@ void remove_song(struct playqueue *queue, struct queue_entry *qe) {
 
   switch (qe->cache.state) {
   case not_requested:
+  case request_failed:
     break;
   case requested:
-    assert(qe->song.media->backend->cache.cancel_cache!=NULL);
-    qe->song.media->backend->cache.cancel_cache(&qe->song);
+    assert(qe->song.media->backend->cache.ops.cancel_cache!=NULL);
+    qe->song.media->backend->cache.ops.cancel_cache(qe);
     break;
   case done:
-    assert(qe->song.media->backend->cache.remove_cache!=NULL);
-    qe->song.media->backend->cache.remove_cache(&qe->song);
+    assert(qe->song.media->backend->cache.ops.remove_cache!=NULL);
+    qe->song.media->backend->cache.ops.remove_cache(qe);
     break;
   default:
     /* something is very wrong; TODO */
@@ -379,40 +378,21 @@ void playqueue_init(struct playqueue *pq) {
   pq->paused=0;
 }
 
-struct backend *add_backend(struct playqueue *pq,
-                            struct poll_struct *ps,
-                            const char *name) {
-  struct backend *be;
-
-  be=malloc(sizeof(struct backend));
-  if (be==NULL)
-    return NULL;
-  be->name=malloc(strlen(name)+1);
-  if (be->name==NULL) {
-    free(be);
-    return NULL;
-  }
-  strcpy(be->name, name);
+int add_backend(struct backend *be,
+		struct playqueue *pq,
+		struct poll_struct *ps) {
   be->medias=NULL;
-  be->cache.request_cache=NULL;
-  be->cache.cancel_cache=NULL;
-  be->cache.remove_cache=NULL;
   be->cache.child.ps=ps;
   be->cache.child.to_fd=-1;
   be->cache.child.pid=0;
-  be->cache.child.starter=NULL;
-  be->cache.child.starter_data=NULL;
-  be->cache.child.read_callback=NULL;
-  be->cache.child.read_cb_data=NULL;
-  //TODO caches
+
   if (pq->backends==NULL) {
     be->next=be;
-    pq->backends=be;
   } else {
     be->next=pq->backends;
-    pq->backends=be;
   }
-  return be;
+  pq->backends=be;
+  return 0;
 }
 
 struct backend *find_backend(struct playqueue *pq, const char *name) {
@@ -471,13 +451,8 @@ int add_song_media_and_backend(struct playqueue *queue,
   memcpy(backend, bms, space-bms);
   backend[space-bms]='\0';  
   be=find_backend(queue, backend);
-  if (be==NULL) {
-    be=add_backend(queue, ps, backend);
-    if (be==NULL) {
-      free(backend);
-      return -1;
-    }
-  }
+  if (be==NULL)
+    return -1;
   free(backend);
   space++;
   remember=space;
@@ -491,7 +466,7 @@ int add_song_media_and_backend(struct playqueue *queue,
   media[space-remember]='\0';
   m=find_media(be, media);
   if (m==NULL) {
-    m=add_media(be, media, 0, 0); //TODO bitflags
+    m=add_media(be, media);
     if (m==NULL) {
       perror("dj: add_media");
       free(media);

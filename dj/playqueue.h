@@ -14,14 +14,37 @@ struct song {
   /* TODO */
 };
 
+struct queue_entry {
+  struct queue_entry *next, *prev;
+  struct priority_pointer *priority;
+  songid_t id;
+  struct {
+    enum cache_state {
+      not_requested,
+      requested,
+      request_failed,
+      done,
+    } state;
+  } cache;
+  struct song song;
+};
+
 struct backend {
   struct backend *next;
-  char *name;
+  const char *name;
   struct media *medias;
   struct {
-    void (*request_cache)(struct song *);
-    void (*cancel_cache)(struct song *);
-    void (*remove_cache)(struct song *);
+    struct {
+      void (*request_cache)(struct queue_entry *);
+      void (*cancel_cache)(struct queue_entry *);
+      void (*remove_cache)(struct queue_entry *);
+    } ops;
+    
+    struct {
+      bitflag optional: 1;
+      bitflag mandatory: 1;
+    } flags;
+    
     struct child_bearing child; /* internal-use only */
   } cache;
 };
@@ -31,23 +54,11 @@ struct media {
   char *name;
   struct backend *backend;
   struct {
-    bitflag caching_optional: 1;
-    bitflag caching_mandatory: 1;
+    struct {
+      bitflag optional: 1;
+      bitflag mandatory: 1;
+    } flags;
   } cache;
-};
-
-struct queue_entry {
-  struct queue_entry *next, *prev;
-  struct priority_pointer *priority;
-  songid_t id;
-  struct {
-    enum cache_state {
-      not_requested,
-      requested,
-      done,
-    } state;
-  } cache;
-  struct song song;
 };
 
 struct priority_pointer {
@@ -85,9 +96,7 @@ int add_song(struct playqueue *queue,
              int priority,
              struct song *song);
 struct media *add_media(struct backend *backend,
-                        char *name,
-                        bitflag caching_optional,
-                        bitflag caching_mandatory);
+                        char *name);
 void remove_song(struct playqueue *queue, struct queue_entry *qe);
 void remove_media(struct playqueue *queue, struct media *media);
 int move_song(struct playqueue *queue,
@@ -108,9 +117,9 @@ int add_song_media_and_backend(struct playqueue *queue,
                                const char *bms,
                                size_t len);
 
-struct backend *add_backend(struct playqueue *pq,
-                            struct poll_struct *ps,
-                            const char *name);
+int add_backend(struct backend *be,
+		struct playqueue *pq,
+		struct poll_struct *ps);
 
 songid_t new_id(void);
 struct queue_entry *find_id(struct playqueue *pq, songid_t id);
