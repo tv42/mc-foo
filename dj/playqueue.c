@@ -175,11 +175,10 @@ struct media *add_media(struct backend *backend,
     media->cache.flags.mandatory=1;
   media->backend=backend;
 
-  if (backend->medias==NULL) {
-    media->next=media;
-  } else {
-    media->next=backend->medias;
-  }
+  media->next=backend->medias;
+  media->pprev=&backend->medias;
+  if (media->next)
+    media->next->pprev=&media->next;
   backend->medias=media;
   return media;
 }
@@ -378,57 +377,40 @@ void playqueue_init(struct playqueue *pq) {
   pq->paused=0;
 }
 
-int add_backend(struct backend *be,
-		struct playqueue *pq,
-		struct poll_struct *ps) {
+void add_backend(struct backend *be,
+		 struct playqueue *pq,
+		 struct poll_struct *ps) {
   be->medias=NULL;
   be->cache.child.ps=ps;
   be->cache.child.to_fd=-1;
   be->cache.child.pid=0;
 
-  if (pq->backends==NULL) {
-    be->next=be;
-  } else {
-    be->next=pq->backends;
-  }
+  be->next=pq->backends;
+  be->pprev=&pq->backends;
+  if (be->next)
+    be->next->pprev=&be->next;
   pq->backends=be;
-  return 0;
 }
 
 struct backend *find_backend(struct playqueue *pq, const char *name) {
-  struct backend *be, *be_anchor;
+  struct backend *be;
 
   assert(pq!=NULL);
-  if (pq->backends==NULL)
-    return NULL;
-
-  be_anchor=be=pq->backends;
-  do {
-    assert(be->name!=NULL);
-    if (strcmp(be->name, name)==0)
-      return be;
+  be=pq->backends;
+  while (be && strcmp(be->name, name))
     be=be->next;
-    assert(be!=NULL);
-  } while(be_anchor!=be);
-  return NULL;
+  return be;
 }
 
 struct media *find_media(struct backend *be, 
                          const char *name) {
-  struct media *m, *m_anchor;
-  assert(be!=NULL);
-  if (be->medias==NULL)
-    return NULL;
+  struct media *m;
 
-  m_anchor=m=be->medias;
-  do {
-    assert(m->name!=NULL);
-    if (strcmp(m->name, name)==0)
-      return m;
+  assert(be!=NULL);
+  m=be->medias;
+  while (m && strcmp(m->name, name))
     m=m->next;
-    assert(m!=NULL);
-  } while(m_anchor!=m);
-  return NULL;
+  return m;
 }
 
 int add_song_media_and_backend(struct playqueue *queue,

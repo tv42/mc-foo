@@ -31,6 +31,7 @@ struct queue_entry {
 
 struct backend {
   struct backend *next;
+  struct backend **pprev;
   const char *name;
   struct media *medias;
   struct {
@@ -51,6 +52,7 @@ struct backend {
 
 struct media {
   struct media *next;
+  struct media **pprev;
   char *name;
   struct backend *backend;
   struct {
@@ -117,9 +119,9 @@ int add_song_media_and_backend(struct playqueue *queue,
                                const char *bms,
                                size_t len);
 
-int add_backend(struct backend *be,
-		struct playqueue *pq,
-		struct poll_struct *ps);
+void add_backend(struct backend *be,
+		 struct playqueue *pq,
+		 struct poll_struct *ps);
 
 songid_t new_id(void);
 struct queue_entry *find_id(struct playqueue *pq, songid_t id);
