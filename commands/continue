@@ -1,0 +1,2 @@
+#!/bin/sh -e
+echo continue|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"
