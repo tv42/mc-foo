@@ -18,4 +18,4 @@ class Options(usage.Options):
 class McFooClientContinue(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.cont(pbcallback=twisted.internet.main.shutDown)
+        self.remote.callRemote("cont").addCallback(twisted.internet.main.shutDown)

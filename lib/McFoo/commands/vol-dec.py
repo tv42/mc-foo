@@ -18,4 +18,4 @@ class Options(usage.Options):
 class McFooClientVolume_dec(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.volume_dec(pbcallback=twisted.internet.main.shutDown)
+        self.remote.callRemote("volume_dec").addCallback(twisted.internet.main.shutDown)

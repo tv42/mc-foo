@@ -25,4 +25,4 @@ class McFooClientJump(McFoo.client.McFooClientSimple):
 
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.jump(self.jump, pbcallback=twisted.internet.main.shutDown)
+        self.remote.callRemote("jump", self.jump).addCallback(twisted.internet.main.shutDown)

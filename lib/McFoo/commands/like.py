@@ -21,4 +21,4 @@ class Options(usage.Options):
 class McFooClientLike(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.like(pbcallback=twisted.internet.main.shutDown)
+        self.remote.callRemote("like").addCallback(twisted.internet.main.shutDown)

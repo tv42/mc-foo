@@ -109,16 +109,16 @@ class PlayQueue:
         self._timer=None
 
         self._last_volume=None
-        self.remote.observe_volume(VolumeObserverFan(self.volume.set))
+        self.remote.callRemote("observe_volume", VolumeObserverFan(self.volume.set))
         self._last_location=None
-        self.remote.observe_location(DjObserverFan(self.see_location))
-        self.remote.observe_playqueue(PlayqueueObserverFan(self.queue))
-        self.remote.observe_history(HistoryObserverFan(self.history, self.playing))
+        self.remote.callRemote("observe_location", DjObserverFan(self.see_location))
+        self.remote.callRemote("observe_playqueue", PlayqueueObserverFan(self.queue))
+        self.remote.callRemote("observe_history", HistoryObserverFan(self.history, self.playing))
 
     def set_volume(self, vol):
         vol=int(vol)
         if self._last_volume!=None and self._last_volume!=vol:
-            self.remote.volume_set(vol)
+            self.remote.callRemote("volume_set", vol)
         self._last_volume=vol
 
     def see_location(self, at):
@@ -127,23 +127,23 @@ class PlayQueue:
 
     def set_location(self, at):
         if self._last_location!=None and self._last_location!=at:
-            self.remote.jump(float(at))
+            self.remote.callRemote("jump", float(at))
         self._last_location=at
 
     def pause(self):
-        self.remote.pauseorplay()
+        self.remote.callRemote("pauseorplay")
 
     def next(self):
-        self.remote.next()
+        self.remote.callRemote("next")
 
     def trash(self):
-        self.remote.delete(map(lambda x: x['id'],self.queue.selected()))
+        self.remote.callRemote("delete", map(lambda x: x['id'],self.queue.selected()))
 
     def notify_move(self, newloc, songs):
-        self.remote.moveabs(newloc, map(lambda song: song['id'], songs))
+        self.remote.callRemote("moveabs", newloc, map(lambda song: song['id'], songs))
 
     def notify_copy(self, newloc, songs):
-        self.remote.addqueueidx(newloc,
+        self.remote.callRemote("addqueueidx", newloc,
                                 map(lambda song:
                                     (song['priority'],
                                      song['filename']),

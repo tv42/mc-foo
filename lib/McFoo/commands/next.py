@@ -18,4 +18,4 @@ class Options(usage.Options):
 class McFooClientNext(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.next(pbcallback=twisted.internet.main.shutDown)
+        self.remote.callRemote("next").addCallback(twisted.internet.main.shutDown)

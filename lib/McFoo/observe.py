@@ -7,10 +7,10 @@ class Observers(UserList.UserList):
 
     def __call__(self, func, *a, **kw):
         for obs in self:
-            apply(getattr(obs, func), a, kw)
+            apply(obs.callRemote, (func,)+a, kw)
                 
     def append_and_call(self, obs, func, *a, **kw):
-        apply(getattr(obs, func), a, kw)
+        apply(obs.callRemote, (func,)+a, kw)
         self.append(obs)
 
 class Observer(twisted.spread.pb.Referenceable):

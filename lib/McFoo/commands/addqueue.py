@@ -34,5 +34,5 @@ class McFooClientAddqueue(McFoo.client.McFooClientSimple):
 
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.addqueue(self.file, self.pri,
-                             pbcallback=twisted.internet.main.shutDown)
+        d=self.remote.callRemote("addqueue", self.file, self.pri)
+        d.addCallback(twisted.internet.main.shutDown)

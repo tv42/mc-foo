@@ -25,4 +25,4 @@ def ShowList(l):
 class McFooClientList(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.list(pbcallback=ShowList)
+        self.remote.callRemote("list").addCallback(ShowList)

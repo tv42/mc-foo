@@ -50,5 +50,5 @@ class HistoryObserverMonitor(McFoo.playqueue.HistoryObserver):
 class McFooClientMonitorPlaying(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.observe_volume(VolumeObserverMonitor())
-        self.remote.observe_history(HistoryObserverMonitor())
+        self.remote.callRemote("observe_volume", VolumeObserverMonitor())
+        self.remote.callRemote("observe_history", HistoryObserverMonitor())
