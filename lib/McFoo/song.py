@@ -21,16 +21,16 @@ def get_comments(filename):
 class Song(McFoo.playqueue.Playable, UserDict.UserDict):
     cur_songid = 1000
 
-    def __init__(self, backend, media, name, pri=100):
+    def __init__(self, filename, pri=100):
         UserDict.UserDict.__init__(self)
 	self.priority=pri
-        self.backend=backend
-        self.media=makesafe(media)
-        self.name=name
-	self.filename='/var/lib/mc-foo/media/%s/%s/path/%s' % (self.backend, self.media, self.name)
+	self.filename=filename
 	Song.cur_songid=Song.cur_songid+1
 	self.id=Song.cur_songid
         self.data=get_comments(self.filename)
+
+    def __getinitargs__(self):
+        return [self.filename, self.priority]
 
     def __repr__(self):
 	return '<song id:%s pri:%s filename:%s>' % (self.id, self.priority, self.filename)
@@ -54,8 +54,6 @@ class Song(McFoo.playqueue.Playable, UserDict.UserDict):
     def __getstate__(self):
         return {'id': self.id,
                 'priority': self.priority,
-                'backend': self.backend,
-                'media': self.media,
-                'name': self.name,
+                'filename': self.filename,
                 'comment': self.data
                 }
