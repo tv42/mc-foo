@@ -64,6 +64,7 @@ static int tcp_server_quit(char *line,
 			   struct tcp_server_state *state) {
   assert(state!=NULL);
   assert(state->pq!=NULL);
+  close(state->fd);
   shutdown_tcp();
   close(state->pq->song_input->to_fd);
   close(state->pq->song_output->to_fd);
