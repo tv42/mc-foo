@@ -20,6 +20,9 @@ class Dj(twisted.internet.process.Process,
          twisted.protocols.basic.LineReceiver):
     delimiter = '\n'
 
+    # TODO if Process gets a connectionLost, we should handle it
+    # somehow..
+
     def __init__(self, playqueue):
         self.playqueue=playqueue
 
