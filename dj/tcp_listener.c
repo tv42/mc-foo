@@ -45,7 +45,7 @@ enum fd_callback_returns tcp_listener_cb(struct poll_struct *ps,
     return fdcb_remove;
   } else {
     len=sizeof(addr);
-    sock=accept(fd, &addr, &len);
+    sock=accept(fd, (struct sockaddr*)&addr, &len);
     if (sock<0) {
       perror("dj: accept");
     } else {
@@ -76,7 +76,7 @@ int init_tcp(void) {
   addr.sin_family=AF_INET;
   addr.sin_port=htons(25706);   /* "dj" */
   addr.sin_addr.s_addr=INADDR_ANY;
-  if (bind(fd, &addr, sizeof(addr)) ==-1) {
+  if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) ==-1) {
     perror("dj: bind");
     exit(1);
   }
