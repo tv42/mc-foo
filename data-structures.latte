@@ -1,0 +1,46 @@
+{\load-library mc_foo-include.latte}
+{\page {MC Foo - Data Structures}
+
+ {\header 2 {Profiles}
+  profiles/<profilename>.cdb includes key and value -pairs like
+  {\pre
+   include -> <profile> <profile> <profile>
+   score:artist:<artistname> -> <preference>
+   score:song:<song-id> -> <preference>
+   score:album:<albumname> -> <preference>
+   categories:include -> pop rock dance gabber classical
+   categories:exlude -> country
+   score:category:classical -> -3
+   score:category:country -> never
+   }
+  (those two lines including country are actually in conflict)
+  
+  The profile symlink profiles/read points to is initially included in
+  the active read profile. Same goes for profiles/write.
+ }
+
+ {\header 2 {Media backends}
+  (e.g. "hard disk", "cdrom-id3", "cdrom-names", "http-linklist")
+
+  {\header 3 {Hard disk}
+   media/hd/<collection-path-munged>.cdb contains information like
+   {\pre
+    path -> <real path>
+    n -> <number of songs>
+    <n> -> <relative pathname to mp3>
+    title:<pathname> -> <title>
+    artist:<pathname> -> <artist>
+    album:<pathname> -> <album>
+    year:<pathname> -> <year>
+    genre:<pathname> -> <genre>
+    volume:<pathname> -> <volume>
+    import-date:<pathname> -> <import>
+    category:<pathname> -> <category>
+    }
+
+   etc.. All backends speak the same API, so some of the information
+   may be generated on the fly.
+   }
+  }
+
+ }

@@ -1,0 +1,80 @@
+/*
+ * $Id: Howto.cook,v 1.1 1999/11/20 19:38:06 tv42 Exp $
+ */
+
+source_files_latte = index.latte authors.latte faq.latte
+  architecture.latte data-structures.latte;
+source_files = [source_files_latte];
+
+html = [fromto %.latte %.html [source_files_latte]];
+files = [html];
+
+all: [files];
+
+clobber: clean
+{
+	rm -f [files];
+
+}
+
+clean:
+{
+  rm -f *.tmp *.d; /* only remove intermediary files */
+}
+
+test: [html]
+{
+	weblint [html];
+}
+
+install:
+{
+}
+
+uninstall:
+{
+}
+
+extra_latte_path = latte-include;
+
+/*** Latte cookbook */
+
+default_latte_path = '/usr/local/share/latte:/usr/share/latte:.';
+
+if [not [defined latte_path]] then
+{
+  if [defined extra_latte_path] then
+	  latte_path = [default_latte_path]':'[extra_latte_path];
+  else
+	  latte_path = [default_latte_path];
+}
+
+%0%.latte.d: %0%.latte
+{
+  env LATTE_PATH\=[latte_path]
+    ./tools/latte-dep
+      %0%.html %0%.latte.d
+      %0%.latte 
+      >[target].tmp;
+  mv [target].tmp [target];
+}
+
+%0%.html: %0%.latte
+{
+  env LATTE_PATH\=[latte_path]
+    latte-html %0%.latte >%0%.html.tmp;
+  mv %0%.html.tmp %0%.html;
+}
+
+object_files = [fromto %0%.latte %0%.html [source_files]];
+dependency_files = [fromto %0%.latte %0%.latte.d [source_files]];
+#include-cooked [dependency_files]
+
+/*** END cookbook */
+
+
+/*
+ * Local Variables:
+ *  tab-width: 2
+ * End:
+ */

@@ -1,0 +1,161 @@
+{\load-library mc_foo-include.latte}
+{\page {MC Foo - Architecture}
+
+ {\header 2 {General}
+  
+  The base system will be implemented in C.
+
+  We will use existing MP3 players as backend, and will never touch
+  file contents or sound hardware ourselves.
+
+  }
+ 
+ {\header 2 {Server}
+  {\b {\todo serverprogramname}} is a separate program running on a
+  sound-enabled machine. It listens on a network socket for incoming 
+  connections. Sockets are the primary way of controlling the 
+  server.
+
+  The server itself manages the queue. Most of the things that can be
+  splitted off to separate programs, will be. This includes just about
+  anything that does not need {\em both} read and write access to the
+  queue.
+
+  {\header 3 {Keeping the playqueue from draining}
+   {\b {\todo utilityname}} is executed by the server and left
+   running. It uses stdin and stdout to communicate with the server. 
+   On stdin, it receives the list of active profiles (on one line,
+   separated by spaces). The server sends this list whenever the
+   queue starts to drain. On stdout, it writes 0..n song paths. The
+   server can not rely on the number of songs returned by 
+   {\b {\todo utilityname}}. If {\b {\todo utilityname}} exits,
+   the server will start a new one.}
+
+  {\header 3 {Making permanent profile changes}
+   {\b {\todo utilityname}} is executed by the server whenever it
+   wishes to make the current, adapted, profile permanent. This can
+   happen e.g. once per minute or when requested. It is given 1..n
+   profile names on the command line, and the changed preferences on
+   stdin. {\b {\todo utilityname}} reports error by its exit status.
+   {\todo The protocol used on stdin needs to be defined.}
+   {\b {\todo utilityname}} splits the preferences evenly between
+   all listed profiles.}
+
+  {\header 3 {Caching a song to faster media}
+   {\b {\todo utilityname}} is executed by the server and left
+   running. It uses stdin and stdout to communicate with the server. 
+   On stdin, it receives a song path. It starts an asynchronous copy
+   of the song to faster media, if deemed necessary. On stdout, it
+   writes the song paths of succesfully cached songs. If 
+   {\b {\todo utilityname}} exits, the server will start a new one.
+   {\todo Needs more information on stdin?}}
+
+  {\header 3 {Play the song}
+   {\b {\todo utilityname}} is executed by the server and left
+   running. It uses stdin and stdout to communicate with the server. 
+   On stdin, it receives commands 
+   {\todo (specify what commands and the format)}, on stdout it
+   gives responses to these commands {\todo (specify)}. It can e.g.
+   pause the music, skip to next song, fast forward, etc. If 
+   {\b {\todo utilityname}} exits, the server will start a new one.}
+
+  {\header 3 {List all (or only available) songs}
+   {\b {\todo utilityname}} gives the client programs a way of finding
+   out what songs have been added to the player. It is not clear yet
+   whether it is useful to implement this as a separate server, a
+   child executed by the server with fd passing (will close the
+   connection), pipe the data through the server, or what. Also
+   consider static files and sendfile(). {\todo think}}
+
+  }
+
+ {\header 2 {Administrative Utilities}
+
+  {\header 3 {Create a new group of songs}
+   Create a new wad of songs, e.g. from a CD full of mp3's.
+   Use ID3 tags, standard filenames, etc for obtaining
+   information. We probably need different utils for different
+   storage types. {\todo think}}
+
+  {\header 3 {Initialize a new profile}
+   Create a new, empty, preference profile. May be as simple as
+   {\tt touch {\i profilename}}}
+
+  {\header 3 {User administration}
+   Access control, authentication, profiles.. {\todo think}}
+
+  }
+
+ {\header 2 {End-User Utilities}
+  Most end user utilities really should be modular, but due to user
+  interface requirements, may end up in one big executable. We'll try
+  to provide simple command line versions of everything as well. Maybe
+  even a WWW interface, though there we will probably use Perl.
+  {\todo tcpclient?}
+  {\todo Authentication?}
+
+  {\header 3 {Request a song}
+   Connect to the server with sockets and request a song.}
+
+  {\header 3 {Activate/disactivate a read profile}
+   Select what profiles are used for selecting the songs}
+
+  {\header 3 {Activate/disactivate a writable profile for user X}
+   Select what profiles are changed when user X expresses his
+   preferences}
+
+  {\header 3 {Skip to next song/Fast Forward/etc}
+   Simple, very operational, control of playing. Preferably with
+   Gnome panel and lirc interfaces.
+   {\todo How to do fast forward and reverse well? How do we control
+    the low level player, e.g. mpg123?}}
+
+  }
+
+ {\header 2 {Profiles}
+  The player should learn what songs are liked and what are not. For
+  this, we will use the notion of {\em profile}. A profile is a set of
+  song-related preference information. Profiles can include other profiles
+  without limits.
+
+  There is one active profile that is used to determine what songs
+  will be played. This is called the current read profile. The profile
+  itself is a pseudo profile that only contains other profiles.
+
+  There is one active write profile {\em per user}. This means
+  preference hints from different users can be stored in different
+  profiles. This is also a pseudo profile, only containing other
+  profiles. The preferences are stored evenly in these subprofiles.
+
+  For example: current read profile includes "classical", "user A" and "user B",
+  "evenings". Current write profile for user A includes "user A", current write
+  profile for user B includes "user B" and "classical".}
+
+ {\header 2 {Picking random songs with a bias}
+  Hard! We can pick a random song and then check what prefences affect
+  it. Doing more complex searches without a real database is even
+  harder, and I consider this project a failure if we resort to a
+  full-fledged SQL database. The solution probably has something to do
+  with weird data structures.
+
+  In theory it would be enough to pick a random song, check the category
+  etc., apply weights and discard if necessary. Positive weights would
+  need something like "in addition of queueing memorize this and make
+  it magically reappear after 100 guesses".. Store last playing time?-o
+  }
+
+ {\header 2 {Miscellanous thoughts}
+  Volume balancing (make different recording levels as loud when
+  playing): Save it always to profile "_volume"? Update as a
+  batch run? Use master volume for user volume, PCM volume for
+  balancing?
+
+  "Style" of songs (ID3 Genre is related, but not the same), assigning
+  preferences to changes from song A to song B, marking songs as
+  "intro"/"speech"..
+
+  Access control: PAM? SSL? Do we need encryption, or just auth?
+
+  }
+
+ }
