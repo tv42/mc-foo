@@ -39,11 +39,17 @@ mc-foo import file /cdrom my-music-volume2
 The first form is for permanent, non-removable medias. The latter ones
 are for removable medias; the same path can contain multiple alternate
 medias. Later you can switch between the two discs by running 
+
 mc-foo change-media file /cdrom my-music-volumeN
 
-To start the music:
+To start and stop the music:
 
 mc-foo dj
+(yes, it does not daemonize, and spews a lot of debug output. Yes, you
+ have to control-c it to make it exit)
+
+mc-foo pause
+mc-foo continue
 
 To control the queue:
 
