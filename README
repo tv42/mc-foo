@@ -25,19 +25,19 @@ Using Mc Foo is currently a two step process:
 1. Create a tap file
 
 A tap file is a persistent description of a Twisted server. To create
-a tap file for Mc Foo, run "mc-foo mktap /path", where "/path" is a
-directory tree containing .ogg and .mp3 files. It will create a file
-named "dj-start.tap".
+a tap file for Mc Foo, run "mktap dj /path", where "/path" is a
+directory tree containing .ogg and .mp3 files. You can also list
+multiple directories. It will create a file named "dj.tap".
 
 2. Start a server using the tap file
 
 Servers are actually started with the program "twistd". To start a
-server stored in the file "dj-start.tap", with logging to stdout and
-no daemonization, run "twistd -l- -n -f dj-start.tap".
+server stored in the file "dj.tap", with logging to stdout and
+no daemonization, run "twistd -l- -n -f dj.tap".
 
 You can now stop the server by pressing Control-C. When stopped, the
 server will write its current state into the file "dj-shutdown.tap". 
-You can use this file, instead of "dj-start.tap", the next time you
+You can use this file, instead of "dj.tap", the next time you
 start Mc Foo. This will allow you to keep the same playlist from one
 run to another.
 
@@ -69,7 +69,7 @@ MCFOOHOST       localhost
 MCFOOPORT       25706 ('d'<<8+'j')
         - these tell the location of the dj server for
 	  the client programs, or the port to listen to,
-	  for "mktap".
+	  for "mktap dj".
 
 
 Known problems
