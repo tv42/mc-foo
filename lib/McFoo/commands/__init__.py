@@ -10,7 +10,8 @@ __all__ = [
     "monitor",
     "next",
     "pause",
+    "pauseorplay",
     "vol-dec",
     "vol-inc",
-
+    "mousecontrol",
     ]
