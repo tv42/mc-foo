@@ -30,7 +30,7 @@ class Dj(twisted.internet.process.Process,
 
         self.missing_a_song=1
 
-        twisted.internet.process.Process.__init__(self, "/usr/lib/mc-foo/lib/turntable", ["turntable"], {}, None)
+        twisted.internet.process.Process.__init__(self, "/usr/bin/turntable", ["turntable"], {}, None)
 
 
     def __getstate__(self):
