@@ -3,6 +3,7 @@
 import McFoo.client
 import sys, os.path
 from twisted.python import usage
+from Tkinter import *
 
 class Options(usage.Options):
     synopsis = "Usage: %s [options] fan" % os.path.basename(sys.argv[0])
@@ -38,17 +39,14 @@ class McFooClientFan(McFoo.client.McFooClientSimple):
         print "Disconnected."
         self.root.quit()
 
-from Tkinter import *
-
-import McFoo.gui.playqueue
-import twisted.internet.tkinternet
-
-import os
-
 def main():
+    import McFoo.gui.playqueue
+    import os
+    import twisted.internet.tksupport
+    from twisted.internet import reactor
     root = Tk()
     root.withdraw()
-    twisted.internet.tkinternet.install(root)
+    twisted.internet.tksupport.install(root)
     c = McFooClientFan(TkRoot=root)
 
     try:
@@ -56,4 +54,4 @@ def main():
     except KeyboardInterrupt:
         pass
 
-    twisted.internet.tkinternet.stop()
+    reactor.stop()

@@ -1,4 +1,4 @@
-import twisted.internet.main
+from twisted.internet import reactor
 import twisted.spread.pb
 import McFoo.config
 
@@ -26,7 +26,7 @@ class McFooClientSimple:
     def handle_failure(self, message):
         if not self.stopping:
             print "Cannot contact DJ:", message
-            twisted.internet.main.shutDown()
+            reactor.stop()
 
     def handle_connect(self, perspective):
         perspective.broker.notifyOnDisconnect(self.handle_disconnect)
@@ -40,4 +40,4 @@ class McFooClientSimple:
         pass
 
     def __call__(self):
-        twisted.internet.main.run()
+        reactor.run()
