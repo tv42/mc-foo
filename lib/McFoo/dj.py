@@ -30,6 +30,7 @@ class Dj:
 	SIZE = 4096
 
 	file = McFoo.backend.file.audiofilechooser(filename)
+        file.start_play()
 	while 1:
 	    (buff, bytes, bit) = file.read(SIZE)
 	    if bytes == 0: break

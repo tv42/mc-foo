@@ -11,6 +11,10 @@ for i in range(256):
 def makesafe(s):
     return string.translate(s, safetable)
 
+def get_comments(filename):
+    import McFoo.backend.file
+    return McFoo.backend.file.audiofilechooser(filename).comment()
+
 class Song(McFoo.playqueue.Playable, UserDict.UserDict):
     cur_songid = 0
 
@@ -23,7 +27,7 @@ class Song(McFoo.playqueue.Playable, UserDict.UserDict):
 	self.filename='/var/lib/mc-foo/media/%s/%s/path/%s' % (self.backend, self.media, self.name)
 	Song.cur_songid=Song.cur_songid+1
 	self.id=Song.cur_songid
-	self.data={} #TODO tags
+        self.data=get_comments(self.filename)
 
     def __repr__(self):
 	return '<song id:%s pri:%s filename:%s>' % (self.id, self.priority, self.filename)
@@ -47,4 +51,5 @@ class Song(McFoo.playqueue.Playable, UserDict.UserDict):
                 'backend': self.backend,
                 'media': self.media,
                 'name': self.name,
+                'comment': self.data
                 }

@@ -1,5 +1,6 @@
 from Tkinter import *
 import McFoo.gui.list
+import McFoo.gui.song
 
 import Pmw
 
@@ -83,14 +84,16 @@ class PlayQueue:
         s=self._rpc('mcfoo.list', [self.serial])
         if s!=None:
             if s.has_key('history'):
-                self.history[:]=s['history'][:-1]
+                self.history[:]=map(lambda s: McFoo.gui.song.GuiSong(s), s['history'][:-1])
                 try:
                     playing=s['history'][-1]
                 except IndexError:
                     playing=None
+                else:
+                    playing=McFoo.gui.song.GuiSong(playing)
                 self.playing.set(playing)
             if s.has_key('queue'):
-                self.queue[:]=s['queue']
+                self.queue[:]=map(lambda s: McFoo.gui.song.GuiSong(s), s['queue'])
             self.serial=s['serial']
         self._refresh_volume()
         self._timed_refresh_setup()
