@@ -1,0 +1,60 @@
+#!/usr/bin/perl -w
+use strict;
+use vars qw($BACKEND $PATH $VOLUME
+           $MCFOOHOME $MCFOODATA $MCFOOCACHE);
+
+$MCFOOHOME=$ENV{MCFOOHOME} || '/usr/lib/mc-foo';
+$MCFOODATA=$ENV{MCFOODATA} || '/var/lib/mc-foo';
+$MCFOOCACHE=$ENV{MCFOOCACHE} || '/var/cache/mc-foo';
+
+sub usage() {
+  die "usage: $0 <backend> <path> [volume]\n";
+}
+sub fail(@) { die "$0: @_\n"; }
+
+sub munge($;) {
+  my ($a) = @_;
+  $a=~tr{a-zA-Z0-9}{_}c;
+  return $a;
+}
+
+usage() if @ARGV < 2 or @ARGV > 3;
+$BACKEND=$ARGV[0];
+$PATH=$ARGV[1];
+$VOLUME=$ARGV[2];
+
+$PATH =~ m{^/} or fail "path $PATH must be an absolute path.";
+-d $PATH or fail "path $PATH not found: $!";
+
+-d "$MCFOODATA/media/$BACKEND"
+  or fail "path $MCFOODATA/media/$BACKEND not found: $!";
+my $mpath = munge $PATH;
+
+if (not -d "$MCFOODATA/media/$BACKEND/$mpath") {
+  mkdir "$MCFOODATA/media/$BACKEND/$mpath", 0755
+    or fail "cannot create dir $MCFOODATA/media/$BACKEND/$mpath: $!";
+  symlink($PATH, "$MCFOODATA/media/$BACKEND/$mpath/path")
+    or fail "cannot create symlink $MCFOODATA/media/$BACKEND/$mpath/path: $!";
+}
+
+if (defined $VOLUME) {
+  -d "$MCFOODATA/media/$BACKEND/$mpath/removable"
+    or mkdir "$MCFOODATA/media/$BACKEND/$mpath/removable", 0755
+    or fail "cannot create dir $MCFOODATA/media/$BACKEND/$mpath/removable: $!";
+  my $mvol = munge $VOLUME;
+  
+  system("make_vinyl",
+         "$MCFOODATA/media/$BACKEND/$mpath/removable/$mvol.cdb",
+         $PATH) == 0
+           or fail "executing make_vinyl failed: $?";
+  
+  symlink("removable/$mvol.cdb", "$MCFOODATA/media/$BACKEND/$mpath/current.$$.tmp");
+  rename("$MCFOODATA/media/$BACKEND/$mpath/current.$$.tmp",
+         "$MCFOODATA/media/$BACKEND/$mpath/current",);
+} else {
+  system("make_vinyl",
+         "$MCFOODATA/media/$BACKEND/$mpath/current",
+         $PATH) == 0
+           or fail "executing make_vinyl failed: $?";
+}
+exit(0);

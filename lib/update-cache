@@ -4,9 +4,9 @@ use CDB_File;
 
 use vars qw($MCFOOHOME $MCFOODATA $MCFOOCACHE);
 
-$MCFOOHOME=$ENV{MCFOOHOME} || '/usr/lib/mc_foo';
-$MCFOODATA=$ENV{MCFOODATA} || '/var/lib/mc_foo';
-$MCFOOCACHE=$ENV{MCFOOCACHE} || '/var/cache/mc_foo';
+$MCFOOHOME=$ENV{MCFOOHOME} || '/usr/lib/mc-foo';
+$MCFOODATA=$ENV{MCFOODATA} || '/var/lib/mc-foo';
+$MCFOOCACHE=$ENV{MCFOOCACHE} || '/var/cache/mc-foo';
 
 my $DEFAULT_SCORE=100; # everything starts with 100 points.
 

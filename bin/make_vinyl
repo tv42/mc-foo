@@ -1,0 +1,44 @@
+#!/usr/bin/perl -w
+use File::Find;
+use MPEG::MP3Info;
+use CDB_File;
+
+sub usage() { die "usage: make_vinyl <cdbfile> <mp3tree>\n" }
+sub fail(@) { die "make_vinyl: @_\n"; }
+
+usage() if @ARGV != 2;
+$CDB=$ARGV[0];
+$FILES=$ARGV[1];
+usage() unless not -e $CDB or -f _;
+usage() unless -d $FILES;
+
+my $n=0;
+my $h=new CDB_File $CDB, "$CDB.$$.tmp"
+  or fail "cannot open cdb file $CDB: $!";
+$FILES .= '/' unless $FILES=~m{/$};
+
+sub wanted {
+  if (-f $_ and -s _ and /\.mp3$/i) {
+    $n++;
+    my $a=$File::Find::name;
+    substr($a, 0, length($FILES)) = ''
+      if substr($a, 0, length($FILES)) eq $FILES;
+    $h->insert($n, $a);
+    
+    my $tag = get_mp3tag($_);
+    if (defined $tag) {
+      foreach my $key (keys %$tag) {
+        if (defined $tag->{$key} and $tag->{$key} ne '') {
+          $h->insert('id3-'.lc($key).":$a", $tag->{$key});
+        }
+      }
+    }
+  }
+}
+
+$File::Find::dont_use_nlink=1;
+find(\&wanted, $FILES);
+
+$h->insert('n', $n);
+$h->finish
+  or fail "cannot finish cdb: $!";

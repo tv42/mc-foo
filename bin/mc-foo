@@ -1,0 +1,16 @@
+#!/bin/sh -e
+MCFOOHOME="${MCFOOHOME:-/usr/lib/mc-foo}"
+
+if [ "$1" = "" ]; then
+    echo "usage: mc-foo <command> [arguments]"
+    exit 0
+fi
+
+if [ -x "$MCFOOHOME/commands/$1" ]; then
+    CMD="$1"
+    shift
+    exec "$MCFOOHOME/commands/$CMD" "$@"
+else
+    echo "mc-foo: no such command." 1>&2
+    exit 1
+fi

@@ -4,6 +4,8 @@ BINDIR := /usr/bin
 DATADIR := /var/lib/mc-foo
 DOCDIR := /usr/share/doc/mc-foo
 CACHEDIR := /var/cache/mc-foo
+LIBDIR := /usr/lib/mc-foo/lib
+CMDDIR := /usr/lib/mc-foo/commands
 
 OBJ := dj/cache.o dj/child-bearer.o dj/dj.o dj/playqueue.o \
 	dj/tcp_server.o dj/tcp_listener.o dj/poller.o \
@@ -11,31 +13,37 @@ OBJ := dj/cache.o dj/child-bearer.o dj/dj.o dj/playqueue.o \
 	turntable/error.o dj/song_output.o turntable/sigchild.o
 CFLAGS := -g -Wall -O2
 
-all: dj/dj turntable/turntable
+BINS := dj/dj turntable/turntable
+
+all: $(BINS)
 
 clean:
-	rm -f $(OBJ) dj/test.o
+	rm -f $(OBJ) $(BINS)
 
 install: all
 	install -d -m0755 $(DESTDIR)$(BINDIR)
 	install -d -m0755 $(DESTDIR)$(DATADIR)
 	install -d -m0755 $(DESTDIR)$(DOCDIR)
 	install -d -m0755 $(DESTDIR)$(CACHEDIR)
+	install -d -m0755 $(DESTDIR)$(LIBDIR)
+	install -d -m0755 $(DESTDIR)$(CMDDIR)
 	install -m0755 dj/dj \
-		pick-a-song/pick-a-song \
-		remember-profiles/remember-profiles \
-		turntable/turntable \
-		update-cache \
-		$(DESTDIR)$(BINDIR)
+		commands/[a-z]* $(DESTDIR)$(CMDDIR)
+	install -m0755 turntable/turntable \
+		lib/[a-z]* $(DESTDIR)$(LIBDIR)
+	install -m0755 bin/[a-z]* $(DESTDIR)$(BINDIR)
 	install -d -m0755 $(DESTDIR)$(CACHEDIR)/mediaprofiles \
 		$(DESTDIR)$(CACHEDIR)/mediaprofiles/file \
 		$(DESTDIR)$(CACHEDIR)/weights \
 		$(DESTDIR)$(DATADIR)/media \
 		$(DESTDIR)$(DATADIR)/media/file \
 		$(DESTDIR)$(DATADIR)/profiles
-	@echo 'Now you should create a user for MC Foo, '
+	@echo 'Now you should create a group for MC Foo, '
 	@echo 'preferably named "mcfoo", and run'
-	@echo "chown -R mcfoo $(DATADIR) $(CACHEDIR)"
+	@echo "chgrp -R mcfoo $(DATADIR)/{media,profiles}"
+	@echo "chgrp -R mcfoo $(CACHEDIR)/{mediaprofiles,weights}"
+	@echo "chmod -R g+s $(DATADIR)/{media,profiles}"
+	@echo "chmod -R g+s $(CACHEDIR)/{mediaprofiles,weights}"
 
 %.o: %.c
 	gcc -c $(CFLAGS) -o $@ $<
