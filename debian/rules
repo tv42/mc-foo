@@ -33,6 +33,9 @@ binary-arch: build install
 	test root = "`whoami`" || (echo need root priviledges; exit 1)
 
 	install -d --mode=0755 "$(DEBTMP)/usr/share/doc/$(PACKAGE)"
+	install --mode=0644 README \
+		"$(DEBTMP)/usr/share/doc/$(PACKAGE)"
+	gzip -9 "$(DEBTMP)/usr/share/doc/$(PACKAGE)/README"
 	install --mode=0644 debian/copyright \
 		"$(DEBTMP)/usr/share/doc/$(PACKAGE)"
 #	gzip -9 $(DEBTMP)/usr/share/man/man1/*
@@ -43,7 +46,7 @@ binary-arch: build install
 	ln -sf ../man7/undocumented.7.gz "$(DEBTMP)/usr/share/man/man1/mc-foo.1.gz"
 	ln -sf ../man7/undocumented.7.gz "$(DEBTMP)/usr/share/man/man1/turntable.1.gz"
 	install -d --mode=0755 $(DEBTMP)/DEBIAN
-	install --mode=0755 debian/postinst debian/prerm debian/postrm \
+	install --mode=0755 debian/postinst debian/prerm \
 		$(DEBTMP)/DEBIAN
 	dpkg-gencontrol -isp -P"$(DEBTMP)"
 	dpkg --build $(DEBTMP) ..

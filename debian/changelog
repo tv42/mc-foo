@@ -1,3 +1,10 @@
+mc-foo (0.0.5.cvs) unstable; urgency=low
+
+  * Install the README file in the package (Closes: #129173).
+  * Remove the postrm, it's obsolete.
+
+ -- Tommi Virtanen <tv@debian.org>  Sun, 10 Mar 2002 15:48:37 +0200
+
 mc-foo (0.0.5) unstable; urgency=low
 
   * If opening /dev/sound/mixer fails, /dev/mixer is tried.

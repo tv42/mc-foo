@@ -1,9 +1,0 @@
-#!/bin/sh -e
-
-if [ "$1" = "purge" ]; then
-    chgrp -R root /var/cache/mc-foo/mediaprofiles \
-        /var/cache/mc-foo/weights \
-	/var/lib/mc-foo/media \
-	/var/lib/mc-foo/profiles
-    groupdel mcfoo
-fi
