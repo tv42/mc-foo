@@ -8,19 +8,20 @@
    score:artist:<artistname> -> <preference>
    score:song:<song-id> -> <preference>
    score:album:<albumname> -> <preference>
-   categories:include -> pop rock dance gabber classical
-   categories:exlude -> country
+   score:category:pop -> +1
+   score:category:rock -> +1
+   score:category:dance -> +1
+   score:category:gabber -> +1
    score:category:classical -> -3
    score:category:country -> never
    }
-  (those two lines including country are actually in conflict)
-  
+
   The profile symlink profiles/read points to is initially included in
   the active read profile. Same goes for profiles/write.
  }
 
  {\header 2 {Media backends}
-  (e.g. "file", "cdrom", "http")
+  (e.g. "file", "removable" (cdrom etc), "http")
 
   {\header 3 {file}
    media/file/<collection-path-munged>/current contains information like
@@ -38,19 +39,31 @@
     }
 
    media/file/<collection-path-munged>/path points to the real
-   location (unmunged).
+   location.
+   {\todo (it can be a file, or a symlink. Symlink would give
+          fast and uncomplicated access when needed; the
+          "content" can be read with readlink. Seems better.)}
    }
   
 
-  {\header 3 {cdrom}
-   media/cdrom/<mount-point-munged>/current is a symlink to
-   cd-catalog/<label-munged-or-some-id>.cdb.
+  {\header 3 {removable}
+   media/removable/<mount-point-munged>/current is a symlink to
+   removable/<label-munged-or-some-id>.cdb.
 
-   File media/cdrom/<mount-point-munged>/path contains unmunged path
-   of mount point.
+   removable may be a symlink to e.g. your CD-rom collection, if
+   sharing it between removable media instances is reasonable
+   (multiple CD-roms capable of reading the same disks).
 
-   Existence of file media/cdrom/<mount-point-munged>/cache means
-   files should be cached on local disk before playing.
+   File media/removable/<mount-point-munged>/path points to the true
+   mount point.
+
+   Existence of media/removable/<mount-point-munged>/cache means
+   files should be cached on local disk before playing. Cache should
+   be symlink to the cache directory to use.
+
+   Note that removable and file are very close to eachother. Maybe
+   removable should just be special case of file, with existence of
+   media/file/<path-munged>/removable the trigger.
    }
 
   {\header 3 {http}
