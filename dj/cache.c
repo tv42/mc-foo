@@ -1,3 +1,5 @@
+#include "playqueue.h"
+
 /*
  * try to ensure the queue has want playable songs,
  * but try at maximum max songs
@@ -12,14 +14,15 @@ int request_caching_queuehead(struct playqueue *queue, int want, int max) {
     return;
   cur=queue->head;
   while(cur!=NULL && want>0 && n<=max) {
-    if (!cur->song.media->cache.flags.caching_mandatory
-        && !cur->song.media->cache.flags.caching_optional) {
+    if (!cur->song.media->cache.caching_mandatory
+        && !cur->song.media->cache.caching_optional) {
       want--;
     } else if (cur->cache.state==done) {
       want--;
     } else if (cur->cache.state==not_requested
-        && (cur->song.media->cache.flags.caching_mandatory
-            || cur->song.media->cache.flags.caching_optional)) {
+        && (cur->song.media->cache.caching_mandatory
+            || cur->song.media->cache.caching_optional)) {
+      assert(cur->song.media->backend->cache.request_cache!=NULL);
       cur->song.media->backend->cache.request_cache(&cur->song);
       cur->cache.state=requested;
     }

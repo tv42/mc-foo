@@ -1,6 +1,9 @@
 #ifndef CHILD_BEARER_H
 #define CHILD_BEARER_H
 
+#include <unistd.h>
+#include <sys/types.h>
+
 struct child_bearing {
   int from_fd;
   int to_fd;

@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <errno.h>
 #include "child-bearer.h"
 
 #define BUFSIZE 1024
