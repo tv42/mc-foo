@@ -99,8 +99,8 @@ int split_to_lines(const void *buf, size_t len, void **data) {
                       len-((unsigned long)buf_tmp-(unsigned long)buf)
                       ))!=NULL) {
     if (state->curlen==0) {
-      if (state->line_callback(buf, 
-                               (unsigned long)line-(unsigned long)buf, 
+      if (state->line_callback(buf_tmp, 
+                               (unsigned long)line-(unsigned long)buf_tmp, 
                                &state->line_cb_data) ==-1) {
         free(state->curline);
         free(state);
