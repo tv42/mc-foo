@@ -51,4 +51,7 @@ CDB_File::create %new, "$MCFOODATA/profiles/$profile.cdb",
   "$MCFOODATA/profiles/$profile.$$.tmp"
   or fail "unable to create new profile: $!";
 
+system("$MCFOOHOME/lib/update-cache") == 0
+           or fail "executing update-cache failed: $?";
+
 exit(0);

@@ -57,4 +57,6 @@ if (defined $VOLUME) {
          $PATH) == 0
            or fail "executing make_vinyl failed: $?";
 }
+system("$MCFOOHOME/lib/update-cache") == 0
+           or fail "executing update-cache failed: $?";
 exit(0);
