@@ -1,4 +1,4 @@
-import sys, re
+import re
 import McFoo.song
 
 stop = 0

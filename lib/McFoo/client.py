@@ -2,8 +2,6 @@ from twisted.internet import reactor
 import twisted.spread.pb
 import McFoo.config
 
-import os
-
 class McFooClientSimple:
     stopping = 0
 

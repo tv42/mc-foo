@@ -4,7 +4,7 @@ import McFoo.client
 import sys, os.path
 from twisted.internet import reactor
 from twisted.python import usage
-from twisted.python.defer import DeferredList
+from twisted.internet.defer import DeferredList
 
 class Options(usage.Options):
     synopsis = "Usage: %s [options] addqueue [--priority=N] FILENAME.." % os.path.basename(sys.argv[0])

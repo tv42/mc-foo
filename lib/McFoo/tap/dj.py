@@ -85,4 +85,4 @@ def updateApplication(app, config):
     prot = pb.BrokerFactory(pb.AuthRoot(auth))
 
     app.listenTCP(portno, prot)
-    s=SaveService("save", app, auth)
+    SaveService("save", app, auth)

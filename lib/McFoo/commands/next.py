@@ -32,5 +32,5 @@ class McFooClientNext(McFoo.client.McFooClientSimple):
             d=defer.succeed(None)
         d.addCallback(self._next)
 
-    def _next(self, foo):
+    def _next(self, dummy):
         self.remote.callRemote("next").addCallback(self.stop)

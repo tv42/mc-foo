@@ -41,13 +41,12 @@ class McFooClientFan(McFoo.client.McFooClientSimple):
 
 def main():
     import McFoo.gui.playqueue
-    import os
     import twisted.internet.tksupport
     from twisted.internet import reactor
     root = Tk()
     root.withdraw()
     twisted.internet.tksupport.install(root)
-    c = McFooClientFan(TkRoot=root)
+    McFooClientFan(TkRoot=root)
 
     try:
         root.mainloop()
