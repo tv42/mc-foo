@@ -1,5 +1,6 @@
 #!/usr/bin/python
-# Downloaded from http://home.earthlink.net/~joecotellese/  --Tv
+# Downloaded from http://home.earthlink.net/~joecotellese/
+# Modified by Tommi Virtanen <tv@debian.org> to add ID3TagException
 ##    ID3Tag.py - a python class for reading ID3v1 tags
 ##    part of the Python MP3 library
 ##    Copyright (C) 2000  Joe Cotellese
@@ -20,6 +21,8 @@
 
 import sys, os, tempfile, shutil
 from threading import *
+
+ID3Tag_HasNoID3='ID3Tag_HasNoID3'
 
 class ID3Tag :
     """
@@ -317,7 +320,7 @@ class ID3Tag :
         fp.seek(-128, 2) #2 specifies to seek from the end of the file
         temp = fp.read(3)
         if temp != "TAG":
-            raise StandardError, "No TAG header found in MP3 file:" + self.filename
+            raise ID3Tag_HasNoID3, ("No TAG header found in MP3 file:", self.filename)
 
         self.m_Title = self.RemovePadding(fp,30)
         self.m_Artist= self.RemovePadding(fp,30)
@@ -406,8 +409,8 @@ def test():
         print tag.theGenre()
         print tag.theComment()
 
-    except StandardError, e:
-        print e
+    except ID3Tag_HasNoID3, (e, file):
+        print e, file
 
 if __name__=='__main__':
     test()
