@@ -46,7 +46,7 @@ class PlayQueue:
 
         self._last_volume=None
         self._refresh_volume()
-        self._timed_refresh()
+        self.refresh()
 
     def set_volume(self, vol):
         vol=int(vol)
@@ -72,19 +72,17 @@ class PlayQueue:
         self._timed_refresh_setup()
 
     def _timed_refresh_setup(self):
-        if self._timer:
-            self.master.after_cancel(self._timer)
         self._timer=self.master.after(10000, self._timed_refresh)
 
     def _refresh_volume(self):
         self._last_volume=self._rpc('mcfoo.volume_get', [])
         self.volume.set(self._last_volume)
 
-    def refresh(self):
+    def _refresh(self):
         s=self._rpc('mcfoo.list', [self.serial])
         if s!=None:
             if s.has_key('history'):
-                self.history[:]=map(lambda s: McFoo.gui.song.GuiSong(s), s['history'][:-1])
+                self.history[:]=map(lambda song: McFoo.gui.song.GuiSong(song), s['history'][:-1])
                 try:
                     playing=s['history'][-1]
                 except IndexError:
@@ -97,6 +95,11 @@ class PlayQueue:
             self.serial=s['serial']
         self._refresh_volume()
         self._timed_refresh_setup()
+
+    def refresh(self):
+        if self._timer:
+            self.master.after_cancel(self._timer)
+        self._refresh()
 
     def notify_move(self, changes):
         # changes = [(newloc, song), (newloc, song), ..]
