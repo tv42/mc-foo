@@ -2,13 +2,16 @@ import asynchat
 import asyncmd
 import McFoo.dj
 
+stop = 0
+
 from errno import EADDRINUSE
 class server(asynchat.async_chat, asyncmd.async_cmd):
-    def __init__(self, dj):
+    def __init__(self, dj, playqueue):
         asynchat.async_chat.__init__(self)
         self.set_terminator('\n')
         self.command = ''
         self.dj = dj
+        self.playqueue = playqueue
 
     def start_listen(self):
         import socket
@@ -37,15 +40,16 @@ class server(asynchat.async_chat, asyncmd.async_cmd):
         self.push("COMMAND: next\n")
 
     def do_quit(self, arg):
-	# TODO make it _all_ go away
-        self.push("THEEND (not yet)\n")
+        global stop
+        stop = 1
+        self.push("THEEND\n")
         self.close_when_done()
 
     def do_list(self, arg):
-	self.push("MULTI foo\n"+str(playqueue))
+	self.push("MULTI foo\n"+str(self.playqueue))
 
     def do_dump(self, arg):
-        self.push(repr(playqueue)+"\n")
+        self.push(repr(self.playqueue)+"\n")
 
     def do_pause(self, arg):
         self.dj.pause()
@@ -58,12 +62,12 @@ class server(asynchat.async_chat, asyncmd.async_cmd):
     def do_delete(self, arg):
 	from string import strip
 	arg=int(arg)
-	songs=filter(lambda x: x.id==arg, playqueue)
+	songs=filter(lambda x: x.id==arg, self.playqueue)
 	if songs==[]:
 	    self.push("COMMAND: remove %d failed\n" % arg)
 	else:
 	    for song in songs:
-		playqueue.remove(song)
+		self.playqueue.remove(song)
 		self.push("COMMAND: remove %s\n" % song.filename)
 
     def do_move(self, arg):
@@ -77,14 +81,20 @@ class server(asynchat.async_chat, asyncmd.async_cmd):
 
     def handle_accept(self):
         (conn, addr) = self.accept()
-        s = server(self.dj)
+        s = server(self.dj, self.playqueue)
         s.set_socket(conn)
 
     def handle_connect(self):
         pass
 
-    def say(self, string):
-        self.push(string+"\n")
+    def say(self, *args):
+        apply(self.say_snippet, args)
+        self.push("\n")
+
+    def say_snippet(self, *args):
+        for s in args:
+            self.push(s)
+        self.push("\n")
 
     def raw_input(self, prompt):
         if prompt==None: prompt=">>> "
