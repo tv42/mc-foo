@@ -90,8 +90,8 @@ class Mp3:
         except NameError:
             pass
         for key in c.keys():
-            if c[key]=='':
-                c.delete[key]
+            if len(c[key])==1 and c[key][0]=='':
+                del c[key]
         return c
     def time_total(self):
         return 0
