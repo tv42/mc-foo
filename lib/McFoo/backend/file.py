@@ -10,6 +10,7 @@ McFooBackendFileDoesNotExist='McFooBackendFileDoesNotExist'
 
 class Ogg:
     def __init__(self, filename):
+        self.filename = filename
         import ogg.vorbis
         try:
             self.vf = ogg.vorbis.VorbisFile(filename)
@@ -23,6 +24,17 @@ class Ogg:
                 print e.args
                 print e.errno
                 raise
+
+    def __getstate__(self):
+        return {
+            'filename': self.filename,
+            'seek': self.time_tell(),
+            }
+
+    def __setstate__(self, state):
+        self.__init__(state['filename'])
+        self.time_seek(state['seek'])
+
     def start_play(self):
         pass
     def read(self, size):
@@ -61,6 +73,17 @@ class Mp3:
                 raise McFooBackendFileDoesNotExist
             else:
                 raise
+
+    def __getstate__(self):
+        return {
+            'filename': self.filename,
+            'seek': self.time_tell(),
+            }
+
+    def __setstate__(self, state):
+        self.__init__(state['filename'])
+        self.time_seek(state['seek'])
+
     def start_play(self):
         pass
     def read(self, size):
