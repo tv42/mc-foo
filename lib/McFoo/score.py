@@ -96,5 +96,4 @@ class ProfileTable(UserDict.UserDict):
         sum=0
         for user, profile in self.items():
             sum+=profile.getScore(filename)
-        print repr(self)
         return sum
