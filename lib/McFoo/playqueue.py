@@ -44,6 +44,10 @@ class PlayQueue(UserList.UserList):
         UserList.UserList.__init__(self)
         self.data=[]
         self.history=PlayHistory()
+        self.serial=1
+
+    def _inc_serial(self):
+        self.serial=self.serial+1
 
     def insert_point(self, pri):
 	smallest=0
@@ -56,22 +60,26 @@ class PlayQueue(UserList.UserList):
 		else:
 		    smallest=i
 	self.insert(smallest, McFooPriorityMarker(pri))
+        self._inc_serial()
 	return smallest
 
     def add(self, song):
 	self.data.insert(self.insert_point(song.priority), song)
+        self._inc_serial()
 
     def remove(self, song):
         i=0
         while song!=self[i]:
             i=i+1
         self[i:i]=[]
+        self._inc_serial()
 
     def remove_by_id(self, id):
         i=0
         while not self[i].playable() or id!=self[i].id:
             i=i+1
         self[i:i+1]=[]
+        self._inc_serial()
 
     def pop(self):
 	i=0
@@ -83,6 +91,7 @@ class PlayQueue(UserList.UserList):
 	except IndexError:
 	    song=None
         self.history.add(song)
+        self._inc_serial()
 	return song
 
     def __str__(self):
@@ -95,7 +104,9 @@ class PlayQueue(UserList.UserList):
         s=[]
         for song in self:
             s.append(song.as_data())
-        return {'history': self.history.as_data(), 'queue': s}
+        return {'serial': self.serial,
+                'history': self.history.as_data(),
+                'queue': s}
 
     def move(self, id, offset):
         i=0
@@ -104,3 +115,13 @@ class PlayQueue(UserList.UserList):
         t=self[i]
         self[i:i+1]=[]
         self.insert(i+offset, t)
+        self._inc_serial()
+
+    def moveabs(self, id, newloc):
+        i=0
+        while not self[i].playable() or id!=self[i].id:
+            i=i+1
+        t=self[i]
+        self[i:i+1]=[]
+        self.insert(newloc, t)
+        self._inc_serial()

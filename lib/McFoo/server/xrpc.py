@@ -34,7 +34,12 @@ class server(xmlrpc.server):
 		raise socket.error, why
 
     def do_list(self, server, source, uri, name, args):
-        return self.playqueue.as_data()
+        print "got args: ", args
+        serial=args[0]
+        if serial==self.playqueue.serial:
+            return {'serial': serial}
+        else:
+            return self.playqueue.as_data()
 
     def do_next(self, server, source, uri, name, args):
         server.dj.next()
@@ -72,6 +77,12 @@ class server(xmlrpc.server):
         for arg in args:
             id, offset = arg
             self.playqueue.move(id, offset)
+        return []
+
+    def do_moveabs(self, server, source, uri, name, args):
+        for arg in args:
+            id, newloc = arg
+            self.playqueue.moveabs(id, newloc)
         return []
 
     def do_addqueue(self, server, source, uri, name, args):
