@@ -22,12 +22,17 @@ class CallMeLater:
         return apply(self.callback, self.a, self.kw)
 
 class DjPerspective(pb.Perspective):
-    def __init__(self, perspectiveName, service, identityName, dj, playqueue, volume):
-        pb.Perspective.__init__(self, perspectiveName, service, identityName)
+    def __init__(self, perspectiveName, identityName, dj, playqueue, volume, profileTable):
+        pb.Perspective.__init__(self, perspectiveName, identityName)
         self.dj = dj
         self.playqueue = playqueue
         self.volume = volume
+        self.profileTable = profileTable
         self.onDetach = []
+
+    def perspective_like(self):
+        user=self.profileTable.adduser(self.identityName)
+        user.incScore(self.playqueue.history[0].filename)
 
     def perspective_list(self):
         return self.playqueue.as_data()
@@ -67,12 +72,14 @@ class DjPerspective(pb.Perspective):
             self.playqueue.moveabs(id, newloc)
 
     def perspective_addqueue(self, pri, backend, media, file):
-        song=McFoo.song.Song(backend, media, file, pri)
+        filename='/var/lib/mc-foo/media/%s/%s/path/%s' % (backend, media, file)
+        song=McFoo.song.Song(filename, pri)
         self.playqueue.add(song)
 
     def perspective_addqueueidx(self, args):
         for pri, backend, media, file, idx in args:
-            song=McFoo.song.Song(backend, media, file, pri)
+            filename='/var/lib/mc-foo/media/%s/%s/path/%s' % (backend, media, file)
+            song=McFoo.song.Song(filename, pri)
             self.playqueue.insert(idx, song)
 
     def perspective_jumpto(self, args):
@@ -119,11 +126,12 @@ class DjPerspective(pb.Perspective):
         return pb.Perspective.detached(self, reference, identity)
 
 class server(pb.Service):
-    def __init__(self, app, dj, playqueue, volume):
+    def __init__(self, app, dj, playqueue, volume, profileTable):
         pb.Service.__init__(self, "dj", app)
         self.dj = dj
         self.playqueue = playqueue
         self.volume = volume
+        self.profileTable = profileTable
 
     def getPerspectiveNamed(self, name):
-        return DjPerspective(name, self, "Nobody", self.dj, self.playqueue, self.volume)
+        return DjPerspective(name, "Nobody", self.dj, self.playqueue, self.volume, self.profileTable)
