@@ -28,4 +28,4 @@ class McFooClientDelete(McFoo.client.McFooClientSimple):
 
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.callRemote("delete", self.ids).addCallback(reactor.stop)
+        self.remote.callRemote("delete", self.ids).addCallback(self.stop)

@@ -18,4 +18,4 @@ class Options(usage.Options):
 class McFooClientVolume_inc(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.callRemote("volume_inc").addCallback(reactor.stop)
+        self.remote.callRemote("volume_inc").addCallback(self.stop)

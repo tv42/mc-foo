@@ -18,4 +18,4 @@ class Options(usage.Options):
 class McFooClientContinue(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.callRemote("cont").addCallback(reactor.stop)
+        self.remote.callRemote("cont").addCallback(self.stop)

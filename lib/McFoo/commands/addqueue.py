@@ -43,5 +43,5 @@ class McFooClientAddqueue(McFoo.client.McFooClientSimple):
             d = self.remote.callRemote("addqueue", file, self.pri)
             deferreds.append(d)
         dl = DeferredList(deferreds)
-        dl.addCallback(reactor.stop)
+        dl.addCallback(self.stop)
         dl.arm()

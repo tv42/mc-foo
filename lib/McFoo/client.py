@@ -41,3 +41,8 @@ class McFooClientSimple:
 
     def __call__(self):
         reactor.run()
+
+    def stop(self, *foo, **bar):
+        # you can give me extra args and I won't mind.
+        # useful for pb callbacks.
+        reactor.stop()

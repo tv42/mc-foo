@@ -18,4 +18,4 @@ class Options(usage.Options):
 class McFooClientPause(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.callRemote("pause").addCallback(reactor.stop)
+        self.remote.callRemote("pause").addCallback(self.stop)
