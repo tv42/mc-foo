@@ -255,6 +255,42 @@ static int tcp_server_pause(char *line,
   return 0;
 }
 
+static int tcp_server_jump(char *line, 
+			   size_t len, 
+			   struct tcp_server_state *state) {
+  char buf[100];
+  int n;
+  
+  assert(state!=NULL);
+  assert(state->pq!=NULL);
+
+  /* allow absolute values only after seeing what mpg123 does with too
+     big frame numbers. */
+  if (len<2
+      || len>30
+      || (line[0]!='-' && line[0]!='+')) { 
+    write(state->fd, "ERR jump needs +-num\n", strlen("ERR jump needs +-num\n"));
+    return 0;
+  }
+
+  for (n=1; n<len; n++) {
+    if (!strchr("0123456789", line[n])) {
+      write(state->fd, "ERR jump needs +-num\n", strlen("ERR jump needs +-num\n"));
+      return 0;
+    }
+  }
+
+  n=snprintf(buf, 100, "JUMP %*s\n", len, line);
+  if (write_to_child(state->pq->song_output, 
+		     buf, n) ==-1) {
+    perror("dj: write_to_child");
+    write(state->fd, "ERR failed\n", strlen("ERR failed\n"));
+  } else {
+    write(state->fd, "OK jumped\n", strlen("OK jumped\n"));
+  }
+  return 0;
+}
+
 static int tcp_server_continue(char *line, 
 			       size_t len, 
 			       struct tcp_server_state *state) {
@@ -320,6 +356,7 @@ int tcp_server_cb(char *line,
     { "MOVE", tcp_server_move },
     { "QUIT", tcp_server_quit },
     { "ADDQUEUE", tcp_server_addqueue },
+    { "JUMP", tcp_server_jump },
     { 0, 0 }
   };
 

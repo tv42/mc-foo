@@ -1,0 +1,12 @@
+#!/bin/sh -e
+if [ "$1" = "help" ]; then
+    echo "next - send a skip to next song command to dj"
+    exit 0
+fi
+
+if [ "$1" = "usage" ]; then
+    echo "next"
+    exit 0
+fi
+
+echo jump "$1"|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"
