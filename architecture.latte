@@ -3,7 +3,8 @@
 
  {\header 2 {General}
   
-  The base system will be implemented in C.
+  The base system will be implemented in C, the trivial utilities in
+  perl.
 
   We will use existing MP3 players as backend, and will never touch
   file contents or sound hardware ourselves.
@@ -46,12 +47,15 @@
    all listed profiles.}
 
   {\header 3 {Caching a song to faster media}
-   {\b file-cache} is executed by the server and left
+   Caching is specific to the media backend; there will be
+   {\b file-cache} and {\b http-cache}.
+
+   {\b {\i backend}-cache} is executed by the server and left
    running. It uses stdin and stdout to communicate with the server. 
    On stdin, it receives a song path. It starts an asynchronous copy
    of the song to faster media, if deemed necessary. On stdout, it
-   writes the song paths of succesfully cached songs. If 
-   {\b file-cache} exits, the server will start a new one.
+   writes the song paths of succesfully cached songs. If
+   {\b {\i backend}-cache} exits, the server will start a new one.
    {\todo Needs more information on stdin?}}
 
   {\header 3 {Play the song}
@@ -136,16 +140,7 @@
   profile for user B includes "user B" and "classical".}
 
  {\header 2 {Picking random songs with a bias}
-  Hard! We can pick a random song and then check what prefences affect
-  it. Doing more complex searches without a real database is even
-  harder, and I consider this project a failure if we resort to a
-  full-fledged SQL database. The solution probably has something to do
-  with weird data structures.
-
-  In theory it would be enough to pick a random song, check the category
-  etc., apply weights and discard if necessary. Positive weights would
-  need something like "in addition of queueing memorize this and make
-  it magically reappear after 100 guesses".. Store last playing time?-o
+  {\todo Describe the new method here}
   }
 
  {\header 2 {Miscellanous thoughts}
