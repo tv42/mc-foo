@@ -18,6 +18,29 @@
 \;  \href=http://download.sourceforge.net/mc-foo/mc-foo_0.0.1-1_i386.deb
 \;  Download the .deb now!}
 
+ {\h2 Version 0.0.6 released, 2002-04-12:}
+
+ {\list
+  {New-style twisted.spread.pb calls.}
+  {Use a Twisted plugin for tap creation.}
+  {Install the README file in the package (Closes: #129173).}
+  {Remove the postrm, it's obsolete (Closes: #128557).}
+  }
+
+ {\h2 Version 0.0.5 released, 2002-01-04:}
+
+ {\list
+  {If opening /dev/sound/mixer fails, /dev/mixer is tried.}
+  {Volume control now controls PCM volume, not the master
+   volume.}
+  {Changed the package to be architecture-independent, there
+   are no C parts left here.}
+  {Added Build-Depends-Indep: python2.1-dev (Closes: #127796).}
+  {After creating the install directory, chmod it 0755 to make
+   sure building in a sgid dir creates a valid DEBIAN dir
+   (Closes: #127799).}
+  }
+
  {\h2 Version 0.0.4 released, 2001-12-19:}
 
  Finally something other than CVS snapshots -- version 0.0.4 {\url
