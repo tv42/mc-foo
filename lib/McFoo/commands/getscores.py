@@ -4,6 +4,7 @@ import McFoo.client
 import sys, os.path
 from twisted.internet import reactor
 from twisted.python import usage
+from pprint import pprint
 
 class Options(usage.Options):
     synopsis = "Usage: %s [options] getscores [USERNAME]" % os.path.basename(sys.argv[0])
@@ -20,7 +21,7 @@ class Options(usage.Options):
 
 class McFooClientGetScores(McFoo.client.McFooClientSimple):
     def gotScores(self, scores):
-        print scores
+        pprint(scores)
         self.stop()
 
     def handle_login(self, perspective):
