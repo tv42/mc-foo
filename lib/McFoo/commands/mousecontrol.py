@@ -40,7 +40,7 @@ class Options(usage.Options):
         usage.Options.__init__(self)
         
     def postOptions(self):
-        if MouseMan.FAKE:
+        if hasattr(MouseMan, 'FAKE'):
             raise "Your twisted is too old to contain twisted.protocols.mice"
         c = McFooClientMouseControl()
         transport = SerialPort(self.opts['file'])
