@@ -37,7 +37,7 @@ class Mp3:
         self.fd_in=None
     def start_play(self):
 	import popen2
- 	self.fd_in, fd_out = popen2.popen2("mpg123 -s -@ -") #Eww
+ 	self.fd_in, fd_out = popen2.popen2("mpg321 -s -@ -") #Eww
 	fd_out.write("%s\n" % self.filename)
 	fd_out.close()
     def read(self, size):
