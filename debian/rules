@@ -2,7 +2,7 @@
 
 PACKAGE := mc-foo
 DEBTMP := debian/tmp.$(PACKAGE)
-PYTHONBIN := python2.1
+PYTHONBIN := /usr/bin/python2.1
 
 build:
 	test -e debian/control
@@ -38,6 +38,9 @@ binary-arch: build install
 	install --mode=0644 debian/changelog \
 		"$(DEBTMP)/usr/share/doc/$(PACKAGE)/changelog"
 	gzip -9 "$(DEBTMP)/usr/share/doc/$(PACKAGE)/changelog"
+	install -d "$(DEBTMP)/usr/share/man/man1"
+	ln -sf ../man7/undocumented.7.gz "$(DEBTMP)/usr/share/man/man1/mc-foo.1.gz"
+	ln -sf ../man7/undocumented.7.gz "$(DEBTMP)/usr/share/man/man1/turntable.1.gz"
 	install -d --mode=0755 $(DEBTMP)/DEBIAN
 	install --mode=0755 debian/postinst debian/prerm debian/postrm \
 		$(DEBTMP)/DEBIAN
