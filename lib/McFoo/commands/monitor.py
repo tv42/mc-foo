@@ -5,7 +5,7 @@ import sys, os.path
 from twisted.python import usage
 
 class Options(usage.Options):
-    synopsis = "Usage: %s [options] next" % os.path.basename(sys.argv[0])
+    synopsis = "Usage: %s [options] monitor" % os.path.basename(sys.argv[0])
 
     def __init__(self):
         usage.Options.__init__(self)
