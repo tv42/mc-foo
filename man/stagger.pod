@@ -1,0 +1,100 @@
+=head1 NAME
+
+stagger - create a tag file for a MP3 directory tree
+
+
+
+=head1 SYNOPSIS
+
+B<stagger> S<[ I<options> ]> I<rootdir>
+
+
+
+=head1 OPTIONS
+
+=over
+
+=item B<-f <pattern>>	
+
+File name pattern 
+
+=item B<-d <pattern>>
+
+Directory pattern 
+
+=item B<-D <pattern>>
+
+Parent directory pattern 
+
+=item B<-a <artist>>
+
+Default artist for all songs
+
+=item B<-A <artist>>
+
+Override artist for all songs
+
+=item B<-g <genre>>
+
+Specify genre for all songs
+
+=item B<-_>
+
+Do not convert underscores to spaces
+
+=item B<-C>
+
+Capitalize words in tags
+
+=item B<-i>
+
+Use ID3 tags as default values
+
+=item B<-I>
+
+Override patterns with ID3 tags 
+
+=back
+
+
+
+=head1 DESCRIPTION
+
+To be written...
+
+
+
+
+=head1 PATTERNS
+
+Valid tags in patterns:
+
+=over
+
+=item B<%a>
+
+Artist
+
+=item B<%b>
+
+Album
+
+=item B<%s>
+
+Song title
+
+=item B<%t>
+
+Track number
+
+=back
+
+Enclose optional parts of a pattern in braces.
+
+=head1 AUTHOR
+
+Kim Lassila <F<kl@tuug.fi>>
+
+=head1 SEE ALSO
+
+mc-foo(1)
