@@ -1,5 +1,7 @@
 mc-foo (0.0.5.cvs) unstable; urgency=low
 
+  * New-style twisted.spread.pb calls.
+  * Use a Twisted plugin for tap creation.
   * Install the README file in the package (Closes: #129173).
   * Remove the postrm, it's obsolete.
 
