@@ -1,4 +1,4 @@
-"""TODO"""
+"""monitor a dj server"""
 
 import McFoo.client
 import sys, os.path

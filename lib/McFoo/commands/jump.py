@@ -1,4 +1,4 @@
-"""TODO"""
+"""rewind or fast forward within the song"""
 
 import McFoo.client
 import sys, os.path
