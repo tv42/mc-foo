@@ -10,8 +10,14 @@ import McFoo.client
 import sys, os, os.path
 from twisted.internet import reactor
 from twisted.python import usage
-from twisted.protocols.mice import mouseman
-from twisted.internet import protocol, abstract, fdesc
+try:
+    from twisted.protocols.mice.mouseman import MouseMan
+except ImportError:
+    # use a dummy until a Twisted version with the support is available
+    class MouseMan:
+        FAKE=1
+
+from twisted.internet import protocol, abstract
 
 class SerialPort(abstract.FileDescriptor):
     def __init__(self, filename):
@@ -21,6 +27,9 @@ class SerialPort(abstract.FileDescriptor):
         return self.fd
 
     def doRead(self):
+        # TODO move this back out as soon as such versio of Twisted is
+        # packaged.
+        from twisted.internet import fdesc
         return fdesc.readFromFD(self.fileno(), self.protocol.dataReceived)
 
 class Options(usage.Options):
@@ -31,6 +40,8 @@ class Options(usage.Options):
         usage.Options.__init__(self)
         
     def postOptions(self):
+        if MouseMan.FAKE:
+            raise "Your twisted is too old to contain twisted.protocols.mice"
         c = McFooClientMouseControl()
         transport = SerialPort(self.opts['file'])
         transport.protocol = McFooMouse(c)
@@ -44,7 +55,7 @@ class McFooClientMouseControl(McFoo.client.McFooClientSimple):
     def handle_disconnect(self):
         self.connect()
 
-class McFooMouse(mouseman.MouseMan):
+class McFooMouse(MouseMan):
     def __init__(self, client):
         self.client = client
 
