@@ -3,6 +3,7 @@
 
 #include <unistd.h>
 #include "child-bearer.h"
+#include "prof_read.h"
 
 typedef unsigned int bitflag;
 typedef unsigned long songid_t;
@@ -66,6 +67,7 @@ struct playqueue {
   
   unsigned int playing: 1;
   unsigned int wantplaying: 1;
+  unsigned int requestedplay: 1;
   unsigned int paused: 1;
 };
 
@@ -92,7 +94,7 @@ int move_song(struct playqueue *queue,
               struct queue_entry *qe,
               signed int count);
 
-int request_song_input(struct playqueue *queue);
+int request_song_input(struct playqueue *queue, struct read_profile *prof);
 
 void playqueue_init(struct playqueue *pq);
 

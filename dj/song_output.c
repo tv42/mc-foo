@@ -54,7 +54,7 @@ int continue_song_output(struct playqueue *pq) {
   if (pq->paused) {
     fprintf(stderr, "dj->turntable: CONT\n");
     if (write_to_child(pq->song_output, 
-                       "CONT\n", 
+                       "PAUSE\n", 
                        strlen("CONT\n")) ==-1) {
       perror("dj: write_to_child");
     }
@@ -70,7 +70,10 @@ int request_playing(struct playqueue *pq) {
   pq->wantplaying=1;
   if (pq->head==NULL)
     return -1;                   /* nothing to play yet */
-  n=snprintf(buf, 1024, "PLAY %lu %s\n", pq->head->id, pq->head->song.path);
+  if (pq->requestedplay)
+    return 0;
+  pq->requestedplay=1;
+  n=snprintf(buf, 1024, "LOAD %s\n", pq->head->song.path);
   if (n<0 || n>=1024)
     return -1;                  /* too long */
   fprintf(stderr, "dj -> turntable: %s", buf);
@@ -90,24 +93,25 @@ int song_output(const char *line, size_t len, void **data) {
     return -1;
   }
   //TODO if len<strlen("PLAYING ") etc..
-  if (strncmp(line, "PLAYING ", strlen("PLAYING "))==0) {
+  if (strncmp(line, "@I ", strlen("@I "))==0) {
     //TODO read id, check with head, assert equality..
     fprintf(stderr, "turntable is playing song\n");
+    pq->requestedplay=0;
     pq->paused=0;
     pq->playing=1;
-  } else if (strncmp(line, "PAUSED", strlen("PAUSED"))==0) {
+  } else if (strncmp(line, "@P 1", strlen("@P 1"))==0) {
     fprintf(stderr, "turntable is paused\n");
     pq->paused=1;
-  } else if (strncmp(line, "CONTINUING", strlen("CONTINUING"))==0) {
+  } else if (strncmp(line, "@P 2", strlen("@P 2"))==0) {
     fprintf(stderr, "turntable is no longer paused\n");
     pq->paused=0;
-  } else if (strncmp(line, "NOTFOUND ", strlen("NOTFOUND "))==0) {
+  } else if (strncmp(line, "@E ", strlen("@E "))==0) {
     //TODO read id, etc..?
-    fprintf(stderr, "turntable did not find song\n");
+    pq->requestedplay=0;
+    fprintf(stderr, "turntable had trouble: %s\n", line);
     remove_song(pq, pq->head);
     request_playing(pq);
-  } else if (strncmp(line, "STOPPED", strlen("STOPPED"))==0
-             || strncmp(line, "END", strlen("END"))==0) {
+  } else if (strncmp(line, "@P 0", strlen("@P 0"))==0) {
     fprintf(stderr, "turntable finished song\n");
     pq->playing=0;
     remove_song(pq, pq->head);
@@ -149,6 +153,9 @@ int init_song_output(struct poll_struct *ps, struct playqueue *pq) {
   assert(ps!=NULL);
   assert(pq!=NULL);
 
+  pq->requestedplay=0;
+  pq->playing=0;
+  pq->wantplaying=1;
   pq->song_output=calloc(1, sizeof(struct child_bearing));
   if (pq->song_output==NULL)
     return -1;

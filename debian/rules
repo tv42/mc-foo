@@ -31,15 +31,15 @@ binary-arch: build
 		"debian/tmp/usr/share/doc/$(PACKAGE)/changelog.Debian"
 	gzip -9 debian/tmp/usr/share/doc/"$(PACKAGE)"/changelog.Debian
 	strip --remove-section=.comment --remove-section=.note \
-		debian/tmp/usr/lib/mc-foo/commands/dj \
-		debian/tmp/usr/lib/mc-foo/lib/turntable
+		debian/tmp/usr/lib/mc-foo/commands/dj
+#		debian/tmp/usr/lib/mc-foo/lib/turntable
 	install -d --mode=0755 debian/tmp/DEBIAN
 	install --mode=0755 debian/postinst debian/prerm debian/postrm \
 		debian/tmp/DEBIAN
 	dpkg-shlibdeps \
-		debian/tmp/usr/lib/mc-foo/commands/dj \
-		debian/tmp/usr/lib/mc-foo/lib/turntable
-	dpkg-gencontrol
+		debian/tmp/usr/lib/mc-foo/commands/dj
+#		debian/tmp/usr/lib/mc-foo/lib/turntable
+	dpkg-gencontrol -isp
 	dpkg --build debian/tmp ..
 
 source diff:                                                                  

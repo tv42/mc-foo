@@ -30,8 +30,11 @@ install: all
 	install -m0644 README $(DESTDIR)$(DOCDIR)
 	install -m0755 dj/dj \
 		commands/[a-z]* $(DESTDIR)$(CMDDIR)
-	install -m0755 turntable/turntable \
-		lib/[a-z]* $(DESTDIR)$(LIBDIR)
+#	install -m0755 turntable/turntable \
+#		$(DESTDIR)$(LIBDIR)
+	install -m0755 turntable/mpg123-remote \
+		$(DESTDIR)$(LIBDIR)/turntable
+	install -m0755 lib/[a-z]* $(DESTDIR)$(LIBDIR)
 	install -m0755 bin/[a-z]* $(DESTDIR)$(BINDIR)
 	install -d -m0755 $(DESTDIR)$(CACHEDIR)/mediaprofiles \
 		$(DESTDIR)$(CACHEDIR)/mediaprofiles/file \
@@ -54,6 +57,6 @@ turntable/turntable: turntable/turntable.o turntable/error.o \
 
 dj/dj: dj/dj.o dj/tcp_listener.o dj/poller.o dj/tcp_server.o \
 	dj/song_input.o dj/playqueue.o dj/child-bearer.o \
-	dj/nonblock.o dj/song_output.o
+	dj/nonblock.o dj/song_output.o dj/prof_read.o
 
 .PHONY: default all clean install
