@@ -14,7 +14,7 @@ if [ "$1" = "configure" -a "$2" = "" ]; then
 	/var/cache/mc-foo/weights \
 	/var/lib/mc-foo/media \
 	/var/lib/mc-foo/profiles
-    chmod -R g+s /var/cache/mc-foo/mediaprofiles \
+    chmod -R g+ws /var/cache/mc-foo/mediaprofiles \
 	/var/cache/mc-foo/weights \
 	/var/lib/mc-foo/media \
 	/var/lib/mc-foo/profiles
