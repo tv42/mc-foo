@@ -21,7 +21,8 @@ install:
 	test -e debian/control
 	test root = "`whoami`" || (echo need root priviledges; exit 1)
 	rm -rf debian/substvars $(DEBTMP)
-	install -d --mode=0755 $(DEBTMP)
+	install -d $(DEBTMP)
+	chmod 0755 $(DEBTMP) # make sure no sgid dir is playing tricks
 	$(PYTHONBIN) setup.py install --prefix=$(DEBTMP)/usr
 	chmod -R go-w $(DEBTMP)
 

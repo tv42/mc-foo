@@ -1,6 +1,7 @@
 import oss
 import twisted.spread.pb
 import McFoo.observe
+from errno import ENOENT
 
 class VolumeObserver(McFoo.observe.Observer):
     def remote_change(self, left, right):
@@ -8,18 +9,24 @@ class VolumeObserver(McFoo.observe.Observer):
 
 class VolumeControl:
     def __init__(self):
-        self.mixer=oss.open_mixer("/dev/sound/mixer")
+        try:
+            self.mixer=oss.open_mixer("/dev/sound/mixer")
+        except IOError, e:
+            if e.errno == ENOENT:
+                self.mixer=oss.open_mixer("/dev/mixer")
+            else:
+                raise
         self.observers=McFoo.observe.Observers()
 
     def get(self, wantstereo=0):
-        (left, right) = self.mixer.read_channel(oss.SOUND_MIXER_VOLUME)
+        (left, right) = self.mixer.read_channel(oss.SOUND_MIXER_PCM)
         if wantstereo:
             return (left, right)
         else:
             return (left+right)/2
 
     def set(self, vol_left, vol_right=None):
-        (left, right) = self.mixer.read_channel(oss.SOUND_MIXER_VOLUME)
+        (left, right) = self.mixer.read_channel(oss.SOUND_MIXER_PCM)
         if vol_right==None:
             average=(left+right)/2.0
             if average==0:
@@ -38,14 +45,14 @@ class VolumeControl:
             right=0
         if right>100:
             right=100
-        self.mixer.write_channel(oss.SOUND_MIXER_VOLUME, (left, right))
+        self.mixer.write_channel(oss.SOUND_MIXER_PCM, (left, right))
         self.observers('change', left, right)
         return self.get()
 
     def adjust(self, adjust_left=5, adjust_right=None):
         if adjust_right==None:
             adjust_right=adjust_left
-        (left, right) = self.mixer.read_channel(oss.SOUND_MIXER_VOLUME)
+        (left, right) = self.mixer.read_channel(oss.SOUND_MIXER_PCM)
         self.set(left+adjust_left, right+adjust_right)
 
     def inc(self, adjust=None):
