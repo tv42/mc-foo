@@ -1,4 +1,13 @@
-mc-foo (0.0.6.cvs) unstable; urgency=low
+mc-foo (0.0.7) unstable; urgency=low
+
+  * Twisted packaging changes, now depend on python2.1-twisted.
+  * No longer use mpg321, python-hip is a python lib to decode mp3s.
+  * "mc-foo addqueue" now takes multiple song names, priority
+    is now an optional flag.
+
+ -- Tommi Virtanen <tv@debian.org>  Tue, 18 Jun 2002 20:08:13 +0300
+
+mc-foo (0.0.6) unstable; urgency=low
 
   * New-style twisted.spread.pb calls.
   * Use a Twisted plugin for tap creation.
