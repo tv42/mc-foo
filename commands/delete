@@ -1,23 +1,21 @@
-#!/usr/bin/env python
-import xmlrpc
-import os
+#!/usr/bin/env python2
+
+import McFoo.client
+import sys
+
+class McFooClientDelete(McFoo.client.McFooClientSimple):
+    def __init__(self, ids):
+        McFoo.client.McFooClientSimple.__init__(self)
+        self.ids=ids
+
+    def handle_login(self, perspective):
+        McFoo.client.McFooClientSimple.handle_login(self, perspective)
+        self.remote.delete(self.ids, McFoo.client.McFooClientExitWhenDone())
 
 def main():
-    try:
-        host=os.environ['MCFOOHOST']
-    except KeyError:
-        host='localhost'
-
-    try:
-        port=int(os.environ['MCFOOPORT'])
-    except KeyError:
-        port=25706
-
-    c = xmlrpc.client(host, port)
-
-    import sys
     l=map(lambda x: int(x), sys.argv[1:])
-    s=c.execute('mcfoo.delete', l)
+    c = McFooClientDelete(l)
+    c()
 
 if __name__ == "__main__":
     main()

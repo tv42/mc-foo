@@ -1,32 +1,34 @@
-#!/usr/bin/env python
-import xmlrpc
-import os
+#!/usr/bin/env python2
+
+import McFoo.client
 import sys
 
-def main():
-    try:
-        host=os.environ['MCFOOHOST']
-    except KeyError:
-        host='localhost'
-            
-    try:
-        port=int(os.environ['MCFOOPORT'])
-    except KeyError:
-        port=25706
-                
-    c = xmlrpc.client(host, port)
+class McFooClientAddqueue(McFoo.client.McFooClientSimple):
+    def __init__(self, pri, backend, media, file):
+        McFoo.client.McFooClientSimple.__init__(self)
+        self.pri=pri
+        self.backend=backend
+        self.media=media
+        self.file=file
 
+    def handle_login(self, perspective):
+        McFoo.client.McFooClientSimple.handle_login(self, perspective)
+        self.remote.addqueue(self.pri, self.backend, self.media, self.file,
+                             McFoo.client.McFooClientExitWhenDone())
+
+def main():
     pri=sys.argv[1]
     pri=int(pri)
     backend=sys.argv[2]
     media=sys.argv[3]
     
-    sys.path.append('/usr/lib/mc-foo/lib/python')
     import McFoo.song
     media=McFoo.song.makesafe(media)
     
     file=sys.argv[4]
-    s=c.execute('mcfoo.addqueue', [(pri, backend, media, file)])
-    
+
+    c = McFooClientAddqueue(pri, backend, media, file)
+    c()
+
 if __name__ == "__main__":
     main()

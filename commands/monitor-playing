@@ -1,0 +1,50 @@
+#!/usr/bin/env python2
+#TODO help, usage
+#help: "next - send a skip to next song command to dj"
+#usage: "next"
+
+import McFoo.client
+import McFoo.gui.song
+import McFoo.volume
+import McFoo.playqueue
+
+import sys
+
+class VolumeObserverMonitor(McFoo.volume.VolumeObserver):
+    def __init__(self):
+        McFoo.volume.VolumeObserver.__init__(self)
+
+    def remote_change(self, left, right):
+        x=((left+right)/2)
+        print "Volume:", x
+        sys.stdout.flush()
+
+class HistoryObserverMonitor(McFoo.playqueue.HistoryObserver):
+    def __init__(self):
+        McFoo.playqueue.HistoryObserver.__init__(self)
+
+    def remote_snapshot(self, history):
+        try:
+            h=history[-1]
+        except IndexError:
+            pass
+        else:
+            print McFoo.gui.song.GuiSong(h)
+            sys.stdout.flush()
+
+    def remote_add(self, song):
+        print McFoo.gui.song.GuiSong(song)
+        sys.stdout.flush()
+
+class McFooClientMonitorPlaying(McFoo.client.McFooClientSimple):
+    def handle_login(self, perspective):
+        McFoo.client.McFooClientSimple.handle_login(self, perspective)
+        self.remote.observe_volume(VolumeObserverMonitor())
+        self.remote.observe_history(HistoryObserverMonitor())
+
+def main():
+    c = McFooClientMonitorPlaying()
+    c()
+
+if __name__ == "__main__":
+    main()

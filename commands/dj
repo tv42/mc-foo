@@ -1,76 +1,56 @@
-#!/usr/bin/env python
-import sys
-sys.path.append('/usr/lib/mc-foo/lib/python')
+#!/usr/bin/env python2
+
+### Twisted Preamble
+# This makes sure that users don't have to set up their environment
+# specially in order to run these programs from bin/.
+import sys,os,string
+
+if string.find(os.path.abspath(sys.argv[0]),'Twisted') != -1:
+    sys.path.append(os.path.dirname(
+        os.path.dirname(os.path.abspath(sys.argv[0])))) 
+### end of preamble
+
+# Twisted Imports
+import twisted.internet.main
+from twisted.spread import pb
 
 import McFoo.playqueue
 import McFoo.dj
 import McFoo.inputsong
 import McFoo.volume
-import McFoo.server.xrpc
-import asyncore
+import McFoo.server.pb
 import select
 import os
+import twisted.python.delay
 
 from errno import EINTR
-
-def poll (rpcserver, inputsong, wakeup, timeout=None):
-    (r,w,e) = rpcserver.activeFds()
-    r.append(wakeup)
-    e_append = [wakeup]
-    if inputsong.readable():
-        r.append(inputsong)
-        e_append = [inputsong]
-    if inputsong.writable():
-        w.append(inputsong)
-        e_append = [inputsong]
-    e.extend(e_append)
-
-    try:
-        (r,w,e) = select.select (r,w,e, timeout)
-    except select.error, (errno, strerror):
-        if errno==EINTR:
-            return
-        else:
-            raise
-
-    for x in filter(lambda x: isinstance(x, asyncore.dispatcher), e):
-        try:
-            x.handle_expt_event()
-        except:
-            x.handle_error (sys.exc_type, sys.exc_value, sys.exc_traceback)
-    for x in filter(lambda x: isinstance(x, asyncore.dispatcher), r):
-        try:
-            x.handle_read_event()
-        except:
-            x.handle_error (sys.exc_type, sys.exc_value, sys.exc_traceback)
-    for x in filter(lambda x: isinstance(x, asyncore.dispatcher), w):
-        try:
-            x.handle_write_event()
-        except:
-            x.handle_error (sys.exc_type, sys.exc_value, sys.exc_traceback)
-    rpcserver.work(0.0)
 
 def main():
     playqueue = McFoo.playqueue.PlayQueue()
     dj = McFoo.dj.Dj(playqueue)
-    inputsong = McFoo.inputsong.InputSong(playqueue)
+    inputsong = McFoo.inputsong.InputSong(playqueue, dj.ensure_music)
     volume = McFoo.volume.VolumeControl()
 
-    XMLRPC = McFoo.server.xrpc.server(dj, playqueue, volume)
-    XMLRPC.start_listen()
+    XMLRPC = McFoo.server.pb.server(dj, playqueue, volume)
 
-    while 1:
-        dj.ensure_music()
-        if len(playqueue) < 100:
-            inputsong.wakeup()
-            poll(XMLRPC, inputsong, dj, 0.01)
-        else:
-            poll(XMLRPC, inputsong, dj, 10.0)
+    bf = pb.BrokerFactory()
+    bf.addService("dj", XMLRPC)
 
-        if McFoo.server.xrpc.stop:
-            break
+    app = twisted.internet.main.Application("dj")
 
-    XMLRPC.close()
+    port=25706
+    try:
+        port=int(os.environ['MCFOOPORT'])
+    except KeyError:
+        pass
+
+    app.listenOn(port, bf)
+
+    timer=twisted.python.delay.Delayed()
+    timer.loop(playqueue.ensure_fill, 1)
+    app.addDelayed(timer)
+
+    app.run()
 
 
 if __name__ == "__main__":

@@ -125,7 +125,7 @@ class PlayQueue(UserList.UserList):
         i=0
         while not self[i].playable() or id!=self[i].id:
             i=i+1
-        return id
+        return i
 
     def remove_by_id(self, id):
         try:

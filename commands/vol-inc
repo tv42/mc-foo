@@ -1,24 +1,18 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #TODO help, usage
 #help: "vol-inc - increase the volume"
 #usage: "vol-inc"
-import xmlrpc
-import os
+
+import McFoo.client
+
+class McFooClientVolume_inc(McFoo.client.McFooClientSimple):
+    def handle_login(self, perspective):
+        McFoo.client.McFooClientSimple.handle_login(self, perspective)
+        self.remote.volume_inc(callback=McFoo.client.McFooClientExitWhenDone())
 
 def main():
-    try:
-        host=os.environ['MCFOOHOST']
-    except KeyError:
-        host='localhost'
-
-    try:
-        port=int(os.environ['MCFOOPORT'])
-    except KeyError:
-        port=25706
-
-    c = xmlrpc.client(host, port)
-    s=c.execute('mcfoo.volume_inc', [])
-
+    c = McFooClientVolume_inc()
+    c()
 
 if __name__ == "__main__":
     main()

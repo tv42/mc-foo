@@ -1,25 +1,22 @@
-#!/usr/bin/env python
-import xmlrpc
-import os
+#!/usr/bin/env python2
+import McFoo.client
+
+class ShowList(McFoo.client.McFooClientExitWhenDone):
+    def remote_done(self, l):
+        for s in l:
+            if s.has_key('id') and s.has_key('backend') \
+               and s.has_key('media') and s.has_key('name'):
+                print "%-3d %s %s %s" % (s['id'], s['backend'], s['media'], s['name'])
+        McFoo.client.McFooClientExitWhenDone.remote_done(self)
+
+class McFooClientList(McFoo.client.McFooClientSimple):
+    def handle_login(self, perspective):
+        McFoo.client.McFooClientSimple.handle_login(self, perspective)
+        self.remote.list(callback=ShowList())
 
 def main():
-    try:
-        host=os.environ['MCFOOHOST']
-    except KeyError:
-        host='localhost'
-
-    try:
-        port=int(os.environ['MCFOOPORT'])
-    except KeyError:
-        port=25706
-
-    c = xmlrpc.client(host, port)
-
-    s=c.execute('mcfoo.list', [])
-    for s in s['queue']:
-        if s.has_key('id') and s.has_key('backend') \
-           and s.has_key('media') and s.has_key('name'):
-            print "%-3d %s %s %s" % (s['id'], s['backend'], s['media'], s['name'])
+    c = McFooClientList()
+    c()
 
 if __name__ == "__main__":
     main()

@@ -1,25 +1,23 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #TODO help, usage
-import xmlrpc
-import os
+
+import McFoo.client
 import sys
 
+class McFooClientJump(McFoo.client.McFooClientSimple):
+    def __init__(self, jump):
+        McFoo.client.McFooClientSimple.__init__(self)
+        self.jump=jump
+
+    def handle_login(self, perspective):
+        McFoo.client.McFooClientSimple.handle_login(self, perspective)
+        self.remote.jump(jump, McFoo.client.McFooClientExitWhenDone())
+
 def main():
-    try:
-        host=os.environ['MCFOOHOST']
-    except KeyError:
-        host='localhost'
-
-    try:
-        port=int(os.environ['MCFOOPORT'])
-    except KeyError:
-        port=25706
-
-    c = xmlrpc.client(host, port)
     j=sys.argv[1]
     j=int(j)
-    s=c.execute('mcfoo.jump', j)
-
+    c = McFooClientJump(j)
+    c()
 
 if __name__ == "__main__":
     main()

@@ -3,7 +3,7 @@ DATADIR := /var/lib/mc-foo
 DOCDIR := /usr/share/doc/mc-foo
 CACHEDIR := /var/cache/mc-foo
 LIBDIR := /usr/lib/mc-foo/lib
-PYLIBDIR := $(LIBDIR)/python
+PYLIBDIR := /usr/lib/python2.0/site-packages
 CMDDIR := /usr/lib/mc-foo/commands
 
 all:

@@ -1,40 +1,40 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
+import McFoo.client
+
+class McFooClientFan(McFoo.client.McFooClientSimple):
+    def __init__(self, TkRoot=None, user='guest', password='guest',
+                 host=None, port=None):
+        McFoo.client.McFooClientSimple.__init__(self,
+                                                user, password,
+                                                host, port)
+        self.root=TkRoot
+
+    def handle_login(self, perspective):
+        McFoo.client.McFooClientSimple.handle_login(self, perspective)
+        pq = McFoo.gui.playqueue.PlayQueue(self.root, self.remote)
+        
+        pq.history.listbox.config(selectmode=EXTENDED)
+        pq.queue.listbox.config(selectmode=EXTENDED)
+        # self.remote.next(McFoo.client.McFooClientExitWhenDone())
+
 from Tkinter import *
 
-import sys
-sys.path.append('/usr/lib/mc-foo/lib/python')
-
 import McFoo.gui.playqueue
+import twisted.internet.tkinternet
 
-import xmlrpc
 import os
 
 def main():
     root = Tk()
-
-    try:
-        host=os.environ['MCFOOHOST']
-    except KeyError:
-        host='localhost'
-
-    try:
-        port=int(os.environ['MCFOOPORT'])
-    except KeyError:
-        port=25706
-
-    c = xmlrpc.client(host, port)
-
-    pq = McFoo.gui.playqueue.PlayQueue(root, c)
-
-    pq.history.listbox.config(selectmode=EXTENDED)
-    pq.queue.listbox.config(selectmode=EXTENDED)
+    twisted.internet.tkinternet.install(root)
+    c = McFooClientFan(TkRoot=root)
 
     try:
         root.mainloop()
     except KeyboardInterrupt:
         pass
 
-    c.close()
+    twisted.internet.tkinternet.stop()
 
 if __name__ == "__main__":
     main()
