@@ -18,6 +18,31 @@
 \;  \href=http://download.sourceforge.net/mc-foo/mc-foo_0.0.1-1_i386.deb
 \;  Download the .deb now!}
 
+ {\h2 Version 0.0.7 released, 2002-06-21:}
+
+ {\strong Debian's main server is currently down. Temporary download:
+  {\url \href=http://tv.debian.net/temp/mc-foo/mc-foo_0.0.7_all.deb mc-foo_0.0.7_all.deb},
+  {\url \href=http://tv.debian.net/temp/mc-foo/mc-foo_0.0.7.dsc mc-foo_0.0.7.dsc},
+  {\url \href=http://tv.debian.net/temp/mc-foo/mc-foo_0.0.7_i386.changes mc-foo_0.0.7_i386.changes},
+  {\url \href=http://tv.debian.net/temp/mc-foo/mc-foo_0.0.7.tar.gz mc-foo_0.0.7.tar.gz}.
+  }
+
+ {\list
+  {No longer use mpg321, python-hip is a python lib to decode mp3s.
+   The turntable subprocess is gone, it's all in one process now.}
+  {No longer use ao, it couldn't provide the non-blocking interface I
+   want. Aiming for a pure-python solution, currently have to hardcode
+   a few ioctl(2) values.}
+  {For songs where the decoding library can provide timing information
+   and seeking (oggs), the tap file now remembers the exact location
+   in the song.}
+  {"mc-foo addqueue" now takes multiple song names, priority
+   is now an optional flag.}
+  {Twisted API changes, reactors etc.}
+  {Twisted packaging changes, now depend on python2.1-twisted.}
+  {Some minor bugfixes.}
+  }
+
  {\h2 Version 0.0.6 released, 2002-04-12:}
 
  {\list
