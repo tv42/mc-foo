@@ -13,19 +13,19 @@ import McFoo.score
 import McFoo.config
 
 class Options(usage.Options):
-    synopsis = "Usage: %s [options] jump JUMPTO" % os.path.basename(sys.argv[0])
+    synopsis = "Usage: %s [options] mktap TODO" % os.path.basename(sys.argv[0])
 
     def __init__(self):
         usage.Options.__init__(self)
 
-    def parseArgs(self, songdir):
-        self.songdir=songdir
+    def parseArgs(self, *songdirs):
+        self.songdirs=songdirs
 
     def postOptions(self):
         #import dj
 
         profileTable=McFoo.score.ProfileTable()
-        filler=McFoo.suggest.Suggestions(self.songdir, profileTable)
+        filler=McFoo.suggest.Suggestions(self.songdirs, profileTable)
         playqueue = McFoo.playqueue.PlayQueue(filler.get)
         dj = McFoo.dj.Dj(playqueue)
         volume = McFoo.volume.VolumeControl()

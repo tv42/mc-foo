@@ -44,13 +44,13 @@ class Cyclic:
 
 
 class Suggestions:
-    def __init__(self, path, profileTable):
-        self.path=path
+    def __init__(self, paths, profileTable):
+        self.paths=paths
         self.data=None
         self.profileTable=profileTable
 
     def __getinitargs__(self):
-        return [self.path, self.profileTable]
+        return [self.paths, self.profileTable]
 
     def _visit(self, songs, dirname, names):
         for file in os.listdir(dirname):
@@ -63,6 +63,7 @@ class Suggestions:
     def get(self):
         if not self.data:
             songs=[]
-            os.path.walk(self.path, self._visit, songs)
+            for path in self.paths:
+                os.path.walk(path, self._visit, songs)
             self.data=Cyclic(songs)
         return self.data.get()
