@@ -138,6 +138,7 @@ pid_t start_by_name(struct child_bearing *child,
     }
     close(to_child[PIPE_READ]);
     close(from_child[PIPE_WRITE]);
+    unsetenv("LD_PRELOAD");
     execvp(args[0], args);
     fprintf(stderr, "dj (child): cannot exec %s: %s\n", 
             args[0], strerror(errno));
