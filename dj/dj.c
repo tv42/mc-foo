@@ -234,10 +234,7 @@ int main(int argc, char *argv[]) {
   }
 
   backend_file.cache.child.starter_data = &queue;
-  if (add_backend(&backend_file, &queue, &polls) !=0) {
-    perror("dj: file backend initialization");
-    exit(1);
-  }
+  add_backend(&backend_file, &queue, &polls);
   
   while(1) {
     //printf("songs=%u, count=%d\n", queue.songs, debug_count_songs(&queue));
