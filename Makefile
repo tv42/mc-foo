@@ -7,18 +7,18 @@ CACHEDIR := /var/cache/mc-foo
 LIBDIR := /usr/lib/mc-foo/lib
 CMDDIR := /usr/lib/mc-foo/commands
 
-OBJ := dj/cache.o dj/child-bearer.o dj/dj.o dj/playqueue.o \
-	dj/tcp_server.o dj/tcp_listener.o dj/poller.o \
-	dj/song_input.o dj/nonblock.o turntable/turntable.o \
-	turntable/error.o dj/song_output.o turntable/sigchild.o
-CFLAGS := -g -Wall -O2
+LIBOBJ:=lib/child-bearer.o lib/poller.o lib/nonblock.o lib/split_to_lines.o
+OBJ := dj/cache.o dj/dj.o dj/playqueue.o \
+	dj/tcp_server.o dj/tcp_listener.o \
+	dj/song_input.o dj/song_output.o turntable/sigchild.o
+CFLAGS := -g -Wall -O2 -Ilib
 
-BINS := dj/dj turntable/turntable
+BINS := dj/dj
 
 all: $(BINS)
 
 clean:
-	rm -f $(OBJ) $(BINS)
+	rm -f $(OBJ) $(LIBOBJ) $(BINS)
 
 install: all
 	install -d -m0755 $(DESTDIR)$(BINDIR)
@@ -34,7 +34,7 @@ install: all
 #		$(DESTDIR)$(LIBDIR)
 	install -m0755 turntable/mpg123-remote \
 		$(DESTDIR)$(LIBDIR)/turntable
-	install -m0755 lib/[a-z]* $(DESTDIR)$(LIBDIR)
+	install -m0755 libbin/[a-z]* $(DESTDIR)$(LIBDIR)
 	install -m0755 bin/[a-z]* $(DESTDIR)$(BINDIR)
 	install -d -m0755 $(DESTDIR)$(CACHEDIR)/mediaprofiles \
 		$(DESTDIR)$(CACHEDIR)/mediaprofiles/file \
@@ -52,11 +52,10 @@ install: all
 %.o: %.c
 	gcc -c $(CFLAGS) -o $@ $<
 
-turntable/turntable: turntable/turntable.o turntable/error.o \
-	turntable/sigchild.o
-
-dj/dj: dj/dj.o dj/tcp_listener.o dj/poller.o dj/tcp_server.o \
-	dj/song_input.o dj/playqueue.o dj/child-bearer.o \
-	dj/nonblock.o dj/song_output.o dj/prof_read.o
+dj/dj: dj/dj.o dj/tcp_listener.o dj/tcp_server.o \
+	dj/song_input.o dj/playqueue.o \
+	dj/song_output.o dj/prof_read.o \
+	lib/split_to_lines.o lib/poller.o \
+	lib/child-bearer.o lib/nonblock.o \
 
 .PHONY: default all clean install
