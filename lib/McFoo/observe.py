@@ -9,8 +9,8 @@ class Observers(UserList.UserList):
         for obs in self:
             apply(obs.callRemote, (func,)+a, kw)
                 
-    def __getinitargs__(self):
-        return [()]
+    def __getstate__(self):
+        return {'data': []}
 
     def append_and_call(self, obs, func, *a, **kw):
         apply(obs.callRemote, (func,)+a, kw)
