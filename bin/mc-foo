@@ -31,7 +31,10 @@ class Options(usage.Options):
 
     def opt_help(self):
         """display this help and exit"""
-        usage.Options.opt_help(self)
+        if not self.args:
+            usage.Options.opt_help(self)
+        else:
+            self.args=self.args+("--help",)
 
     def opt_host(self, hostname):
         """host that runs the dj server"""
