@@ -89,7 +89,7 @@ enum fd_callback_returns read_from_child(struct poll_struct *ps,
 #define PIPE_READ 0
 #define PIPE_WRITE 1
 pid_t start_by_name(struct child_bearing *child,
-                    const char *prog) {
+                    char *const args[]) {
   pid_t pid;
 
   unsigned int to_child[2];
@@ -138,9 +138,9 @@ pid_t start_by_name(struct child_bearing *child,
     }
     close(to_child[PIPE_READ]);
     close(from_child[PIPE_WRITE]);
-    execlp(prog, prog, NULL);
+    execvp(args[0], args);
     fprintf(stderr, "dj (child): cannot exec %s: %s\n", 
-            prog, strerror(errno));
+            args[0], strerror(errno));
     exit(1);
   }
 }

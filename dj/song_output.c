@@ -126,6 +126,10 @@ int song_output(char *line, size_t len, void **data) {
 pid_t start_song_output(struct child_bearing *child) {
   struct split_to_lines_state *state;
   pid_t tmp;
+  char *const args[] = {
+    "/usr/lib/mc-foo/lib/turntable",
+    NULL
+  };
 
   state=calloc(1, sizeof(struct split_to_lines_state));
   if (state==NULL)
@@ -142,7 +146,7 @@ pid_t start_song_output(struct child_bearing *child) {
   child->read_callback=split_to_lines;
   child->read_cb_data=(void*)state;
   
-  if ((tmp=start_by_name(child, "/usr/lib/mc-foo/lib/turntable")) ==-1) {
+  if ((tmp=start_by_name(child, args)) ==-1) {
     free(state->curline);
     free(state);
     child->read_cb_data=NULL;

@@ -15,7 +15,7 @@ struct child_bearing {
 };
 
 pid_t start_by_name(struct child_bearing *child,
-                    const char *prog);
+                    char *const args[]);
 enum fd_callback_returns read_from_child(struct poll_struct *ps,
                                          unsigned int fd,
                                          void **data,
