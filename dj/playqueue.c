@@ -340,8 +340,8 @@ int move_song(struct playqueue *queue,
   return 0;
 }
 
-int request_song_input(struct playqueue *queue) {
-  char *profiles="user.tv\n";
+int request_song_input(struct playqueue *queue, struct read_profile *prof) {
+  struct read_profile *cur;
   static time_t last_time=0;
 
   if (queue->songs >= 20
@@ -350,7 +350,15 @@ int request_song_input(struct playqueue *queue) {
 
   last_time=time(NULL);
 
-  if (write_to_child(queue->song_input, profiles, strlen(profiles))==-1) {
+  cur=prof;
+  while (cur!=NULL) {
+    if (write_to_child(queue->song_input, cur->name, strlen(cur->name))==-1) {
+      perror("dj: song_input");
+      return -1;
+    }
+    cur=cur->next;
+  }
+  if (write_to_child(queue->song_input, "\n", strlen("\n"))==-1) {
     perror("dj: song_input");
     return -1;
   }
