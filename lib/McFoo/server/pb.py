@@ -7,7 +7,7 @@ from errno import EADDRINUSE, EINTR
 
 from twisted.spread import pb
 from twisted.python import log
-import twisted.internet.main
+from twisted.internet import reactor
 
 def maybeTraceback(tb):
     if tb!=pb.PB_CONNECTION_LOST:
@@ -53,7 +53,7 @@ class DjPerspective(pb.Perspective):
     def perspective_quit(self):
         global stop
         stop = 1
-        twisted.internet.main.shutDown()
+        reactor.stop()
 
     def perspective_delete(self, args):
         for arg in args:
@@ -126,14 +126,3 @@ class DjPerspective(pb.Perspective):
     def attached(self, reference, identity):
         log.msg('user %s attached' % identity.name)
         return self
-
-class server(pb.Service):
-    def __init__(self, app, dj, playqueue, volume, profileTable):
-        pb.Service.__init__(self, "dj", app)
-        self.dj = dj
-        self.playqueue = playqueue
-        self.volume = volume
-        self.profileTable = profileTable
-
-    def getPerspectiveNamed(self, name):
-        return DjPerspective(name, "Nobody", self.dj, self.playqueue, self.volume, self.profileTable)

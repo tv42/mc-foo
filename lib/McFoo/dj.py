@@ -8,124 +8,117 @@ import McFoo.observe
 from errno import EIO
 
 import twisted.internet.process
+from twisted.internet import protocol
 import twisted.protocols.basic
 from twisted.python import log
+from twisted.spread import pb
+from twisted.persisted import styles
+from twisted.internet import reactor
 import McFoo.observe
+import McFoo.server.pb
+import McFoo.audiodevice
 
 class DjObserver(McFoo.observe.Observer):
     def remote_change(self, at):
         pass
 
-class Dj(twisted.internet.process.Process,
-         twisted.protocols.basic.LineReceiver):
-    delimiter = '\n'
+class Dj(pb.Service):
+    def __init__(self, app, playqueue, volume, profileTable):
+        pb.Service.__init__(self, "dj", app)
+        self.playqueue = playqueue
+        self.volume = volume
+        self.profileTable = profileTable
 
-    # TODO if Process gets a connectionLost, we should handle it
-    # somehow..
-
-    def __init__(self, playqueue):
-        self.playqueue=playqueue
-
-        self.player_state=None
-        self.player_songlength=None
-        self.player_at=None
         self.observers=McFoo.observe.Observers()
 
-        self.missing_a_song=1
+        self._audio_dev = McFoo.audiodevice.AudioDevice()
+        self.file=None
 
-        twisted.internet.process.Process.__init__(self, "/usr/bin/turntable", ["turntable"], {}, None)
+        self.timer=None
+        self.next()
 
-
-    def __getstate__(self):
-        return {'playqueue':self.playqueue}
-
-    def __setstate__(self, state):
-        self.__init__(state['playqueue'])
-        self.ensure_music()
-
-    def startReading(self):
-        twisted.internet.process.Process.startReading(self)
-        self.transport=self.writer
-
-    def handleChunk(self, chunk):
-        self.dataReceived(chunk)
-
-    def ensure_music(self):
-        if (self.missing_a_song
-            and (self.player_state==None
-                 or self.player_state=='waiting'
-                 or self.player_state=='waiting_paused')):
-            self.start_next_song()
-
-    def start_next_song(self):
-        next=self.playqueue.pop()
-        if next:
-            self.write("play %s\n"%next.filename)
-            self.missing_a_song=0
-
-    def lineReceived(self, line):
-	if line != '':
-	    list = string.split(line, ' ', 2)
-            cmd=list[0]
-            args=list[1:]
-            if args:
-                args=args[0]
-            try:
-                func=getattr(self, 'do_'+cmd)
-            except AttributeError:
-                log.msg("turntable said:"+line)
-            else:
-                func(args)
-	    self.command = ''
-
-    def do_state(self, args):
-        self.player_state=args
-        if self.player_state=='waiting':
-            self.missing_a_song=1
-        self.ensure_music()
-
-    def do_length(self, args):
-        self.player_songlength=float(args)
-
-    def do_at(self, args):
-        self.player_at=float(args)
-        if self.player_songlength:
-            at=self.player_at/self.player_songlength
-            self.observers('change', at)
+    def startService(self):
+        if self.file:
+            self.timer = reactor.callLater(0, self._tick)
         else:
-            self.observers('change', 0.0)
+            self.next()
 
-    def next(self):
-        self.start_next_song()
-        
     def pause(self):
-        self.write("pause\n")
-
-    def play(self):
-        self.write("continue\n")
+        if self.timer:
+            reactor.cancelCallLater(self.timer)
+            self.timer=None
 
     def pauseorplay(self):
-        self.write("toggle_pause\n")
+        if self.timer:
+            self.pause()
+        else:
+            self.play()
+
+    def getPerspectiveNamed(self, name):
+        return McFoo.server.pb.DjPerspective(name, "Nobody", self, self.playqueue, self.volume, self.profileTable)
+    delimiter = '\n'
+
+    def next(self):
+        self.file=None
+        while 1:
+            next=self.playqueue.pop()
+            filename=next.filename
+            try:
+                self.file=McFoo.backend.file.audiofilechooser(filename)
+            except McFoo.backend.file.McFooBackendFileUnknownFormat:
+                print "unkown format:", next
+                pass
+            except McFoo.backend.file.McFooBackendFileDoesNotExist:
+                print "file does not exist:", next
+                pass
+            else:
+                break
+            
+        self.file.start_play()
+        self.play()
+
+    def play(self):
+        if not self.timer:
+            self.timer = reactor.callLater(0, self._tick)
+
+    def _tick(self):
+        self.timer = None
+
+        SIZE = 8192
+
+        (buff, bytes, bit) = self.file.read(SIZE)
+        if bytes == 0:
+            self.next()
+        self._audio_dev.play(buff, bytes)
+        self.timer = reactor.callLater(0, self._tick)
+
+    def _jumpto(self, to):
+        total=self.file.time_total()
+        if to > total:
+            to=total
+        if to < 0:
+            to=0
+        self.file.time_seek(to)
 
     def jumpto(self, to):
-        if self.player_songlength:
-            to=to*self.player_songlength
-            self.write("jumpto %f\n"%to)
+        if self.file.time_total():
+            to=to*self.file.time_total()
+            self._jumpto(to)
         else:
             # no, you can't jump around in this song
             self.observers('change', 0.0)
 
     def jump(self, secs):
-        if self.player_songlength:
-            self.write("jump %f\n"%secs)
+        if self.file.time_total():
+            self._jumpto(self.file.time_tell()+float(secs))
         else:
             # no, you can't jump around in this song
             self.observers('change', 0.0)
 
     def observe(self, callback):
-        if self.player_songlength:
-            at=((self.player_at or 0.0)
-                /self.player_songlength)
+        if self.file.time_total():
+            at=((self.file.time_tell() or 0.0)
+                /self.file.time_total())
         else:
             at=0.0
         self.observers.append_and_call(callback,
@@ -134,6 +127,3 @@ class Dj(twisted.internet.process.Process,
 
     def unobserve(self, callback):
         self.observers.remove(callback)
-
-    def handleError(self, text):
-        log.write("turntable:"+text)

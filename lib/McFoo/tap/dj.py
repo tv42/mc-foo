@@ -20,6 +20,7 @@ I am the support module for making an Mc Foo DJ server with mktap.
 """
 
 from twisted.python import usage
+from twisted.internet import reactor
 import McFoo.config
 
 class Options(usage.Options):
@@ -50,12 +51,12 @@ def updateApplication(app, config):
     profileTable=McFoo.score.ProfileTable()
     filler=McFoo.suggest.Suggestions(config.songdirs, profileTable)
     playqueue = McFoo.playqueue.PlayQueue(filler.get)
-    dj = McFoo.dj.Dj(playqueue)
-    volume = McFoo.volume.VolumeControl()
 
-    service=McFoo.server.pb.server(app, dj, playqueue, volume, profileTable)
-    perspective=service.getPerspectiveNamed("guest")
-    perspective.setService(service)
+    volume = McFoo.volume.VolumeControl()
+    dj=McFoo.dj.Dj(app, playqueue, volume, profileTable)
+
+    perspective=dj.getPerspectiveNamed("guest")
+    perspective.setService(dj)
     perspective.makeIdentity("guest")
 
     portno = config.port
@@ -75,7 +76,5 @@ import McFoo.suggest
 import McFoo.score
 import select
 import os
-
-from twisted.internet import main
 
 import dj
