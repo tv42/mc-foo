@@ -9,6 +9,7 @@ from errno import EIO
 
 import twisted.internet.process
 import twisted.protocols.basic
+from twisted.python import log
 import McFoo.observe
 
 class DjObserver(McFoo.observe.Observer):
@@ -69,8 +70,7 @@ class Dj(twisted.internet.process.Process,
             try:
                 func=getattr(self, 'do_'+cmd)
             except AttributeError:
-                print "turntable said:", line
-                pass
+                log.msg("turntable said:"+line)
             else:
                 func(args)
 	    self.command = ''
@@ -133,4 +133,4 @@ class Dj(twisted.internet.process.Process,
         self.observers.remove(callback)
 
     def handleError(self, text):
-        print "turntable:", text,
+        log.write("turntable:"+text)
