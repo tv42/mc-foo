@@ -37,11 +37,11 @@ class Dj(twisted.internet.process.Process,
 
     def __setstate__(self, state):
         self.__init__(state['playqueue'])
+        self.ensure_music()
 
     def startReading(self):
         twisted.internet.process.Process.startReading(self)
         self.transport=self.writer
-        self.ensure_music()
 
     def handleChunk(self, chunk):
         self.dataReceived(chunk)
@@ -69,7 +69,7 @@ class Dj(twisted.internet.process.Process,
             try:
                 func=getattr(self, 'do_'+cmd)
             except AttributeError:
-                print "dj: turntable said:", line
+                print "turntable said:", line
                 pass
             else:
                 func(args)
