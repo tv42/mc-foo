@@ -18,11 +18,6 @@ sub usage() {
 
 sub fail(@) { die "pick-a-song: @_\n" }
 
-usage() if @ARGV>1;
-my $num = $ARGV[0] || 10;
-$num =~ /^\d+$/ or usage();
-main($num);
-
 sub dir(&$) {
         my ($grep) = shift;
         return () unless defined $grep;
@@ -69,7 +64,7 @@ sub freshen($$@) {
   defined $sub and ref $sub eq 'CODE'
     or return undef;
   my $new={};
-  
+
   for (@_) {
     if (exists $old->{$_}) {
       $new->{$_} = $old->{$_};
@@ -115,7 +110,7 @@ sub songname($$;) {
       }
     }
     my $rand = rand($weights);
-    
+
     my ($selected_media, $selected_media_name);
   out: for my $med (@medias) {
       $selected_media_name=$med;
@@ -166,3 +161,8 @@ sub main($) {
     }
   }
 }
+
+usage() if @ARGV>1;
+my $num = $ARGV[0] || 10;
+$num =~ /^\d+$/ or usage();
+main($num);
