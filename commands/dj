@@ -31,10 +31,10 @@ def main():
     inputsong = McFoo.inputsong.InputSong(playqueue, dj.ensure_music)
     volume = McFoo.volume.VolumeControl()
 
-    XMLRPC = McFoo.server.pb.server(dj, playqueue, volume)
+    peanutbutter = McFoo.server.pb.server(dj, playqueue, volume)
 
     bf = pb.BrokerFactory()
-    bf.addService("dj", XMLRPC)
+    bf.addService("dj", peanutbutter)
 
     app = twisted.internet.main.Application("dj")
 
