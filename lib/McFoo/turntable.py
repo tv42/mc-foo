@@ -182,7 +182,7 @@ class Turntable:
                 self.play()
 
     def play(self):
-        SIZE = 4096
+        SIZE = 8192
 
         (buff, bytes, bit) = self.file.read(SIZE)
         if bytes == 0:
