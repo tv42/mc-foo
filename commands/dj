@@ -1,40 +1,36 @@
 #!/usr/bin/python
 
-### Twisted Preamble
-# This makes sure that users don't have to set up their environment
-# specially in order to run these programs from bin/.
-import sys,os,string
-
-if string.find(os.path.abspath(sys.argv[0]),'Twisted') != -1:
-    sys.path.append(os.path.dirname(
-        os.path.dirname(os.path.abspath(sys.argv[0])))) 
-### end of preamble
-
-# Twisted Imports
 import twisted.internet.main
 from twisted.spread import pb
 
 import McFoo.playqueue
 import McFoo.dj
-import McFoo.inputsong
 import McFoo.volume
 import McFoo.server.pb
+import McFoo.suggest
+import McFoo.score
 import select
 import os
-import twisted.python.delay
 
 from errno import EINTR
 
-def main():
-    playqueue = McFoo.playqueue.PlayQueue()
+from twisted.protocols import protocol
+from twisted.internet import main
+
+if __name__ == "__main__":
+    import dj
+
+    profileTable=McFoo.score.ProfileTable()
+    filler=McFoo.suggest.Suggestions("/data/music", profileTable)
+    playqueue = McFoo.playqueue.PlayQueue(filler.get)
     dj = McFoo.dj.Dj(playqueue)
-    inputsong = McFoo.inputsong.InputSong(playqueue, dj.ensure_music)
     volume = McFoo.volume.VolumeControl()
 
-
-    app = twisted.internet.main.Application("dj")
-    service = McFoo.server.pb.server(app, dj, playqueue, volume)
-    service.getPerspectiveNamed("guest").makeIdentity("guest")
+    app = main.Application("dj")
+    service=McFoo.server.pb.server(app, dj, playqueue, volume, profileTable)
+    perspective=service.getPerspectiveNamed("guest")
+    perspective.setService(service)
+    perspective.makeIdentity("guest")
 
     port=25706
     try:
@@ -44,12 +40,4 @@ def main():
 
     app.listenOn(port, pb.BrokerFactory(pb.AuthRoot(app)))
 
-    timer=twisted.python.delay.Delayed()
-    timer.loop(playqueue.ensure_fill, 1)
-    app.addDelayed(timer)
-
-    app.run()
-
-
-if __name__ == "__main__":
-    main()
+    app.save("start")
