@@ -2,6 +2,7 @@
 #include "child-bearer.h"
 #include "song_output.h"
 #include "tcp_listener.h"
+#include "split_to_lines.h"
 
 #include <unistd.h>
 #include <assert.h>

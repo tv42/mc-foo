@@ -1,6 +1,7 @@
 #include "song_output.h"
 #include "child-bearer.h"
 #include "playqueue.h"
+#include "split_to_lines.h"
 
 #include <stdlib.h>
 #include <assert.h>
