@@ -6,8 +6,6 @@ TODO
 - caching isn't as important as it was back then, I got myself
   a big disk
 
-- song moving in queue not implemented
-
 - currenty playing song is too much of a special case
 
 - profiles
@@ -25,4 +23,4 @@ TODO
 
 - jump to certain place in song
 
-- add to queue
+- non-polling notification of changes
