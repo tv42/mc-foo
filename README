@@ -1,0 +1,101 @@
+MC Foo
+======
+
+MC Foo is an advanced, adaptive and learning mp3 jukebox server.
+
+   -continuous music playing
+   -learns what music you like and dislike (not finished yet)
+   -no static playlists; uses a playqueue you can view and alter
+   -can be controlled from any hosts and even with 
+    infrared remote controllers (needs more clients)
+   -allows multiple user/preference profiles,
+    according to whose listening and his or her mood (not finished yet)
+
+Note that MC Foo is in the early stages of development, and not
+everything works yet. I use it every day, but your mileage may vary.
+
+MC Foo is distributed under the GNU General Public License.
+
+
+How to get started
+------------------
+
+After installing, the mc-foo data dirs are writable by group mcfoo.
+Make your user id be a member of this group (gpasswd -a userid mcfoo,
+re-login or newgrp mcfoo to activate). This gives you seamless write
+access to the song database.
+
+To import your mp3 collection for use in MC Foo:
+
+mc-foo import file ~/mp3
+# insert CD 1
+mount /cdrom
+mc-foo import file /cdrom my-music-volume1
+umount /cdrom
+# insert CD 2
+mount /cdrom
+mc-foo import file /cdrom my-music-volume2
+
+The first form is for permanent, non-removable medias. The latter ones
+are for removable medias; the same path can contain multiple alternate
+medias. Later you can switch between the two discs by running 
+mc-foo change-media file /cdrom my-music-volumeN
+
+To start the music:
+
+mc-foo dj
+
+To control the queue:
+
+mc-foo next
+mc-foo queue-del
+(use arrows, space and enter)
+
+(there's also a move command, but no frontend for it;
+ try nc 0 25706, and type in "list" to see the queue,
+ note the number in front of the songs; then type
+ "move 13 +7" and a new "list" to see the changes)
+
+
+Environment variables
+---------------------
+                Default value
+MCFOOHOME       /usr/lib/mc-foo
+MCFOODATA       /var/lib/mc-foo
+MCFOOCACHE      /var/cache/mc-foo
+
+MCFOOHOST       0 (localhost)
+MCFOOPORT       25706 ('d'<<8+'j')
+        - these tell the location of the dj server, for
+          mc-foo next, mc-foo queue-del etc.
+          Note that dj itself does not currently honor
+          the port env.var.
+
+
+Known problems
+--------------
+
+Sometimes mpg123 complains about /dev/dsp and doesn't play the song. 
+This is a heisenbug that seems to go away when straced, so finding the
+cause is quite hard.
+
+mc-foo next causes both the previous and next song to to play for a
+short while. This is caused by buffering in Esound.
+
+The profile system is not operational yet; the profiles are taken into
+consideration when the playqueue is filled, but there is no easy way of
+inputting your preferences.
+
+The TCP server "list"-command shows bogus values for the informational
+fields. They will be replaced with the song attributes (ID3 etc) and
+profile information. They are there to demonstrate the protocol
+format.
+
+
+More information
+----------------
+
+The project web page is at http://mc-foo.sourceforge.net/
+The bug tracking system is at  https://sourceforge.net/bugs/?group_id=256
+
+If you have any questions, please email me at tv@debian.org.

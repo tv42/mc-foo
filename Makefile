@@ -27,6 +27,7 @@ install: all
 	install -d -m0755 $(DESTDIR)$(CACHEDIR)
 	install -d -m0755 $(DESTDIR)$(LIBDIR)
 	install -d -m0755 $(DESTDIR)$(CMDDIR)
+	install -m0644 README $(DESTDIR)$(DOCDIR)
 	install -m0755 dj/dj \
 		commands/[a-z]* $(DESTDIR)$(CMDDIR)
 	install -m0755 turntable/turntable \
