@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+from Tkinter import *
+
+import sys
+sys.path.append('/usr/lib/mc-foo/lib/python')
+
+import McFoo.gui.playqueue
+
+import xmlrpc
+import os
+
+def main():
+    root = Tk()
+
+    try:
+        host=os.environ['MCFOOHOST']
+    except KeyError:
+        host='localhost'
+
+    try:
+        port=int(os.environ['MCFOOPORT'])
+    except KeyError:
+        port=25706
+
+    c = xmlrpc.client(host, port)
+
+    pq = McFoo.gui.playqueue.PlayQueue(root, c)
+
+    pq.history.listbox.config(selectmode=EXTENDED)
+    pq.queue.listbox.config(selectmode=EXTENDED)
+
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
