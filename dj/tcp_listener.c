@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <stdio.h>
 #include <sys/poll.h>
+#include <fcntl.h>
 
 #define MAX_TCP_CONNS 20
 
@@ -90,6 +91,10 @@ int init_tcp(void) {
   }
   if (make_nonblock(fd) ==-1) {
     perror("dj: make_nonblock");
+    exit(1);
+  }
+  if (fcntl(fd, F_SETFD, FD_CLOEXEC) ==-1) {
+    perror("dj: set close-on-exec");
     exit(1);
   }
   return fd;
