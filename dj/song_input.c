@@ -18,7 +18,7 @@ int song_input(const char *line, size_t len, void **data) {
     fprintf(stderr, "dj: error in adding songs to queue.\n");
     fprintf(stderr, "dj: line was: [%.*s]\n", (int)len, line);
   } else {
-    fprintf(stderr, "dj: now %d songs in queue\n", pq->songs);
+    //fprintf(stderr, "dj: now %d songs in queue\n", pq->songs);
   }
   return 0;
 };
