@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.2
 
 ### Twisted Preamble
 # This makes sure that users don't have to set up their environment
@@ -31,12 +31,10 @@ def main():
     inputsong = McFoo.inputsong.InputSong(playqueue, dj.ensure_music)
     volume = McFoo.volume.VolumeControl()
 
-    peanutbutter = McFoo.server.pb.server(dj, playqueue, volume)
-
-    bf = pb.BrokerFactory()
-    bf.addService("dj", peanutbutter)
 
     app = twisted.internet.main.Application("dj")
+    service = McFoo.server.pb.server(app, dj, playqueue, volume)
+    service.getPerspectiveNamed("guest").makeIdentity("guest")
 
     port=25706
     try:
@@ -44,7 +42,7 @@ def main():
     except KeyError:
         pass
 
-    app.listenOn(port, bf)
+    app.listenOn(port, pb.BrokerFactory(pb.AuthRoot(app)))
 
     timer=twisted.python.delay.Delayed()
     timer.loop(playqueue.ensure_fill, 1)

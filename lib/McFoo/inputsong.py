@@ -10,12 +10,13 @@ class InputSong(twisted.internet.process.Process,
     delimiter = '\n'
 
     def __init__(self, playqueue, callback=None):
-        twisted.internet.process.Process.__init__(self, "/usr/lib/mc-foo/lib/pick-a-song", ["pick-a-song"], {})
         self.playqueue=playqueue
         self.last=0
         self.callback=callback
 
         self.playqueue.filler=self.wakeup
+
+        twisted.internet.process.Process.__init__(self, "/usr/lib/mc-foo/lib/pick-a-song", ["pick-a-song"], {})
 
     def handleChunk(self, chunk):
         self.dataReceived(chunk)

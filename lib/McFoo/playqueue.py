@@ -1,7 +1,7 @@
 import twisted.spread.pb
 import McFoo.observe
 
-class HistoryObserver(twisted.spread.pb.Referenced):
+class HistoryObserver(twisted.spread.pb.Referenceable):
     def __init__(self):
         pass
 
@@ -11,7 +11,7 @@ class HistoryObserver(twisted.spread.pb.Referenced):
     def remote_add(self, entry):
         pass
 
-class PlayqueueObserver(twisted.spread.pb.Referenced):
+class PlayqueueObserver(twisted.spread.pb.Referenceable):
     def __init__(self):
         pass
 

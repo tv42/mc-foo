@@ -1,12 +1,7 @@
 import twisted.internet.main
 import twisted.spread.pb
-import twisted.internet.tcp
 
 import os
-
-class McFooClientExitWhenDone(twisted.spread.pb.Referenced):
-    def remote_done(self):
-        twisted.internet.main.shutDown()
 
 class McFooClientSimple:
     stopping = 0
@@ -29,25 +24,24 @@ class McFooClientSimple:
                 port=25706
 
         self.remote = None
-        broker = twisted.spread.pb.Broker()
-        broker.requestPerspective('dj', user, password,
-                                  self.handle_login,
-                                  self.handle_loginfailure)
-        broker.notifyOnDisconnect(self.handle_disconnect)
-        self.tcp=twisted.internet.tcp.Client(host, port, broker)
+        twisted.spread.pb.connect(
+            self.handle_connect,
+            self.handle_failure,
+            host, port,
+            user, password,
+            "dj")
 
-    def handle_disconnect(self):
+    def handle_failure(self, message):
         if not self.stopping:
-            print "Disconnected."
+            print "Cannot contact DJ:", message
             twisted.internet.main.shutDown()
 
-    def handle_loginfailure(self):
-        print "Authentication failed."
-        self.stopping = 1
-        twisted.internet.main.shutDown()
+    def handle_connect(self, perspective):
+        self.remote = perspective
+        self.handle_login(perspective)
 
     def handle_login(self, perspective):
-        self.remote = perspective
+        pass
 
     def __call__(self):
         twisted.internet.main.run()

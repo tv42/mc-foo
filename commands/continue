@@ -1,14 +1,15 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.2
 #TODO help, usage
 #help: "continue - send a continue paused song command to dj"
 #usage: "continue"
 
 import McFoo.client
+import twisted.internet.main
 
 class McFooClientContinue(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.cont(McFoo.client.McFooClientExitWhenDone())
+        self.remote.cont(pbcallback=twisted.internet.main.shutDown)
 
 def main():
     c = McFooClientContinue()

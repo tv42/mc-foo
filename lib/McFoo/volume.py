@@ -2,7 +2,7 @@ import oss
 import twisted.spread.pb
 import McFoo.observe
 
-class VolumeObserver(twisted.spread.pb.Referenced):
+class VolumeObserver(twisted.spread.pb.Referenceable):
     def __init__(self):
         pass
 
@@ -11,7 +11,7 @@ class VolumeObserver(twisted.spread.pb.Referenced):
 
 class VolumeControl:
     def __init__(self):
-        self.mixer=oss.open_mixer()
+        self.mixer=oss.open_mixer("/dev/sound/mixer")
         self.observers=McFoo.observe.Observers()
 
     def get(self, wantstereo=0):

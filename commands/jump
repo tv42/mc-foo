@@ -1,8 +1,9 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.2
 #TODO help, usage
 
 import McFoo.client
 import sys
+import twisted.internet.main
 
 class McFooClientJump(McFoo.client.McFooClientSimple):
     def __init__(self, jump):
@@ -11,7 +12,7 @@ class McFooClientJump(McFoo.client.McFooClientSimple):
 
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.jump(jump, McFoo.client.McFooClientExitWhenDone())
+        self.remote.jump(jump, pbcallback=twisted.internet.main.shutDown)
 
 def main():
     j=sys.argv[1]

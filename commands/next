@@ -1,14 +1,15 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.2
 #TODO help, usage
 #help: "next - send a skip to next song command to dj"
 #usage: "next"
 
 import McFoo.client
+import twisted.internet.main
 
 class McFooClientNext(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.next(McFoo.client.McFooClientExitWhenDone())
+        self.remote.next(pbcallback=twisted.internet.main.shutDown)
 
 def main():
     c = McFooClientNext()

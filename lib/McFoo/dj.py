@@ -14,7 +14,6 @@ class Dj(twisted.internet.process.Process,
     delimiter = '\n'
 
     def __init__(self, playqueue):
-        twisted.internet.process.Process.__init__(self, "/usr/lib/mc-foo/lib/turntable", ["turntable"], {})
         self.playqueue=playqueue
 
         self.player_state=None
@@ -22,6 +21,9 @@ class Dj(twisted.internet.process.Process,
         self.player_at=None
 
         self.missing_a_song=1
+
+        twisted.internet.process.Process.__init__(self, "/usr/lib/mc-foo/lib/turntable", ["turntable"], {}, None)
+
 
     def __getstate__(self):
         return {'playqueue':self.playqueue}
