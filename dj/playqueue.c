@@ -507,3 +507,7 @@ struct queue_entry *find_id(struct playqueue *pq, songid_t id) {
   }
   return qe;
 }
+
+songid_t stringtoid(const char *s) {
+  return strtoul(s, NULL, 0); 
+}

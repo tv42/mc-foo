@@ -112,5 +112,6 @@ struct backend *add_backend(struct playqueue *pq,
 
 songid_t new_id(void);
 struct queue_entry *find_id(struct playqueue *pq, songid_t id);
+songid_t stringtoid(const char *s);
 
 #endif
