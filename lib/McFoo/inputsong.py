@@ -1,17 +1,15 @@
-import asynchat
+import asyncreadline
 import socket_pty
 import McFoo.song
 import string
 import time
 
-class InputSong(asynchat.async_chat):
+class InputSong(asyncreadline.asyncreadline):
     def __init__(self, playqueue):
-	asynchat.async_chat.__init__(self, socket_pty.socket_pty())
-	self.set_terminator('\n')
-	self.command = ''
-	self.last=None
+	asyncreadline.asyncreadline.__init__(self, socket_pty.socket_pty())
         self.playqueue=playqueue
-        self.last=time.time()
+        self.last=0
+        self.ensure_connect()
 
     def handle_connect(self):
 	pass
@@ -20,6 +18,13 @@ class InputSong(asynchat.async_chat):
 	if not self.socket.connected:
 	    self.connect(("/usr/lib/mc-foo/lib/pick-a-song", ["pick-a-song"]))
 	
+    def process(self, line):
+	if line[-1]=='\015':
+	    line = line[:-1]
+	if line != '':
+	    list = string.split(line, ' ', 2)
+            self.playqueue.add(McFoo.song.Song(list[0], list[1], list[2]))
+
     def wakeup(self):
         self.ensure_connect()
         now=time.time()
@@ -28,13 +33,3 @@ class InputSong(asynchat.async_chat):
             self.push("\n")
             self.last=now
 
-    def collect_incoming_data(self, data):
-	self.command = self.command + data
-
-    def found_terminator(self):
-	if self.command[-1]=='\015':
-	    self.command = self.command[:-1]
-	if self.command != '':
-	    list = string.split(self.command, ' ', 2)
-	    self.command = ''
-            self.playqueue.add(McFoo.song.Song(list[0], list[1], list[2]))
