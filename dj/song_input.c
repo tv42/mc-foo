@@ -13,8 +13,13 @@ int song_input(const char *line, size_t len, void **data) {
   assert(*data!=NULL);
   pq=*data;
 
-  add_song_media_and_backend(pq, pq->song_input->ps, 100, line, len);
-  fprintf(stderr, "dj: now %d songs in queue\n", pq->songs);
+  if (add_song_media_and_backend(pq, pq->song_input->ps, 
+                                 100, line, len) == -1) {
+    fprintf(stderr, "dj: error in adding songs to queue.\n");
+    fprintf(stderr, "dj: line was: [%.*s]\n", (int)len, line);
+  } else {
+    fprintf(stderr, "dj: now %d songs in queue\n", pq->songs);
+  }
   return 0;
 };
 
