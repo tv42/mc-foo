@@ -1,3 +1,12 @@
+mc-foo (0.0.11) unstable; urgency=low
+
+  * Cleanups and fixes to make it work better with python2.2 
+    and newer twisted.
+  * Be mad, not hip; switched the mp3 decoder.
+  * Save a dj-snapshot.tap every 60 seconds.
+
+ -- Tommi Virtanen <tv@debian.org>  Sun, 13 Oct 2002 16:38:32 +0300
+
 mc-foo (0.0.10) unstable; urgency=low
 
   * Python 2.2 is now default (Closes: #161559).
