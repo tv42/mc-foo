@@ -1,14 +1,25 @@
-#!/usr/bin/python
-#TODO help, usage
-#help: "next - send a skip to next song command to dj"
-#usage: "next"
+"""TODO"""
+
+import McFoo.client
+import sys, os.path
+import twisted.internet.main
+from twisted.python import usage
+
+class Options(usage.Options):
+    synopsis = "Usage: %s [options] next" % os.path.basename(sys.argv[0])
+
+    def __init__(self):
+        usage.Options.__init__(self)
+
+    def postOptions(self):
+        c = McFooClientMonitorPlaying()
+        c()
+
 
 import McFoo.client
 import McFoo.gui.song
 import McFoo.volume
 import McFoo.playqueue
-
-import sys
 
 class VolumeObserverMonitor(McFoo.volume.VolumeObserver):
     def __init__(self):
@@ -41,10 +52,3 @@ class McFooClientMonitorPlaying(McFoo.client.McFooClientSimple):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
         self.remote.observe_volume(VolumeObserverMonitor())
         self.remote.observe_history(HistoryObserverMonitor())
-
-def main():
-    c = McFooClientMonitorPlaying()
-    c()
-
-if __name__ == "__main__":
-    main()

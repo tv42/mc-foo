@@ -1,9 +1,22 @@
-#!/usr/bin/python
-#TODO help, usage
+"""TODO"""
 
 import McFoo.client
-import sys
+import sys, os.path
 import twisted.internet.main
+from twisted.python import usage
+
+class Options(usage.Options):
+    synopsis = "Usage: %s [options] jump JUMPTO" % os.path.basename(sys.argv[0])
+
+    def __init__(self):
+        usage.Options.__init__(self)
+
+    def parseArgs(self, jumpto):
+        self.jumpto=float(jumpto)
+
+    def postOptions(self):
+        c = McFooClientJump(self.jumpto)
+        c()
 
 class McFooClientJump(McFoo.client.McFooClientSimple):
     def __init__(self, jump):
@@ -13,11 +26,3 @@ class McFooClientJump(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
         self.remote.jump(self.jump, pbcallback=twisted.internet.main.shutDown)
-
-def main():
-    j=float(sys.argv[1])
-    c = McFooClientJump(j)
-    c()
-
-if __name__ == "__main__":
-    main()

@@ -1,19 +1,73 @@
-#!/bin/sh -e
-MCFOOHOME="${MCFOOHOME:-/usr/lib/mc-foo}"
+#!/usr/bin/python
 
-if [ "$1" = "" ]; then
-    echo "usage: mc-foo <command> [arguments]"
-    echo "  All commands understand arguments 'help' and 'usage'."
-    echo "  Try mc-foo help for a list of command or mc-foo usage"
-    echo "  for a usage summary."
-    exit 0
-fi
+from twisted.python import usage
+import McFoo.commands
+import sys, os, os.path
 
-if [ -x "$MCFOOHOME/commands/$1" ]; then
-    CMD="$1"
-    shift
-    exec "$MCFOOHOME/commands/$CMD" "$@"
-else
-    echo "mc-foo: no such command." 1>&2
-    exit 1
-fi
+class UnknownCommand(usage.UsageError):
+    pass
+
+class Options(usage.Options):
+    optFlags = [
+        ]
+
+    synopsis = "Usage: %s [options] cmd [cmdoptions]" % os.path.basename(sys.argv[0])
+
+    def parseArgs(self, *a):
+        self.args = a
+
+    def postOptions(self):
+        if self.args:
+            cmd=self.args[0]
+            if cmd not in McFoo.commands.__all__:
+                raise UnknownCommand, ("unknown command: %s" % cmd)
+            else:
+                m=self._get_cmd(cmd, ["Options"])
+                cmd_config=m.Options()
+                cmd_config.parseOptions(self.args[1:])
+        else:
+            self.opt_help()
+
+    def opt_help(self):
+        """display this help and exit"""
+        usage.Options.opt_help(self)
+
+    def _get_cmd(self, cmd, names=[]):
+        m=__import__("McFoo.commands."+cmd,
+                     globals(), locals(), names)
+        return m
+        
+    opt_h = opt_help
+
+    def opt_version(self):
+        """output version information and exit"""
+        print "McFoo v42"
+        import __main__
+        print __main__.__doc__
+        sys.exit(0)
+
+    opt_v = opt_version
+
+    def __str__(self, width=None):
+        if not width:
+            width = int(os.environ.get('COLUMNS', '80'))
+        s=usage.Options.__str__(self, width)
+        longdesc={}
+        for cmd in McFoo.commands.__all__:
+            m=self._get_cmd(cmd, ["description", "__doc__"])
+            if not (getattr(m, "description", None) is None):
+                longdesc[cmd]=m.description
+            elif not (getattr(m, "__doc__", None) is None):
+                longdesc[cmd]=m.__doc__
+        if longdesc:
+            s=s+"Commands:\n"
+            for cmd in longdesc.keys():
+                s=s+"  %-14s %s\n"%(cmd, longdesc[cmd])
+        return s
+
+
+try:
+    config = Options()
+    config.parseOptions()
+except usage.UsageError, ue:
+    print "%s: %s" % (sys.argv[0], ue)

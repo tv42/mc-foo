@@ -1,5 +1,18 @@
-#!/usr/bin/python
+"""an interface to dj"""
+
 import McFoo.client
+import sys, os.path
+import twisted.internet.main
+from twisted.python import usage
+
+class Options(usage.Options):
+    synopsis = "Usage: %s [options] fan" % os.path.basename(sys.argv[0])
+
+    def __init__(self):
+        usage.Options.__init__(self)
+
+    def postOptions(self):
+        main()
 
 class McFooClientFan(McFoo.client.McFooClientSimple):
     def __init__(self, TkRoot=None, user=None, password=None,
@@ -45,6 +58,3 @@ def main():
         pass
 
     twisted.internet.tkinternet.stop()
-
-if __name__ == "__main__":
-    main()
