@@ -107,7 +107,7 @@ int request_profile_write(struct write_profile *head) {
   while (cur!=NULL) {
     score=cur->scores;
     while (score!=NULL) {
-      if (write_to_child(, cur->name, strlen(cur->name))==-1) {
+      if (write_to_child(queue->prof_write, cur->name, strlen(cur->name))==-1) {
 	perror("dj: request_profile_write");
 	return -1;
       }
@@ -115,7 +115,7 @@ int request_profile_write(struct write_profile *head) {
     }
     cur=cur->next;
   }
-  if (write_to_child(queue->song_input, "\n", strlen("\n"))==-1) {
+  if (write_to_child(queue->prof_write, "\n", strlen("\n"))==-1) {
     perror("dj: request_profile_write");
     return -1;
   }

@@ -75,6 +75,7 @@ struct playqueue {
   struct priority_pointer *priority_tail;
   struct child_bearing *song_input;
   struct child_bearing *song_output;
+  struct child_bearing *prof_write;
   struct backend *backends;
   unsigned int songs;
   
