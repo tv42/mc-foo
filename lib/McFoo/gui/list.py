@@ -13,6 +13,10 @@ class DraggedItems(UserList.UserList):
             # undo
             self.source.dnd_undo(self)
 
+class DraggedItemsCopy(DraggedItems):
+    def dnd_end(self, target, event):
+        pass
+
 class List(UserList.UserList):
     """An extended Tkinter listbox.
 
@@ -134,6 +138,7 @@ class ReorderableList(List):
         self.listbox.dnd_leave=self.dnd_leave
         self.listbox.dnd_motion=self.dnd_motion
         self.notify_move=None
+        self.notify_copy=None
         self.notify_drag_start=None
         self.notify_drag_end=None
 
@@ -150,7 +155,8 @@ class ReorderableList(List):
         self._dnd_selection(self.listbox.nearest(event.y))
 
     def dnd_accept(self, source, event):
-        if isinstance(source, DraggedItems):
+        if isinstance(source, DraggedItems) \
+           or isinstance(source, DraggedItemsCopy):
             return self.listbox
         else:
             return None
@@ -169,8 +175,12 @@ class ReorderableList(List):
         self.listbox.select_clear(0, END)
         self.listbox.select_set(idx, idx+len(source)-1)
         self.listbox.see(idx)
-        if self.notify_move:
-            self.notify_move(self.selected_with_idx())
+        if isinstance(source, DraggedItemsCopy):
+            if self.notify_copy:
+                self.notify_copy(self.selected_with_idx())
+        else:
+            if self.notify_move:
+                self.notify_move(self.selected_with_idx())
         if self.notify_drag_end:
             self.notify_drag_end()
 
@@ -212,3 +222,53 @@ class ReorderableList(List):
         # re-eval near to make selection reflect what the user sees
         near=self._near(event)
         self._dnd_selection(near)
+
+class DraggableList(List):
+    """An extended Tkinter.Listbox with draggable items (no drop).
+
+    All objects put here should be capable of stringifying themselves.
+    This list will only function as a source for drags -- it will
+    never accept drops."""
+
+    def __init__(self, master, data=[]):
+        List.__init__(self, master, data)
+        self.listbox.bind("<Button-3>", self._drag_start)
+
+    def _drag_start(self, event):
+        near=self.listbox.nearest(event.y)
+        if not self.listbox.select_includes(near):
+            self._dnd_selection(near)
+        tuples=self.selected_with_idx()
+        items=DraggedItemsCopy(self, tuples)
+        Tkdnd.dnd_start(items, event)
+
+    def _dnd_selection(self, idx=None):
+        self.listbox.select_clear(0, END)
+        if idx!=None:
+            self.listbox.select_set(idx)
+
+    def _near(self, event):
+        return self.listbox.nearest(event.y_root - self.listbox.winfo_rooty())
+
+
+class DraggableLabel(Label):
+    """An extended Tkinter.Label with a draggable item (no drop).
+
+    The object put here should be capable of stringifying itself.
+    This label will only function as a source for drags -- it will
+    never accept drops."""
+
+    def __init__(self, master, content=None):
+        Label.__init__(self, master)
+        self.pack(fill=BOTH, expand=1)
+        self.bind("<Button-3>", self._drag_start)
+        self.set(content)
+
+    def set(self, content=None):
+        self.content=content
+        self.config(text=content)
+
+    def _drag_start(self, event):
+        if self.content:
+            items=DraggedItemsCopy(self, [(0, self.content)])
+            Tkdnd.dnd_start(items, event)
