@@ -12,10 +12,17 @@ $FILES=$ARGV[1];
 usage() unless not -e $CDB or -f _;
 usage() unless -d $FILES;
 
+sub munge($;) {
+  my ($a) = @_;
+  $a=~tr{a-zA-Z0-9}{_}c;
+  return $a;
+}
+
 my $n=0;
 my $h=new CDB_File $CDB, "$CDB.$$.tmp"
   or fail "cannot open cdb file $CDB: $!";
-$FILES .= '/' unless $FILES=~m{/$};
+$FILES .= '/' unless $FILES=~m{ /$ }x;
+my %fields = ();
 
 sub wanted {
   if (-f $_ and -s _ and /\.mp3$/i) {
@@ -29,7 +36,9 @@ sub wanted {
     if (defined $tag) {
       foreach my $key (keys %$tag) {
         if (defined $tag->{$key} and $tag->{$key} ne '') {
-          $h->insert('id3-'.lc($key).":$a", $tag->{$key});
+          my $k = 'id3-'.munge lc($key);
+          $fields{$k}=1;
+          $h->insert("$k:$a", $tag->{$key});
         }
       }
     }
@@ -40,5 +49,6 @@ $File::Find::dont_use_nlink=1;
 find(\&wanted, $FILES);
 
 $h->insert('n', $n);
+$h->insert('fields', join ' ', keys %fields);
 $h->finish
   or fail "cannot finish cdb: $!";
