@@ -56,3 +56,9 @@ class Dj:
 
     def play(self):
         self._command="play"
+
+    def pauseorplay(self):
+        if self._command=="pause":
+            self._command="play"
+        elif self._command==None:
+            self._command="pause"
