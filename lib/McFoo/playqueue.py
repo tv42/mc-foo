@@ -1,4 +1,5 @@
 import twisted.spread.pb
+import McFoo.observe
 
 class HistoryObserver(twisted.spread.pb.Referenced):
     def __init__(self):
@@ -56,14 +57,13 @@ class PlayHistory(UserList.UserList):
     def __init__(self):
         UserList.UserList.__init__(self)
         self.maxlen=10
-        self.observers=[]
+        self.observers=McFoo.observe.Observers()
 
     def add(self, song):
         if song!=None:
             self[0:0]=[song]
         self[self.maxlen:]=[]
-        for callback in self.observers:
-            callback.add(song.as_data())
+        self.observers('add', song.as_data())
 
     def as_data(self):
         s=map(lambda s: s.as_data(), self.data)
@@ -71,8 +71,7 @@ class PlayHistory(UserList.UserList):
         return s
 
     def observe(self, callback):
-        callback.snapshot(self.as_data())
-        self.observers.append(callback)
+        self.observers.append_and_call(callback, 'snapshot', self.as_data())
 
 #TODO protect threads from eachother
 class PlayQueue(UserList.UserList):
@@ -82,11 +81,10 @@ class PlayQueue(UserList.UserList):
         UserList.UserList.__init__(self)
         self.data=[]
         self.history=PlayHistory()
-        self.observers=[]
+        self.observers=McFoo.observe.Observers()
 
     def observe(self, callback):
-        callback.snapshot(self.as_data())
-        self.observers.append(callback)
+        self.observers.append_and_call(callback, 'snapshot', self.as_data())
 
     def insert_point(self, pri):
 	smallest=0
@@ -109,16 +107,14 @@ class PlayQueue(UserList.UserList):
 
     def insert(self, idx, song):
 	self._insert(idx, song)
-        for callback in self.observers:
-            callback.insert(idx, song.as_data())
+        self.observers('insert', idx, song.as_data())
 
     def remove(self, song):
         i=0
         while song!=self[i]:
             i=i+1
         self[i:i+1]=[]
-        for callback in self.observers:
-            callback.remove(i)
+        self.observers('remove', i)
         self.ensure_fill()
 
     def id2idx(self, id):
@@ -134,8 +130,7 @@ class PlayQueue(UserList.UserList):
             pass
         else:
             self[i:i+1]=[]
-            for callback in self.observers:
-                callback.remove(i)
+            self.observers('remove', i)
             self.ensure_fill()
 
     def pop(self):
@@ -149,8 +144,7 @@ class PlayQueue(UserList.UserList):
 	    song=None
 
         if song:
-            for callback in self.observers:
-                callback.remove(i)
+            self.observers('remove', i)
             self.history.add(song)
 
         self.ensure_fill()
@@ -181,8 +175,7 @@ class PlayQueue(UserList.UserList):
             t=self[i]
             self[i:i+1]=[]
             self._insert(i+offset, t)
-            for callback in self.observers:
-                callback.move(i, i+offset)
+            self.observers('move', i, i+offset)
 
     def moveabs(self, id, newloc):
         try:
@@ -193,5 +186,4 @@ class PlayQueue(UserList.UserList):
             t=self[i]
             self[i:i+1]=[]
             self._insert(newloc, t)
-            for callback in self.observers:
-                callback.move(i, newloc)
+            self.observers('move', i, newloc)

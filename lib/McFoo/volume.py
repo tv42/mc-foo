@@ -1,5 +1,6 @@
 import oss
 import twisted.spread.pb
+import McFoo.observe
 
 class VolumeObserver(twisted.spread.pb.Referenced):
     def __init__(self):
@@ -11,7 +12,7 @@ class VolumeObserver(twisted.spread.pb.Referenced):
 class VolumeControl:
     def __init__(self):
         self.mixer=oss.open_mixer()
-        self.observers=[]
+        self.observers=McFoo.observe.Observers()
 
     def get(self, wantstereo=0):
         (left, right) = self.mixer.read_channel(oss.SOUND_MIXER_VOLUME)
@@ -41,8 +42,7 @@ class VolumeControl:
         if right>100:
             right=100
         self.mixer.write_channel(oss.SOUND_MIXER_VOLUME, (left, right))
-        for callback in self.observers:
-            callback.change(left, right)
+        self.observers('change', left, right)
         return self.get()
 
     def adjust(self, adjust_left=5, adjust_right=None):
@@ -75,5 +75,6 @@ class VolumeControl:
 
     def observe(self, callback):
         l,r=self.get(wantstereo=1)
-        callback.change(l,r)
-        self.observers.append(callback)
+        self.observers.append_and_call(callback,
+                                       'change',
+                                       l, r)
