@@ -45,7 +45,7 @@ enum fd_callback_returns tcp_listener_cb(struct poll_struct *ps,
               ntohs(addr.sin_port));
       if (register_poll_fd(ps,
                            sock, POLLIN|POLLOUT,
-                           tcp_server_cb, (void*)state) <0) {
+                           tcp_server_cb, (void*)state) ==-1) {
         perror("dj: register_poll_fd");
         close(sock);
       }

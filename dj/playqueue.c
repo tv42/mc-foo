@@ -310,3 +310,16 @@ void move_song(struct playqueue *queue,
     queue->head=qe;
   }
 }
+
+int request_song_input(struct playqueue *queue) {
+  //TODO write profiles with 
+  //write_to_child(queue->song_input, "foo", strlen(foo+1))
+  exit(1);
+}
+
+void playqueue_init(struct playqueue *pq) {
+  assert(pq!=NULL);
+  pq->head=pq->tail=NULL;
+  pq->priorities=pq->priority_tail=NULL;
+  pq->song_input=NULL;
+}

@@ -57,6 +57,7 @@ struct playqueue {
   struct queue_entry *head, *tail;
   struct priority_pointer *priorities;
   struct priority_pointer *priority_tail;
+  struct child_bearing *song_input;
 };
 
 int find_priority(struct playqueue *queue, 
@@ -81,5 +82,9 @@ void remove_media(struct playqueue *queue, struct media *media);
 void move_song(struct playqueue *queue,
               struct queue_entry *qe,
               signed int count);
+
+int request_song_input(struct playqueue *queue);
+
+void playqueue_init(struct playqueue *pq);
 
 #endif
