@@ -49,7 +49,7 @@ class socket_pty:
 	pid, fd = pty.fork()
 	if pid==0:
 	    # child
-	    os.execv(cmd)
+	    apply(os.execv, cmd)
 	else:
 	    # parent
 	    self.fd=fd
@@ -73,6 +73,7 @@ class socket_pty:
                 self.fd=None
                 return ''
             else:
+                print "socket_pty.recv: e="%`e`
                 raise
 
     def close(self):
