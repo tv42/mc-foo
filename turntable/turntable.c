@@ -56,7 +56,7 @@ void start_player(const char *file) {
     fflush(NULL);
   } else {                      /* child */
     close(1);
-    execlp("esddsp", "esddsp", "mpg123", "-q", "-b", "256", file, NULL);
+    execlp("mpg123", "mpg123", "-q", "-b", "256", file, NULL);
     perrorexit("turntable(child): exec");
   }
 }
@@ -366,6 +366,8 @@ int main(int argc, char **argv) {
         perrorexit("poll");
       break;
     default:
+      if (pollfds[0].revents & POLLHUP)
+	tt_quit(pollfds[0].fd);
       if (pollfds[0].revents & (POLLERR|POLLNVAL))
         perrorexit("poll(stdin)");
       if (pollfds[1].revents & (POLLERR|POLLNVAL))
