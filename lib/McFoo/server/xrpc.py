@@ -1,9 +1,10 @@
 import xmlrpc
+import sys
 import McFoo.song
 
 stop = 0
 
-from errno import EADDRINUSE
+from errno import EADDRINUSE, EINTR
 class server(xmlrpc.server):
     def _methods(self):
         m = {}
@@ -12,9 +13,10 @@ class server(xmlrpc.server):
                 m['mcfoo.%s'%name[3:]]=getattr(self, name)
         return m
     
-    def __init__(self, dj, playqueue):
+    def __init__(self, dj, playqueue, volume):
         self.dj = dj
         self.playqueue = playqueue
+        self.volume = volume
         xmlrpc.server.__init__(self)
         self.addMethods(self._methods())
 
@@ -101,4 +103,45 @@ class server(xmlrpc.server):
         return []
 
     def do_jump(self, server, source, uri, name, args):
+        #TODO
         return []
+
+    def do_volume_inc(self, server, source, uri, name, args):
+        vol=None
+        try:
+            vol=args[0]
+        except IndexError:
+            pass
+        self.volume.inc(vol)
+        return []
+
+    def do_volume_dec(self, server, source, uri, name, args):
+        vol=None
+        try:
+            vol=args[0]
+        except IndexError:
+            pass
+        self.volume.dec(vol)
+        return []
+
+    def do_volume_get(self, server, source, uri, name, args):
+        return self.volume.get()
+
+    def do_volume_set(self, server, source, uri, name, args):
+        vol=args[0]
+        self.volume.set(vol)
+        return self.volume.get()
+
+    def work(self, timeout=-1.0):
+        try:
+            xmlrpc.server.work(self, timeout)
+        except:
+            (type, value, traceback) = sys.exc_info()
+            if type=="xmlrpc.error":
+                (errno, strerror)=value
+                if errno==EINTR:
+                    pass
+                else:
+                    raise
+            else:
+                raise

@@ -29,8 +29,12 @@ def main():
     pq.history.listbox.config(selectmode=EXTENDED)
     pq.queue.listbox.config(selectmode=EXTENDED)
 
-    root.mainloop()
+    try:
+        root.mainloop()
+    except KeyboardInterrupt:
+        pass
 
+    c.close()
 
 if __name__ == "__main__":
     main()

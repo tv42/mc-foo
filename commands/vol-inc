@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+#TODO help, usage
+#help: "vol-inc - increase the volume"
+#usage: "vol-inc"
+import xmlrpc
+import os
+
+def main():
+    try:
+        host=os.environ['MCFOOHOST']
+    except KeyError:
+        host='localhost'
+
+    try:
+        port=int(os.environ['MCFOOPORT'])
+    except KeyError:
+        port=25706
+
+    c = xmlrpc.client(host, port)
+    s=c.execute('mcfoo.volume_inc', [])
+
+
+if __name__ == "__main__":
+    main()

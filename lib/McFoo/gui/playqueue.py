@@ -31,6 +31,9 @@ class PlayQueue:
         self.pause_button.pack(side=LEFT)
         self.next_button = Button(buttonbar, text="Next", command=self.next)
         self.next_button.pack(side=LEFT)
+        self.volume = Scale(buttonbar, orient=HORIZONTAL, bigincrement=1, \
+                            showvalue=0, command=self.set_volume)
+        self.volume.pack(side=LEFT)
         self.trash_button = Button(buttonbar, text="Trash", command=self.trash)
         self.trash_button.pack(side=RIGHT)
         buttonbar.pack(fill=X)
@@ -39,7 +42,15 @@ class PlayQueue:
         self._dragging=0
         self.serial=0
         self._timer=None
+
+        self._last_volume=None
+        self._refresh_volume()
         self._timed_refresh()
+
+    def set_volume(self, vol):
+        vol=int(vol)
+        if self._last_volume!=None and self._last_volume!=vol:
+            self._rpc('mcfoo.volume_set', [vol])
 
     def pause(self):
         self._rpc('mcfoo.pauseorplay', [])
@@ -64,14 +75,24 @@ class PlayQueue:
             self.master.after_cancel(self._timer)
         self._timer=self.master.after(10000, self._timed_refresh)
 
+    def _refresh_volume(self):
+        self._last_volume=self._rpc('mcfoo.volume_get', [])
+        self.volume.set(self._last_volume)
+
     def refresh(self):
         s=self._rpc('mcfoo.list', [self.serial])
-        if s.has_key('history'):
-            self.history[:]=s['history'][:-1]
-            self.playing.set(s['history'][-1])
-        if s.has_key('queue'):
-            self.queue[:]=s['queue']
-        self.serial=s['serial']
+        if s!=None:
+            if s.has_key('history'):
+                self.history[:]=s['history'][:-1]
+                try:
+                    playing=s['history'][-1]
+                except IndexError:
+                    playing=None
+                self.playing.set(playing)
+            if s.has_key('queue'):
+                self.queue[:]=s['queue']
+            self.serial=s['serial']
+        self._refresh_volume()
         self._timed_refresh_setup()
 
     def notify_move(self, changes):
@@ -95,4 +116,21 @@ class PlayQueue:
         self._dragging=0
 
     def _rpc(self, command, params):
-        return self.xrpc.execute(command, params)
+        try:
+            return self.xrpc.execute(command, params)
+        except:
+            (type, value, traceback) = sys.exc_info()
+            if type=="xmlrpc.error":
+                strerror=value
+                try:
+                    strerror=strerror[1]
+                except IndexError:
+                    # I guess it wasn't a (source, string)
+                    # tuple at all..
+                    pass
+                if strerror=='got EOS while reading':
+                    pass
+                else:
+                    raise
+            else:
+                raise

@@ -5,15 +5,59 @@ sys.path.append('/usr/lib/mc-foo/lib/python')
 import McFoo.playqueue
 import McFoo.dj
 import McFoo.inputsong
+import McFoo.volume
 import McFoo.server.xrpc
 import asyncore
+import select
+import os
+
+from errno import EINTR
+
+def poll (rpcserver, inputsong, pipe_read, timeout=None):
+    (r,w,e) = rpcserver.activeFds()
+    r.append(pipe_read)
+    e_append = [pipe_read]
+    if inputsong.readable():
+        r.append(inputsong)
+        e_append = [inputsong]
+    if inputsong.writable():
+        w.append(inputsong)
+        e_append = [inputsong]
+    e.extend(e_append)
+
+    try:
+        (r,w,e) = select.select (r,w,e, timeout)
+    except select.error, (errno, strerror):
+        if errno==EINTR:
+            return
+        else:
+            raise
+
+    for x in filter(lambda x: isinstance(x, asyncore.dispatcher), e):
+        try:
+            x.handle_expt_event()
+        except:
+            x.handle_error (sys.exc_type, sys.exc_value, sys.exc_traceback)
+    for x in filter(lambda x: isinstance(x, asyncore.dispatcher), r):
+        try:
+            x.handle_read_event()
+        except:
+            x.handle_error (sys.exc_type, sys.exc_value, sys.exc_traceback)
+    for x in filter(lambda x: isinstance(x, asyncore.dispatcher), w):
+        try:
+            x.handle_write_event()
+        except:
+            x.handle_error (sys.exc_type, sys.exc_value, sys.exc_traceback)
+    rpcserver.work(0.0)
 
 def main():
     playqueue = McFoo.playqueue.PlayQueue()
-    dj = McFoo.dj.Dj()
+    (pipe_r, pipe_w) = os.pipe()
+    dj = McFoo.dj.Dj(pipe_w)
     inputsong = McFoo.inputsong.InputSong(playqueue)
+    volume = McFoo.volume.VolumeControl()
 
-    XMLRPC = McFoo.server.xrpc.server(dj, playqueue)
+    XMLRPC = McFoo.server.xrpc.server(dj, playqueue, volume)
     XMLRPC.start_listen()
 
     while 1:
@@ -26,14 +70,9 @@ def main():
 
         if len(playqueue) < 100:
             inputsong.wakeup()
-            asyncore.poll(0.001)
+            poll(XMLRPC, inputsong, pipe_r, 0.01)
         else:
-            asyncore.poll(1)
-
-        try:
-            XMLRPC.work(0.01)
-        except:
-            pass
+            poll(XMLRPC, inputsong, pipe_r, 10.0)
 
         if McFoo.server.xrpc.stop:
             break

@@ -1,13 +1,19 @@
 import McFoo.backend.file
+import os
+
 class Dj:
     def _player(self):
         while 1:
-            self._playable.wait()
-            self._playfile(self._song.filename)
-            self._song=None
-            self._playable.clear()
+            try:
+                self._playable.wait()
+                self._playfile(self._song.filename)
+                self._song=None
+                self._playable.clear()
+                os.write(self._pipe_fd, "\n")
+            except KeyboardInterrupt:
+                pass
 
-    def __init__(self):
+    def __init__(self, pipe_fd):
         import ao
         from threading import Thread, Event
         self._audio_id = ao.get_driver_id('oss')
@@ -15,6 +21,7 @@ class Dj:
         self._playable=Event()
         self._song=None
         self._command=None
+        self._pipe_fd=pipe_fd
         playerthread=Thread(target=self._player, name="McFooDj")
         playerthread.setDaemon(1)
         playerthread.start()
