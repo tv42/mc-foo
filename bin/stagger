@@ -1,0 +1,255 @@
+#!/usr/bin/perl -w
+
+use Getopt::Std;
+use Data::Dumper;
+use File::Find;
+
+$PROG = "stagger";
+$VERSION = "v0.0.1";
+$DEFAULT_DIR_PATTERN  = $ENV{STAGGER_DIR_PATTERN} || "%a{-%b}";
+$DEFAULT_PDIR_PATTERN = $ENV{STAGGER_PDIR_PATTERN} || "";
+$DEFAULT_FILE_PATTERN = $ENV{STAGGER_FILE_PATTERN} || "{%t[-_]}%s\.mp3";
+   
+# stagger
+# =======
+# creates a tag file for MP3 directory tree structure.
+# The tag file contains information about each song
+# (artist, album, song title, genre). 
+# It can be imported to mc-foo MP3 playing system.
+# See http://mc-foo.sourceforge.net for more information.
+#
+# (C) 2000 Kim Lassila <kl@tuug.fi>
+
+sub usage() {
+print <<EOF;
+$PROG $VERSION - generate a tag file for MP3 directory tree structure
+Usage: $PROG [options] <root directory>
+
+Options:
+ -f <pattern>	file name pattern (default: "$DEFAULT_FILE_PATTERN")
+ -d <pattern>	directory pattern (default: "$DEFAULT_DIR_PATTERN")
+ -D <pattern>	parentdir pattern (default: "$DEFAULT_PDIR_PATTERN")
+ -a <artist>	default artist for all songs    -- UNIMPLEMENTED
+ -A <artist>	override artist for all songs   -- UNIMPLEMENTED
+ -g <genre>	specify genre  for all songs
+ -_		do not convert underscores to spaces	
+ -C		capitalize words		
+ -i		use ID3 tags as default values  -- UNIMPLEMENTED
+ -I		override patterns with ID3 tags -- UNIMPLEMENTED
+
+Valid tags in patterns:
+ %a	Artist
+ %b	Album
+ %s	Song title
+ %t	Track number
+Enclose optional parts of a pattern in braces.
+
+EOF
+exit(100);
+}
+
+###
+##  Capitalize the argument string.
+#
+sub capitalize(\$) {
+  my $s = shift;
+  my @splitchr = ( " ", "_", "-" );
+
+  foreach $c (@splitchr) {
+    $$s = join ($c, map { ucfirst } split($c, $$s));
+  }
+
+  #print "$$s\n";
+}
+
+# representation of a pattern
+#%pattern = ( 
+#	    'cmdline' => "%a-%b",
+#	    'regexp'  => "^(.*?)-(.*?)\$",
+#	    'order'   => [ "artist", "album" ];
+#	   );
+
+sub escape_pattern(\$) {
+  my $ptrn = shift;
+  my @esc_chars = qw/ ( ) ^ \$ /;
+  for (@esc_chars) {
+    $_ = '\\' . $_;
+    $$ptrn =~ s/$_/$_/g;
+  }
+  #warn "escaped pattern: $$ptrn\n";
+}
+
+sub check_pattern($;) {
+  $_ = shift;
+  die "invalid pattern: $_\n" 
+    if /%[^abst]/ || m([\/\\]);
+}
+
+#####
+####  Create a pattern regexp structure. 
+###   Parameter: pattern with command line syntax, e.g. "%a-%b"
+##    Returns a reference to the pattern structure (hash).
+#
+sub make_pattern($) {
+  my %patterns = ( '%a' => "artist",
+		   '%b' => "album",
+		   '%s' => "song",
+		   '%t' => "track", # numeric
+		 );
+  my @names;
+  my $ptrn = shift; # command line pattern
+  my %result; 
+
+  return 0 unless $ptrn;
+
+  $result{cmdline} = $ptrn;
+  check_pattern($ptrn);
+  escape_pattern($ptrn);
+
+  while ($ptrn =~ /%[abst]/g) {
+    my $p = $&; # pattern
+
+    die "invalid pattern $p\n" unless exists $patterns{$p};
+    push @names, $patterns{$p};
+  }
+  # handle optional tags
+  # "%a{-%b}-%s" --> "%a(?:-%b)?-%s"
+  $ptrn =~ s/{(.*?)}/(?:$1)?/g;
+
+  # replace patterns with non-greedy wild card matches
+  $ptrn =~ s/%[abs]/(.*?)/g;
+  $ptrn =~ s/%t/(\\d+)/;
+  $ptrn =~ s/^/^/;
+  $ptrn =~ s/$/\$/;
+  #warn "pattern = $ptrn\n";
+  
+  $result{regexp} = $ptrn;
+  $result{order} = \@names;
+  return \%result;
+}
+		 
+#####
+####  Create a tag hash. 
+###   Parameter: song file path
+##    Returns a reference to the tag structure.
+#
+sub make_tag($) {
+  my $path = shift;
+  my ($dir, $filename);
+  my %tag;
+
+  $tag{artist} = $opts{a} if exists $opts{a};
+  $tag{genre}  = $opts{g} if exists $opts{g};
+
+  my @path = split('/', $path);
+
+  if ($file_ptrn) {
+    # parse song file name
+    $filename = pop @path;
+    my @names = @{$file_ptrn->{order}};
+    my $n = 1;
+    $filename =~ /$file_ptrn->{regexp}/
+      or die "no match: $filename =~ $file_ptrn->{regexp}\n";
+    for (@names) {
+      $tag{$_} = $$n if $$n;
+      #warn "$n $_ $tag{$_} \n";
+      $n++;
+    }
+  }
+
+  if ($dir_ptrn) {
+    # parse directory name
+    $dir = pop @path || die "no parent directory for $path\n";
+    @names = @{$dir_ptrn->{order}};
+    $dir =~ /$dir_ptrn->{regexp}/ 
+      or die "no match: $dir =~ $dir_ptrn->{regexp}\n";
+    $n = 1;
+    for (@names) {
+      $tag{$_} = $$n if $$n;
+      #warn "$n $_ $tag{$_} \n";
+      $n++;
+    }
+  }
+  
+  if ($pdir_ptrn) {
+    # parse parent directory name
+    $dir = pop @path || die "no parent directory for $path\n";
+    @names = @{$pdir_ptrn->{order}};
+    $dir =~ /$pdir_ptrn->{regexp}/ 
+      or die "no match: $dir =~ $dir_ptrn->{regexp}\n";
+    $n = 1;
+    for (@names) {
+      $tag{$_} = $$n if $$n;
+      #warn "$n $_ $tag{$_} \n";
+      $n++;
+    }
+  }
+
+  #warn Dumper(\%tag);
+
+  # genre
+  $tag{genre} = lc $opts{g} if $opts{g};
+
+  # munge
+  for (keys %tag) {
+    my $t = $tag{$_};
+    $t =~ s/_/ /g unless $opts{_};
+    capitalize($t) if $opts{C};
+    $tag{$_} = $t;
+  }
+  $tag{file} = $path;
+  return \%tag;
+}
+
+
+sub wanted {
+  if (-f $_ && /\.mp3$/) {
+    my $name = $File::Find::name;
+    $name =~ s|^\./||; # strip leading "./"
+    
+    #print "$File::Find::dir/$_\n";
+    #my $pdir = $File::Find::dir;
+    #$pdir =~ s|^.*/||;
+    push @songinfo, make_tag($name);
+  }
+}
+
+
+###
+##  M A I N 
+#
+
+# Global variables:
+#my @songinfo;
+#my %opts;
+#my $dir_ptrn;
+#my $file_ptrn;
+
+my $cmdline = "$PROG @ARGV";
+
+getopt('Ddfag', \%opts);
+usage() if $opts{h} || $#ARGV;
+
+my $rootdir = $ARGV[0];
+-d $rootdir or die "$rootdir: $!\n" ;
+$rootdir =~ /^\// or $rootdir = "$ENV{PWD}/$rootdir";
+$rootdir =~ s|/$||;
+$rootdir =~ s|/\.$||;
+
+#warn "rootdir = $rootdir\n";
+
+chdir $rootdir or die "can't cd to $rootdir: $!\n";
+
+$dir_ptrn = make_pattern($opts{d} || $DEFAULT_DIR_PATTERN);
+$pdir_ptrn = make_pattern($opts{D} || $DEFAULT_PDIR_PATTERN);
+$file_ptrn = make_pattern($opts{f} || $DEFAULT_FILE_PATTERN);
+
+find(\&wanted, ".");
+
+print <<EOF;
+# MP3 song information file
+# Generated by $PROG $VERSION
+# Command line: $cmdline
+# Root directory: $rootdir
+EOF
+print Data::Dumper->Dump([ \@songinfo ], [ "songinfo" ]);
