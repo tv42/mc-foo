@@ -48,10 +48,13 @@ class McFooPriorityMarker(NonPlayable):
 
 import UserList
 class PlayHistory(UserList.UserList):
-    def __init__(self):
-        UserList.UserList.__init__(self)
+    def __init__(self, initlist=[]):
+        UserList.UserList.__init__(self, initlist)
         self.maxlen=10
         self.observers=McFoo.observe.Observers()
+
+    def __getinitargs__(self):
+        return [self.data]
 
     def add(self, song):
         if song!=None:
@@ -71,13 +74,14 @@ class PlayHistory(UserList.UserList):
         self.observers.remove(callback)
 
 class PlayQueue(UserList.UserList):
-    filler=None
-
-    def __init__(self):
-        UserList.UserList.__init__(self)
-        self.data=[]
+    def __init__(self, filler, initlist=[]):
+        UserList.UserList.__init__(self, initlist)
         self.history=PlayHistory()
         self.observers=McFoo.observe.Observers()
+        self.filler=filler
+
+    def __getinitargs__(self):
+        return [self.filler, self.data]
 
     def observe(self, callback):
         self.observers.append_and_call(callback, 'snapshot', self.as_data())
@@ -133,6 +137,7 @@ class PlayQueue(UserList.UserList):
             self.ensure_fill()
 
     def pop(self):
+        self.ensure_fill()
 	i=0
 	try:
             while not self[i].playable():
@@ -146,12 +151,13 @@ class PlayQueue(UserList.UserList):
             self.observers('remove', i)
             self.history.add(song)
 
-        self.ensure_fill()
 	return song
 
     def ensure_fill(self):
-        if len(self) < 100 and self.filler:
-                self.filler()
+        while len(self) < 100:
+            filename=self.filler()
+            song=McFoo.song.Song(filename)
+            self.add(song)
 
     def __str__(self):
 	s=''
