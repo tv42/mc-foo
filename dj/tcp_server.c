@@ -61,7 +61,11 @@ enum fd_callback_returns read_from_socket(struct poll_struct *ps,
 int tcp_server_quit(const char *line, 
                           size_t len, 
                           struct tcp_server_state *state) {
+  assert(state!=NULL);
+  assert(state->pq!=NULL);
   shutdown_tcp();
+  close(state->pq->song_input->to_fd);
+  close(state->pq->song_output->to_fd);
   exit(1); //TODO close listening socket, kill children, etc..
 }
 
@@ -86,6 +90,88 @@ int tcp_server_next(const char *line,
 
   write(state->fd, "OK next song\n", 
         strlen("OK next song\n"));
+  return 0;
+}
+
+int tcp_server_delete(const char *line, 
+                      size_t len, 
+                      struct tcp_server_state *state) {
+  struct queue_entry *qe;
+  char ids[100];
+  songid_t id;
+  assert(state!=NULL);
+  assert(state->pq!=NULL);
+
+  if (len>=30) {
+    write(state->fd, "ERR id too long\n", 
+          strlen("ERR id too long\n"));
+  } else {
+    memcpy(ids, line, len);
+    ids[len]='\0';
+    id=stringtoid(ids);
+    qe=find_id(state->pq, id);
+
+    if (qe==state->pq->head) {
+      write(state->fd, "ERR cannot remove head\n", 
+            strlen("ERR cannot remove head\n"));
+    } else if (qe==NULL) {
+      write(state->fd, "ERR id not found\n", 
+            strlen("ERR id not found\n"));
+    } else {
+      remove_song(state->pq, qe);
+      write(state->fd, "OK removed\n", 
+            strlen("OK removed\n"));
+    }
+  }
+  return 0;
+}
+
+int tcp_server_move(const char *line, 
+                    size_t len, 
+                    struct tcp_server_state *state) {
+  struct queue_entry *qe;
+  char ids[100];
+  char *counts;
+  signed int count;
+  songid_t id;
+  assert(state!=NULL);
+  assert(state->pq!=NULL);
+
+  if (len>=30) {
+    write(state->fd, "ERR id too long\n", 
+          strlen("ERR id too long\n"));
+  } else {
+    memcpy(ids, line, len);
+    ids[len]='\0';
+    counts=ids;
+    while (counts[0]==' ')
+      ++counts;
+    counts=strchr(counts, ' ');
+    if (counts==NULL) {
+      write(state->fd, "ERR tell count too\n", 
+            strlen("ERR tell count too\n"));
+    } else {
+      id=stringtoid(ids);
+      qe=find_id(state->pq, id);
+      
+      if (qe==state->pq->head) {
+        write(state->fd, "ERR cannot move head\n", 
+              strlen("ERR cannot move head\n"));
+      } else if (qe==NULL) {
+        write(state->fd, "ERR id not found\n", 
+              strlen("ERR id not found\n"));
+      } else {
+        count=strtol(counts, NULL, 0);
+        if (move_song(state->pq, qe, count) < 0) {
+        write(state->fd, "ERR move failed\n", 
+              strlen("ERR move failed\n"));
+        } else {
+          write(state->fd, "OK moved\n", 
+                strlen("OK moved\n"));
+        }
+      }
+    }
+  }
   return 0;
 }
 
@@ -202,6 +288,8 @@ int tcp_server_cb(const char *line,
     { "PAUSE", tcp_server_pause },
     { "CONTINUE", tcp_server_continue },
     { "STATUS", tcp_server_status },
+    { "DELETE", tcp_server_delete },
+    { "MOVE", tcp_server_move },
     { "QUIT", tcp_server_quit },
     { 0, 0 }
   };
