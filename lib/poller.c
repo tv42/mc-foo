@@ -46,6 +46,9 @@ int register_poll_fd(struct poll_struct *ps,
     ps->nfds+=1;
   }
 
+  assert(ps->pollfds!=NULL);
+  assert(ps->fd_handlers!=NULL);
+
   memset(&ps->pollfds[n], 0, sizeof(struct pollfd));
   memset(&ps->fd_handlers[n], 0, sizeof(struct fd_handler));
   ps->pollfds[n].fd=fd;
@@ -53,6 +56,13 @@ int register_poll_fd(struct poll_struct *ps,
   ps->fd_handlers[n].poll_cb=poll_cb;
   ps->fd_handlers[n].data=data;
   return 0;
+}
+
+static inline void poll_disable(struct poll_struct *ps,
+				int n) {
+  memset(&ps->pollfds[n], 0, sizeof(struct pollfd));
+  memset(&ps->fd_handlers[n], 0, sizeof(struct fd_handler));
+  ps->pollfds[n].fd=-1;
 }
 
 int do_poll(struct poll_struct *ps, int timeout) {
@@ -68,7 +78,7 @@ int do_poll(struct poll_struct *ps, int timeout) {
   } while (n==-1 && errno==EINTR);
   if (n<0)
     return n;
-  assert(timeout!=0 || n>=0);
+  assert(timeout>=0 || n>=0);
   for (n=0;n<ps->nfds;n++) {
     if (ps->pollfds[n].fd==-1
         || ps->pollfds[n].revents==0)
@@ -84,9 +94,7 @@ int do_poll(struct poll_struct *ps, int timeout) {
       /* nothing */
       break;
     case fdcb_remove:
-      memset(&ps->pollfds[n], 0, sizeof(struct pollfd));
-      memset(&ps->fd_handlers[n], 0, sizeof(struct fd_handler));
-      ps->pollfds[n].fd=-1;
+      poll_disable(ps, n);
       break;
     default:
       assert(1==0);
@@ -96,3 +104,34 @@ int do_poll(struct poll_struct *ps, int timeout) {
   return 0;
 }
 
+int poll_iterate(struct poll_struct *ps,
+		 poll_iterator_t func,
+		 void *iter_data) {
+  unsigned int n;
+
+  assert(ps!=NULL);
+  assert(ps->pollfds!=NULL);
+  assert(ps->fd_handlers!=NULL);
+  assert(ps->nfds>0);
+  assert(ps->nfds_top>0);
+  assert(ps->nfds<=ps->nfds_top);
+  assert(func);
+
+  n=0;
+  while(n<ps->nfds) {
+    if (ps->pollfds[n].fd!=-1) {
+      switch (func(iter_data,
+		   &ps->fd_handlers[n])) {
+      case fdcb_ok:
+	break;
+      case fdcb_remove:
+	poll_disable(ps, n);
+	break;
+      default:
+	assert(1==0);
+      }
+    }
+    n++;
+  }
+  return 0;
+}
