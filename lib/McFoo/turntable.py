@@ -157,11 +157,9 @@ class Turntable:
             self.state=states[self.state][cmd]
             self.status.state(self.state)
         elif cmd=='jump' and args:
-            if args[0] in ('+', '-'):
-                jump=self.file.time_tell()+float(args)
-            else:
-                jump=float(args)
-            self.file.time_seek(jump)
+            self.jumpto(self.file.time_tell()+float(args))
+        elif cmd=='jumpto' and args:
+            self.jumpto(float(args))
         else:
             print "bad command", cmd
 
@@ -190,3 +188,11 @@ class Turntable:
             self.file=None
             return
         self._audio_dev.play(buff, bytes)
+
+    def jumpto(self, to):
+        total=self.file.time_total()
+        if to > total:
+            to=total
+        if to < 0:
+            to=0
+        self.file.time_seek(to)

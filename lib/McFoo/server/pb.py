@@ -65,6 +65,10 @@ class DjPerspective(pb.Perspective):
             song=McFoo.song.Song(backend, media, file, pri)
             self.playqueue.insert(idx, song)
 
+    def perspective_jumpto(self, args):
+        self.dj.jumpto(args)
+        pass
+
     def perspective_jump(self, args):
         self.dj.jump(args)
         pass

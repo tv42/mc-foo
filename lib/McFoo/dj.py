@@ -104,12 +104,17 @@ class Dj(twisted.internet.process.Process,
     def pauseorplay(self):
         self.write("toggle_pause\n")
 
-    def jump(self, to):
+    def jumpto(self, to):
         if self.player_songlength:
             to=to*self.player_songlength
-            if to > self.player_songlength:
-                to=self.player_songlength
-            self.write("jump %f\n"%to)
+            self.write("jumpto %f\n"%to)
+        else:
+            # no, you can't jump around in this song
+            self.observers('change', 0.0)
+
+    def jump(self, secs):
+        if self.player_songlength:
+            self.write("jump %f\n"%secs)
         else:
             # no, you can't jump around in this song
             self.observers('change', 0.0)
