@@ -1,6 +1,8 @@
 TODO
 ====
 
+<Acapnotic> Tv: The use of callback and errback is handled by for you by the broker, so instead of "if callback: callback(bleh)", you can just have your methods do "return bleh"
+
 - nice shutdown procedure
 
 - caching isn't as important as it was back then, I got myself
@@ -10,8 +12,6 @@ TODO
 
 - profiles
 
-- a gooey
-
 - CDB in Python
 
 - tags
@@ -19,8 +19,4 @@ TODO
 - replace Python's silly threading with something that really
   helps file IO
 
-- finish asynchronism
-
 - jump to certain place in song
-
-- non-polling notification of changes
