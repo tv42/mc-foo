@@ -19,13 +19,15 @@ sub munge($;) {
   return $a;
 }
 
-if ($ARGV[0] eq 'help') {
-  print "change-media - change the current removable media mounted at path\n";
-  exit 0;
-}
-if ($ARGV[0] eq 'usage') {
-  print "$USAGE\n";
-  exit 0;
+if (@ARGV) {
+  if ($ARGV[0] eq 'help') {
+    print "change-media - change the current removable media mounted at path\n";
+    exit 0;
+  }
+  if ($ARGV[0] eq 'usage') {
+    print "$USAGE\n";
+    exit 0;
+  }
 }
 
 usage() if @ARGV != 3;
