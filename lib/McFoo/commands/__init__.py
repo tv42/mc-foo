@@ -7,6 +7,7 @@ __all__ = [
     "jump",
     "like",
     "list",
+    "mktap",
     "monitor",
     "next",
     "pause",
