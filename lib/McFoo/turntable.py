@@ -62,6 +62,9 @@ class fdsocket:
     def setblocking(self, block):
         return 1
 
+    def getpeername(self):
+        return None
+
 class TurntableInput(asyncreadline.asyncreadline):
     def __init__(self, callback, conn=None):
         asyncreadline.asyncreadline.__init__(self, conn)
