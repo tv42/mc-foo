@@ -81,6 +81,14 @@ class Dj(pb.Service):
         if not self.timer:
             self.timer = reactor.callLater(0, self._tick)
 
+    def _notify(self):
+        if self.file.time_total():
+            at=((self.file.time_tell() or 0.0)
+                /self.file.time_total())
+        else:
+            at=0.0
+        self.observers('change', at)
+
     def _tick(self):
         self.timer = None
 
@@ -92,6 +100,8 @@ class Dj(pb.Service):
         self._audio_dev.play(buff, bytes)
         self.timer = reactor.callLater(0, self._tick)
 
+        self._notify()
+
     def _jumpto(self, to):
         total=self.file.time_total()
         if to > total:
@@ -99,6 +109,7 @@ class Dj(pb.Service):
         if to < 0:
             to=0
         self.file.time_seek(to)
+        self._notify()
 
     def jumpto(self, to):
         if self.file.time_total():
