@@ -1,0 +1,80 @@
+#!/usr/bin/perl -w
+use strict;
+use CDB_File;
+
+sub fail(@) {
+  warn("remember-profiles: @_\n");
+  exit(1);
+}
+
+sub usage() {
+  warn("remember-profiles: usage:\n",
+       "  remember-profiles profile-name\n");
+  exit(1);
+}
+
+sub extract_netstring(\$;) {
+  # TODO no way to differentiate between empty netstrings and
+  # incomplete netstrings
+  my ($nsref) = @_;
+  my $i = index $$nsref, ':';
+  $i>=0 or return '';
+  my $len = substr($$nsref, 0, $i);
+  defined $len and $len =~ /^[0-9]+$/ or return undef;
+  length($$nsref) >= $i+1+$len+1 or return '';
+  my $r = substr($$nsref, $i+1, $len+1);
+  substr($r,-1) eq ',' or return undef;
+  chop $r;
+  substr($$nsref, 0, $i+1+$len+1) = '';
+  return $r;
+}
+
+sub from_netstring(\$;) {
+  my ($nsref) = @_;
+  if (not wantarray) { extract_netstring($$nsref) }
+  else {
+    my @r;
+    my $r = 'foo';
+    while ($r ne '') {
+      $r = extract_netstring($$nsref);
+      defined $r or last;
+      push @r, $r if $r ne '';
+    }
+    defined $r or return undef;
+    return @r;
+  }
+}
+
+usage() if @ARGV!=1;
+my ($profile) = @ARGV;
+
+my %new;
+if (-e "profiles/$profile.cdb") {
+  my %old;
+  tie %old, 'CDB_File', "profiles/$profile.cdb"
+    or fail "open old profile: $!";
+  %new=%old;
+  untie %old;
+}
+
+my $clean_end;
+while(<STDIN>) {
+  chomp;
+  $clean_end=1, last if /^$/;
+  /^([+-]?\d+)\s+(.*)/ or fail "invalid input data: $_";
+  my ($var, $val) = ("score:$2", $1);
+  defined $val or fail "invalid fields in input data: $_";
+  if (defined $new{$var}) {
+    $new{$var}+=$val;
+  } else {
+    $new{$var}=$val;
+  }
+}
+
+$clean_end or fail 'stdin did not end with an empty line';
+
+CDB_File::create %new, "profiles/$profile.cdb", 
+  "profiles/$profile.$$.tmp"
+  or fail "unable to create new profile: $!";
+
+exit(0);
