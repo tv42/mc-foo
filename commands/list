@@ -6,9 +6,8 @@ import sys
 
 def ShowList(l):
     for s in l:
-        if s.has_key('id') and s.has_key('backend') \
-           and s.has_key('media') and s.has_key('name'):
-            print "%-3d %s %s %s" % (s['id'], s['backend'], s['media'], s['name'])
+        if s.has_key('id') and s.has_key('filename'):
+            print "%-3d %s" % (s['id'], s['filename'])
     twisted.internet.main.shutDown()
 
 class McFooClientList(McFoo.client.McFooClientSimple):
