@@ -29,7 +29,10 @@ while 1:
     else:
 	asyncore.poll(1)
 
-    XMLRPC.work(0.01)
+    try:
+        XMLRPC.work(0.01)
+    except:
+        pass
 
     if McFoo.server.xrpc.stop:
         break
