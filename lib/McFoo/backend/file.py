@@ -15,6 +15,8 @@ class Mp3:
     def read(self, size):
 	foo = self.fd_in.read(size)
 	return (foo, len(foo), 0)
+    def __del__(self):
+        self.fd_in.close()
 
 def audiofilechooser(filename):
     import string
