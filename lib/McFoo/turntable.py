@@ -159,9 +159,9 @@ class Turntable:
             self.status.state(self.state)
         elif cmd=='jump' and args:
             if args[0] in ('+', '-'):
-                jump=self.file.time_tell()+float(args[0])
+                jump=self.file.time_tell()+float(args)
             else:
-                jump=float(args[0])
+                jump=float(args)
             self.file.time_seek(jump)
         else:
             print "bad command", cmd
