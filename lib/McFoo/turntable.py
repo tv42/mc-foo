@@ -49,6 +49,7 @@ class fdsocket:
         return os.read(self.fd, buffer_size)
 
     def send(self, data):
+        assert self.fd>=0
         return os.write(self.fd, data)
 
     def fileno(self):
