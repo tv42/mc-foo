@@ -1,0 +1,44 @@
+#!/usr/bin/perl -w
+use strict;
+use vars qw($BACKEND $MEDIA $VOLUME
+           $MCFOOHOME $MCFOODATA $MCFOOCACHE);
+
+$MCFOOHOME=$ENV{MCFOOHOME} || '/usr/lib/mc-foo';
+$MCFOODATA=$ENV{MCFOODATA} || '/var/lib/mc-foo';
+$MCFOOCACHE=$ENV{MCFOOCACHE} || '/var/cache/mc-foo';
+
+sub usage() {
+  die "usage: $0 <backend> <media> <volume>\n";
+}
+sub fail(@) { die "$0: @_\n"; }
+
+sub munge($;) {
+  my ($a) = @_;
+  $a=~tr{a-zA-Z0-9}{_}c;
+  return $a;
+}
+
+usage() if @ARGV != 3;
+$BACKEND=$ARGV[0];
+$MEDIA=$ARGV[1];
+$VOLUME=$ARGV[2];
+
+my $mmed = munge $MEDIA;
+
+-d "$MCFOODATA/media/$BACKEND/$mmed"
+  or fail "path $MCFOODATA/media/$BACKEND/$mmed not found";
+
+-e "$MCFOODATA/media/$BACKEND/$mmed/removable"
+  or fail "media $BACKEND/$mmed is not removable";
+
+my $mvol = munge $VOLUME;
+
+-e "$MCFOODATA/media/$BACKEND/$mmed/removable/$mvol.cdb"
+  or fail "volume $VOLUME does not exist";
+  
+symlink("removable/$mvol.cdb", "$MCFOODATA/media/$BACKEND/$mmed/current.$$.tmp");
+rename("$MCFOODATA/media/$BACKEND/$mmed/current.$$.tmp",
+       "$MCFOODATA/media/$BACKEND/$mmed/current",);
+system("$MCFOOHOME/lib/update-cache") == 0
+  or fail "executing update-cache failed: $?";
+exit(0);
