@@ -2,6 +2,7 @@
 
 from twisted.python import usage
 import McFoo.commands
+import McFoo.config
 import sys, os, os.path
 
 class UnknownCommand(usage.UsageError):
@@ -31,6 +32,20 @@ class Options(usage.Options):
     def opt_help(self):
         """display this help and exit"""
         usage.Options.opt_help(self)
+
+    def opt_host(self, hostname):
+        """host that runs the dj server"""
+        McFoo.config.store.host = hostname
+
+    opt_H = opt_host
+    host = McFoo.config.store.host
+
+    def opt_port(self, port):
+        """port the dj server listens to"""
+        McFoo.config.store.port = int(port)
+        
+    opt_P = opt_port
+    port = McFoo.config.store.port
 
     def _get_cmd(self, cmd, names=[]):
         m=__import__("McFoo.commands."+cmd,

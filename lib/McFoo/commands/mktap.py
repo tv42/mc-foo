@@ -10,6 +10,7 @@ import McFoo.volume
 import McFoo.server.pb
 import McFoo.suggest
 import McFoo.score
+import McFoo.config
 
 class Options(usage.Options):
     synopsis = "Usage: %s [options] jump JUMPTO" % os.path.basename(sys.argv[0])
@@ -35,8 +36,6 @@ class Options(usage.Options):
         perspective.setService(service)
         perspective.makeIdentity("guest")
 
-        port=25706
-        
-        app.listenOn(port, pb.BrokerFactory(pb.AuthRoot(app)))
+        app.listenOn(McFoo.config.store.port, pb.BrokerFactory(pb.AuthRoot(app)))
         
         app.save("start")

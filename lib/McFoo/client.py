@@ -1,5 +1,6 @@
 import twisted.internet.main
 import twisted.spread.pb
+import McFoo.config
 
 import os
 
@@ -12,22 +13,13 @@ class McFooClientSimple:
             user='guest'
         if password==None:
             password='guest'
-        if host==None:
-            try:
-                host=os.environ['MCFOOHOST']
-            except KeyError:
-                host='localhost'
-        if port==None:
-            try:
-                port=int(os.environ['MCFOOPORT'])
-            except KeyError:
-                port=25706
 
         self.remote = None
         twisted.spread.pb.connect(
             self.handle_connect,
             self.handle_failure,
-            host, port,
+            McFoo.config.store.host,
+            McFoo.config.store.port,
             user, password,
             "dj")
 
