@@ -6,11 +6,11 @@ class socket_pty:
 	self.nonblock=0
 
     def setblocking(self, bool=None):
-	if bool:
+	if bool!=None:
 	    self.nonblock=bool
 	else:
 	    bool=self.nonblock
-	if self.fd:
+	if self.fd!=None:
 	    import fcntl
 	    import FCNTL
 	    flags = fcntl.fcntl(self.fd, FCNTL.F_GETFL, 0)
@@ -56,7 +56,7 @@ class socket_pty:
 	return os.read(self.fd, buffer_size)
 
     def close(self):
-	if self.fd:
+	if self.fd!=None:
 	    os.close(self.fd)
 
     def fileno(self):
