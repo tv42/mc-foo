@@ -34,7 +34,6 @@ class server(xmlrpc.server):
 		raise socket.error, why
 
     def do_list(self, server, source, uri, name, args):
-        print "got args: ", args
         serial=args[0]
         if serial==self.playqueue.serial:
             return {'serial': serial}
@@ -47,6 +46,10 @@ class server(xmlrpc.server):
 
     def do_pause(self, server, source, uri, name, args):
         server.dj.pause()
+        return []
+
+    def do_pauseorplay(self, server, source, uri, name, args):
+        server.dj.pauseorplay()
         return []
 
     def do_continue(self, server, source, uri, name, args):
@@ -86,9 +89,15 @@ class server(xmlrpc.server):
         return []
 
     def do_addqueue(self, server, source, uri, name, args):
-        pri, backend, media, file=args[0], args[1], args[2], args[3]
-        song=McFoo.song.Song(backend, media, file, pri)
-        self.playqueue.add(song)
+        for pri, backend, media, file in args:
+            song=McFoo.song.Song(backend, media, file, pri)
+            self.playqueue.add(song)
+        return []
+
+    def do_addqueueidx(self, server, source, uri, name, args):
+        for pri, backend, media, file, idx in args:
+            song=McFoo.song.Song(backend, media, file, pri)
+            self.playqueue.insert(idx, song)
         return []
 
     def do_jump(self, server, source, uri, name, args):
