@@ -1,6 +1,10 @@
 import ID3Tag
 import string
 
+from errno import ENOENT
+
+McFooBackendFileUnknownFormat='McFooBackendFileUnknownFormat'
+
 class Ogg:
     def __init__(self, filename):
         import ogg.vorbis
@@ -11,6 +15,12 @@ class Ogg:
         return self.vf.read(size)
     def comment(self):
         return self.vf.comment().as_dict()
+    def time_total(self):
+        return self.vf.time_total(0)
+    def time_tell(self):
+        return self.vf.time_tell()
+    def time_seek(self, secs):
+        return self.vf.time_seek(secs)
 
 class Mp3:
     def __init__(self, filename):
@@ -32,23 +42,54 @@ class Mp3:
         id3=ID3Tag.ID3Tag(self.filename)
         try:
             id3.Read()
-            c={'TITLE': [string.strip(id3.theTitle())],
-               'ARTIST': [string.strip(id3.theArtist())],
-               'ALBUM': [string.strip(id3.theAlbum())],
-               'YEAR': [string.strip(id3.theYear())],
-               'GENRE': [id3.theGenre()],
-               'COMMENT': [string.strip(id3.theComment())]}
-        except StandardError, exception:
-            s="No TAG header found in MP3 file:"
-            strerror=exception.args[0]
-            if string.find(strerror, s, 0, len(s))==0:
+        except ID3Tag.ID3Tag_HasNoID3, (strerror, filename):
+            if strerror=="No TAG header found in MP3 file:":
                 pass
             else:
                 raise
+        except IOError, (errno, strerror):
+            if errno==ENOENT:
+                pass
+            else:
+                raise
+        except NameError, e:
+            print "EXCEPT: ", e
+            raise
+
+        try:
+            c={'TITLE': [string.strip(id3.theTitle())]}
+        except NameError:
+            pass
+        try:
+            c={'ARTIST': [string.strip(id3.theArtist())]}
+        except NameError:
+            pass
+        try:
+            c={'ALBUM': [string.strip(id3.theAlbum())]}
+        except NameError:
+            pass
+        try:
+            c={'YEAR': [string.strip(id3.theYear())]}
+        except NameError:
+            pass
+        try:
+            c={'GENRE': [id3.theGenre()]}
+        except NameError:
+            pass
+        try:
+            c={'COMMENT': [string.strip(id3.theComment())]}
+        except NameError:
+            pass
         for key in c.keys():
             if c[key]=='':
                 c.delete[key]
         return c
+    def time_total(self):
+        return 0
+    def time_tell(self):
+        return 0
+    def time_seek(self, secs):
+        pass
 
 def audiofilechooser(filename):
     import string
@@ -58,4 +99,6 @@ def audiofilechooser(filename):
     elif ext == '.mp3':
 	return Mp3(filename)
     else:
-	return None
+        raise McFooBackendFileUnknownFormat, \
+              ("Unknown file format:", filename)
+
