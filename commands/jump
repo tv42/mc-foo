@@ -2,19 +2,24 @@
 #TODO help, usage
 import xmlrpc
 import os
-
-try:
-    host=os.environ['MCFOOHOST']
-except KeyError:
-    host='localhost'
-
-try:
-    port=int(os.environ['MCFOOPORT'])
-except KeyError:
-    port=25706
-
-c = xmlrpc.client(host, port)
 import sys
-j=sys.argv[1]
-j=int(j)
-s=c.execute('mcfoo.jump', j)
+
+def main():
+    try:
+        host=os.environ['MCFOOHOST']
+    except KeyError:
+        host='localhost'
+
+    try:
+        port=int(os.environ['MCFOOPORT'])
+    except KeyError:
+        port=25706
+
+    c = xmlrpc.client(host, port)
+    j=sys.argv[1]
+    j=int(j)
+    s=c.execute('mcfoo.jump', j)
+
+
+if __name__ == "__main__":
+    main()

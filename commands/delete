@@ -2,18 +2,22 @@
 import xmlrpc
 import os
 
-try:
-    host=os.environ['MCFOOHOST']
-except KeyError:
-    host='localhost'
+def main():
+    try:
+        host=os.environ['MCFOOHOST']
+    except KeyError:
+        host='localhost'
 
-try:
-    port=int(os.environ['MCFOOPORT'])
-except KeyError:
-    port=25706
+    try:
+        port=int(os.environ['MCFOOPORT'])
+    except KeyError:
+        port=25706
 
-c = xmlrpc.client(host, port)
+    c = xmlrpc.client(host, port)
 
-import sys
-l=map(lambda x: int(x), sys.argv[1:])
-s=c.execute('mcfoo.delete', l)
+    import sys
+    l=map(lambda x: int(x), sys.argv[1:])
+    s=c.execute('mcfoo.delete', l)
+
+if __name__ == "__main__":
+    main()
