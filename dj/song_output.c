@@ -73,7 +73,10 @@ int request_playing(struct playqueue *pq) {
   if (pq->requestedplay)
     return 0;
   pq->requestedplay=1;
-  n=snprintf(buf, 1024, "LOAD %s\n", pq->head->song.path);
+  n=snprintf(buf, 1024, "LOAD /var/lib/mc-foo/media/%s/%s/path/%s\n", 
+	     pq->head->song.media->backend->name,
+	     pq->head->song.media->name,	     
+	     pq->head->song.path);
   if (n<0 || n>=1024)
     return -1;                  /* too long */
   fprintf(stderr, "dj -> turntable: %s", buf);
@@ -81,7 +84,7 @@ int request_playing(struct playqueue *pq) {
   return 0;
 }
 
-int song_output(const char *line, size_t len, void **data) {
+int song_output(char *line, size_t len, void **data) {
   struct playqueue *pq;
   
   assert(data!=NULL);

@@ -81,15 +81,13 @@ sub freshen($$@) {
   return $new;
 }
 
-sub song_path($$;) {
+sub songname($$;) {
   my ($media, $num) = @_;
   my %m;
   tie %m, 'CDB_File', "$MCFOODATA/media/$media/current"
     or fail "Cannot open $MCFOODATA/media/$media/current: $!";
   exists $m{$num} or return undef;
-  my $path=readlink("$MCFOODATA/media/$media/path")
-    or fail "Cannot read $MCFOODATA/media/$media/path: $!";
-  return $path.'/'.$m{$num};
+  return $m{$num};
 }
 
 
@@ -143,8 +141,8 @@ sub song_path($$;) {
       }
       if ($points>0) {
         if ($rand <= $points) {
-          return [$selected_media_name,
-                  song_path($selected_media_name, $n)];
+          return [split('/', $selected_media_name, 2),
+                  songname($selected_media_name, $n)];
         }
         $rand-=$points;
       }

@@ -86,10 +86,10 @@ enum fd_callback_returns read_from_child(struct poll_struct *ps,
   }
 }
 
-int split_to_lines(const void *buf, size_t len, void **data) {
+int split_to_lines(void *buf, size_t len, void **data) {
   struct split_to_lines_state *state;
   char *line;
-  const char *buf_tmp;
+  char *buf_tmp;
 
   assert(buf!=NULL);
   assert(len>=0);

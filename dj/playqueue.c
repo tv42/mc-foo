@@ -65,7 +65,8 @@ int add_priority(struct playqueue *queue,
   } else {
     pri->prev=anchor->prev;
     pri->next=anchor;
-    pri->prev->next=pri;
+    if (pri->prev)
+      pri->prev->next=pri;
     anchor->prev=pri;
   }
 
@@ -455,20 +456,20 @@ int add_song_media_and_backend(struct playqueue *queue,
                                int priority,
                                const char *bms,
                                size_t len) {
-  char *slash, *space;
+  char *remember, *space;
   char *backend, *media, *song;
   struct backend *be;
   struct media *m;
   struct song s;
 
-  slash=memchr(bms, '/', len);
-  if (slash==NULL || slash==bms)
+  space=memchr(bms, ' ', len);
+  if (space==NULL || space==bms)
     return -1;
-  backend=malloc(slash-bms+1);
+  backend=malloc(space-bms+1);
   if (backend==NULL)
     return -1;
-  memcpy(backend, bms, slash-bms);
-  backend[slash-bms]='\0';  
+  memcpy(backend, bms, space-bms);
+  backend[space-bms]='\0';  
   be=find_backend(queue, backend);
   if (be==NULL) {
     be=add_backend(queue, ps, backend);
@@ -478,15 +479,16 @@ int add_song_media_and_backend(struct playqueue *queue,
     }
   }
   free(backend);
-  slash++;
-  space=memchr(slash, ' ', len-(slash-bms+1));
-  if (space==NULL || space==slash)
+  space++;
+  remember=space;
+  space=memchr(remember, ' ', len-(remember-bms+1));
+  if (space==NULL || space==remember)
     return -1;
-  media=malloc(space-slash+1);
+  media=malloc(space-remember+1);
   if (media==NULL)
     return -1;
-  memcpy(media, slash, space-slash);
-  media[space-slash]='\0';
+  memcpy(media, remember, space-remember);
+  media[space-remember]='\0';
   m=find_media(be, media);
   if (m==NULL) {
     m=add_media(be, media, 0, 0); //TODO bitflags

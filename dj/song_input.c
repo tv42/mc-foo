@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-int song_input(const char *line, size_t len, void **data) {
+int song_input(char *line, size_t len, void **data) {
   struct playqueue *pq;
   
   assert(data!=NULL);

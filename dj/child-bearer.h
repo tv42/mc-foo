@@ -10,7 +10,7 @@ struct child_bearing {
   pid_t pid;
   pid_t (*starter)(struct child_bearing *);
   void *starter_data;
-  int (*read_callback)(const void *, size_t, void **);
+  int (*read_callback)(void *, size_t, void **);
   void *read_cb_data;
 };
 
@@ -31,10 +31,10 @@ struct split_to_lines_state {
   size_t curlen;
   size_t maxlen;
   char *curline;
-  int (*line_callback)(const char *, size_t, void **);
+  int (*line_callback)(char *, size_t, void **);
   void *line_cb_data;
 };
 
-int split_to_lines(const void *buf, size_t len, void **data);
+int split_to_lines(void *buf, size_t len, void **data);
 
 #endif

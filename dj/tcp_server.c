@@ -14,7 +14,7 @@ struct tcp_server_state {
   struct playqueue *pq;
 };
 
-typedef int (*tcp_action)(const char *line, 
+typedef int (*tcp_action)(char *line, 
                           size_t len, 
                           struct tcp_server_state *state);
 
@@ -58,9 +58,9 @@ enum fd_callback_returns read_from_socket(struct poll_struct *ps,
   }
 }
 
-int tcp_server_quit(const char *line, 
-                          size_t len, 
-                          struct tcp_server_state *state) {
+int tcp_server_quit(char *line, 
+		    size_t len, 
+		    struct tcp_server_state *state) {
   assert(state!=NULL);
   assert(state->pq!=NULL);
   shutdown_tcp();
@@ -69,9 +69,9 @@ int tcp_server_quit(const char *line,
   exit(1); //TODO close listening socket, kill children, etc..
 }
 
-int tcp_server_next(const char *line, 
-                          size_t len, 
-                          struct tcp_server_state *state) {
+int tcp_server_next(char *line, 
+		    size_t len, 
+		    struct tcp_server_state *state) {
   assert(state!=NULL);
   assert(state->pq!=NULL);
   //TODO check id
@@ -90,7 +90,7 @@ int tcp_server_next(const char *line,
   return 0;
 }
 
-int tcp_server_delete(const char *line, 
+int tcp_server_delete(char *line, 
                       size_t len, 
                       struct tcp_server_state *state) {
   struct queue_entry *qe;
@@ -123,7 +123,7 @@ int tcp_server_delete(const char *line,
   return 0;
 }
 
-int tcp_server_move(const char *line, 
+int tcp_server_move(char *line, 
                     size_t len, 
                     struct tcp_server_state *state) {
   struct queue_entry *qe;
@@ -172,7 +172,7 @@ int tcp_server_move(const char *line,
   return 0;
 }
 
-int tcp_server_list_queue(const char *line, 
+int tcp_server_list_queue(char *line, 
                           size_t len, 
                           struct tcp_server_state *state) {
   struct queue_entry *qe;
@@ -217,7 +217,7 @@ int tcp_server_list_queue(const char *line,
   return 0;
 }
 
-int tcp_server_status(const char *line, 
+int tcp_server_status(char *line, 
                      size_t len, 
                      struct tcp_server_state *state) {
   assert(state!=NULL);
@@ -239,7 +239,7 @@ int tcp_server_status(const char *line,
   return 0;
 }
 
-int tcp_server_pause(const char *line, 
+int tcp_server_pause(char *line, 
                      size_t len, 
                      struct tcp_server_state *state) {
   assert(state!=NULL);
@@ -254,7 +254,7 @@ int tcp_server_pause(const char *line,
   return 0;
 }
 
-int tcp_server_continue(const char *line, 
+int tcp_server_continue(char *line, 
                         size_t len, 
                         struct tcp_server_state *state) {
   assert(state!=NULL);
@@ -269,10 +269,40 @@ int tcp_server_continue(const char *line,
   return 0;
 }
 
+int tcp_server_addqueue(char *line, 
+			size_t len, 
+			struct tcp_server_state *state) {
+  size_t i;
+  int priority;
+
+  while (len && line[0]==' ') {
+    line++; len--;
+  }
+  for (i=0; i<len; i++) {
+    if (line[i]==' ')
+      break;
+  }
+  if (i==len) {
+    write(state->fd, "ERR invalid input\n", strlen("ERR invalid input\n"));
+    return 0;
+  }
+  line[i]='\0';
+  priority = strtol(line, NULL, 0);
+  if (add_song_media_and_backend(state->pq,
+				 state->pq->song_input->ps,
+				 priority,
+				 line+i+1,
+				 len-i-1) == -1) {
+    write(state->fd, "ERR trouble\n", strlen("ERR trouble\n"));
+  } else {
+    write(state->fd, "OK added\n", strlen("OK added\n"));
+  }
+  return 0;
+}
 
 #define TCP_SERV_OK_QUIT "OK quit\n"
 #define TCP_SERV_ERR_UNIMPLEMENTED "ERR unimplemented\n"
-int tcp_server_cb(const char *line,
+int tcp_server_cb(char *line,
                   size_t len,
                   void **data) {
   int i;
@@ -288,6 +318,7 @@ int tcp_server_cb(const char *line,
     { "DELETE", tcp_server_delete },
     { "MOVE", tcp_server_move },
     { "QUIT", tcp_server_quit },
+    { "ADDQUEUE", tcp_server_addqueue },
     { 0, 0 }
   };
 
