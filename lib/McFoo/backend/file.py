@@ -8,7 +8,6 @@ class Ogg:
 class Mp3:
     def __init__(self, filename):
 	import popen2
-	import string
  	self.fd_in, fd_out = popen2.popen2("mpg123 -s -@ -") #Eww
 	fd_out.write("%s\n" % filename)
 	fd_out.close()

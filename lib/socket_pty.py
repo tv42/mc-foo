@@ -38,7 +38,6 @@ class socket_pty:
 	pid, fd = pty.fork()
 	if pid==0:
 	    # child
-	    import os
 	    os.execv(cmd)
 	else:
 	    # parent
