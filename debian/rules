@@ -2,25 +2,35 @@
 
 PACKAGE := mc-foo
 DEBTMP := debian/tmp.$(PACKAGE)
+PYTHONBIN := python2.1
 
 build:
 	test -e debian/control
-	$(MAKE)
+	$(PYTHONBIN) setup.py build
 
 clean:
 	test -e debian/control
 	test root = "`whoami`" || (echo need root priviledges; exit 1)
-	$(MAKE) clean
+	-$(PYTHONBIN) setup.py clean --all
+	find . -type f -name '*.pyc' -print0 \
+	| xargs -0 --no-run-if-empty rm --
+	rm -f MANIFEST
 	rm -rf debian/substvars debian/files $(DEBTMP)
 
-binary-indep: build
-
-binary-arch: build
+install:
 	test -e debian/control
 	test root = "`whoami`" || (echo need root priviledges; exit 1)
 	rm -rf debian/substvars $(DEBTMP)
 	install -d --mode=0755 $(DEBTMP)
-	$(MAKE) DESTDIR="$(CURDIR)/$(DEBTMP)" install
+	$(PYTHONBIN) setup.py install --prefix=$(DEBTMP)/usr
+	chmod -R go-w $(DEBTMP)
+
+binary-indep: build install
+
+binary-arch: build install
+	test -e debian/control
+	test root = "`whoami`" || (echo need root priviledges; exit 1)
+
 	install -d --mode=0755 "$(DEBTMP)/usr/share/doc/$(PACKAGE)"
 	install --mode=0644 debian/copyright \
 		"$(DEBTMP)/usr/share/doc/$(PACKAGE)"
