@@ -67,19 +67,16 @@ class DjPerspective(pb.Perspective):
             id, offset = arg
             self.playqueue.move(id, offset)
 
-    def perspective_moveabs(self, args):
-        for arg in args:
-            id, newloc = arg
+    def perspective_moveabs(self, newloc, ids):
+        for id in ids:
             self.playqueue.moveabs(id, newloc)
 
-    def perspective_addqueue(self, pri, backend, media, file):
-        filename='/var/lib/mc-foo/media/%s/%s/path/%s' % (backend, media, file)
-        song=McFoo.song.Song(filename, pri)
+    def perspective_addqueue(self, filename, priority=1000):
+        song=McFoo.song.Song(filename, priority)
         self.playqueue.add(song)
 
-    def perspective_addqueueidx(self, args):
-        for pri, backend, media, file, idx in args:
-            filename='/var/lib/mc-foo/media/%s/%s/path/%s' % (backend, media, file)
+    def perspective_addqueueidx(self, idx, songs):
+        for pri, filename in songs:
             song=McFoo.song.Song(filename, pri)
             self.playqueue.insert(idx, song)
 

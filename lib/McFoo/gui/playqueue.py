@@ -139,19 +139,15 @@ class PlayQueue:
     def trash(self):
         self.remote.delete(map(lambda x: x['id'],self.queue.selected()))
 
-    def notify_move(self, changes):
-        # changes = [(newloc, song), (newloc, song), ..]
-        self.remote.moveabs(map(lambda (newloc, song):
-                                (song['id'], newloc),changes))
+    def notify_move(self, newloc, songs):
+        self.remote.moveabs(newloc, map(lambda song: song['id'], songs))
 
-    def notify_copy(self, changes):
-        # changes = [(newloc, song), (newloc, song), ..]
-        self.remote.addqueueidx(map(lambda (newloc, song):
+    def notify_copy(self, newloc, songs):
+        self.remote.addqueueidx(newloc,
+                                map(lambda song:
                                     (song['priority'],
-                                     song['backend'],
-                                     song['media'],
-                                     song['name'], newloc),
-                                    changes))
+                                     song['filename']),
+                                    songs))
 
     def notify_drag_start(self):
         self._dragging=1

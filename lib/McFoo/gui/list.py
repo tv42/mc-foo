@@ -200,15 +200,11 @@ class ReorderableList(List):
         if isinstance(source, DraggedItemsCopy):
             if self.notify_copy:
                 # self.notify_copy(self.selected_with_idx())
-                self.notify_copy(map(lambda t, idx=idx:
-                                     (idx, t[1]),
-                                     source))
+                self.notify_copy(idx, map(lambda t: t[1], source))
         else:
             if self.notify_move:
                 # self.notify_move(self.selected_with_idx())
-                self.notify_move(map(lambda t, idx=idx:
-                                     (idx, t[1]),
-                                     source))
+                self.notify_move(idx, map(lambda t: t[1], source))
         if self.notify_drag_end:
             self.notify_drag_end()
 
