@@ -1,0 +1,12 @@
+#!/bin/sh -e
+if [ "$1" = "help" ]; then
+    echo "addqueue - add songs to dj queue"
+    exit 0
+fi
+
+if [ "$1" = "usage" ]; then
+    echo "addqueue <priority> <backend> <media> <file>"
+    exit 0
+fi
+
+echo "addqueue $@"|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"
