@@ -15,6 +15,7 @@ class Song(McFoo.playqueue.Playable, UserDict.UserDict):
     cur_songid = 0
 
     def __init__(self, backend, media, name, pri=100):
+        UserDict.UserDict.__init__(self)
 	self.priority=pri
         self.backend=backend
         self.media=makesafe(media)
