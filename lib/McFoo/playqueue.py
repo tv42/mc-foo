@@ -67,6 +67,10 @@ class PlayQueue(UserList.UserList):
 	self.data.insert(self.insert_point(song.priority), song)
         self._inc_serial()
 
+    def insert(self, idx, song):
+	self.data.insert(idx, song)
+        self._inc_serial()
+
     def remove(self, song):
         i=0
         while song!=self[i]:
