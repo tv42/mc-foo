@@ -1,4 +1,4 @@
-mc-foo (0.0.6) unstable; urgency=low
+mc-foo (0.0.6.cvs) unstable; urgency=low
 
   * New-style twisted.spread.pb calls.
   * Use a Twisted plugin for tap creation.
