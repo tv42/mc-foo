@@ -1,5 +1,7 @@
 #include "playqueue.h"
 #include <errno.h>
+#include <assert.h>
+#include <stdlib.h>
 
 int find_priority(struct playqueue *queue, 
                   int n, 
@@ -27,9 +29,6 @@ int find_priority(struct playqueue *queue,
  * Otherwise, the pointer will be inserted before pri,
  * or if pri is NULL to the tail of the priority list.
  *
- * loc will be NULL. The caller must set it before calling other
- * queue manipulation methods.
- *
  * if new is non-NULL, it *new will point to the new entry.
  *
  * use find_priority to get a value for pri; don't set it yourself.
@@ -49,7 +48,7 @@ int add_priority(struct playqueue *queue,
   if (pri==NULL)
     return -1;
   pri->priority=priority;
-  pri->loc=NULL;
+  pri->insertion_point=NULL;
 
   if (queue->priorities==NULL) {
     pri->next=pri->prev=NULL;
@@ -65,6 +64,12 @@ int add_priority(struct playqueue *queue,
     pri->next=anchor;
     pri->prev->next=pri;
     anchor->prev=pri;
+  }
+
+  if (pri->prev==NULL) {
+    pri->insertion_point=queue->head;
+  } else {
+    pri->insertion_point=pri->prev->insertion_point;
   }
 
   if (new!=NULL)
@@ -98,52 +103,82 @@ int find_or_add_priority(struct playqueue *queue,
   return 0;
 }
 
-int add_song(struct playqueue *queue, int priority, struct song *song) {
+int add_song(struct playqueue *queue,
+             int priority,
+             struct song *song) {
   struct queue_entry *qe;
-  struct priority_pointer *pri;
 
   qe=(struct queue_entry *)malloc(sizeof(struct queue_entry));
   if (qe==NULL)
     return -1;
   qe->cache.state=not_requested;
+  qe->priority=NULL;
   qe->song=*song;
 
-  if (find_or_add_priority(queue, priority, &pri) == -1)
+  if (find_or_add_priority(queue, priority, &(qe->priority)) == -1)
     return -1;
 
-  if (pri->next != NULL) {      /* not the largest priority */
-    qe->next=pri->next->loc;
-    qe->prev=qe->next->prev;
-  } else {                      /* largest priority */
-    qe->next=NULL;
-    qe->prev=queue->tail;
-    queue->tail=qe;
+  qe->prev=qe->priority->insertion_point;
+  qe->priority->insertion_point=qe;
+  if (qe->prev==NULL) {
+    queue->head=qe;
+  } else {
+    qe->next=qe->prev->next;
   }
-
-  if (pri->loc==NULL)
-    pri->loc=qe;                /* it's a new entry */
-
+  if (qe->next==NULL) {
+    queue->tail=qe;
+  } else {
+    qe->next->prev=qe;
+  }
+  if (qe->prev!=NULL)
+    qe->prev->next=qe;
   return 0;
 }
 
-void add_media(struct backend *backend, struct media *media) {
+struct media *add_media(struct backend *backend,
+                        char *name,
+                        bitflag caching_optional,
+                        bitflag caching_mandatory) {
+  struct media *media;
+  if (backend==NULL
+      || name==NULL
+      || name[0]=='\0') {
+    errno=EINVAL;
+    return NULL;
+  }
+  if ((media=(struct media*)malloc(sizeof(struct media))) ==NULL)
+    return NULL;
+  if ((media->name=(char*)malloc(strlen(name)+1)) ==NULL) {
+    free(media);
+    return NULL;
+  }
+
+  strcpy(media->name, name); /* yes, it is safe. See the malloc above */
+  if (caching_optional)
+    media->cache.caching_optional=1;
+  if (caching_mandatory)
+    media->cache.caching_mandatory=1;
   media->backend=backend;
+
   if (backend->medias==NULL) {
     media->next=media;
   } else {
     media->next=backend->medias;
   }
   backend->medias=media;
+  return media;
 }
 
 void remove_song(struct playqueue *queue, struct queue_entry *qe) {
   assert(queue!=NULL);
   assert(qe!=NULL);
+  assert(qe->song.path!=NULL);
   assert(queue->tail!=NULL);
+  assert(qe->priority!=NULL);
 
   if (queue->tail==qe)
     queue->tail=qe->prev;
-  
+
   qe->next->prev=qe->prev;
   if (qe->prev!=NULL) {
     qe->prev->next=qe->next;
@@ -168,6 +203,7 @@ void remove_song(struct playqueue *queue, struct queue_entry *qe) {
     /* something is very wrong; TODO */
     exit(42);
   }
+  free(qe->song.path);
   free(qe);
 }
 
@@ -212,4 +248,65 @@ void remove_media(struct playqueue *queue, struct media *media) {
 
   free(media->name);
   free(media);
+}
+
+void move_song(struct playqueue *queue,
+              struct queue_entry *qe,
+              signed int count) {
+  struct queue_entry *cur;
+  struct priority_pointer *pri;
+
+  assert(queue!=NULL);
+  assert(qe!=NULL);
+
+  cur=qe;
+
+  //TODO running out of queue..
+  if (count<=0) {
+    while (count<=0 && cur!=NULL) {          /* move closer to head */
+      cur=cur->prev;
+      count++;
+      for (pri=qe->priority; pri!=NULL; pri=pri->prev) {
+        if (pri->insertion_point==cur)
+          qe->priority->insertion_point=cur;
+      }
+    }
+  } else {
+    while (count>0 && cur->next!=NULL) { /* move closer to tail */
+      cur=cur->next;
+      count--;
+      if (qe->priority->insertion_point==cur)
+        qe->priority->insertion_point=qe;
+      for (pri=qe->priority->next; pri!=NULL; pri=pri->next) {
+        if (pri->insertion_point==cur)
+          pri->insertion_point=cur;
+      }
+    }
+  }
+
+  /* remove qe from old location */
+  if (qe->next!=NULL) {
+    qe->next->prev=qe->prev;
+  } else {
+    queue->tail=qe->prev;
+  }
+  if (qe->prev!=NULL) {
+    qe->prev->next=qe->next;
+  } else {
+    queue->head=qe->next;
+  }
+
+  /* add below cur, or at the head if cur NULL */
+  qe->prev=cur;
+  qe->next= (cur!=NULL ? cur->next : queue->head);
+  if (qe->next!=NULL) {
+    qe->next->prev=qe;
+  } else {
+    queue->tail=qe;
+  }
+  if (qe->prev!=NULL) {
+    qe->prev->next=qe;
+  } else {
+    queue->head=qe;
+  }
 }

@@ -8,6 +8,7 @@ typedef unsigned int bitflag;
 
 struct song {
   struct media *media;
+  char *path;
   /* TODO */
 };
 
@@ -35,6 +36,7 @@ struct media {
 
 struct queue_entry {
   struct queue_entry *next, *prev;
+  struct priority_pointer *priority;
   struct {
     enum cache_state {
       not_requested,
@@ -48,14 +50,36 @@ struct queue_entry {
 struct priority_pointer {
   struct priority_pointer *next, *prev;
   int priority;
-  struct queue_entry *loc;
+  struct queue_entry *insertion_point;
 };
 
 struct playqueue {
   struct queue_entry *head, *tail;
   struct priority_pointer *priorities;
   struct priority_pointer *priority_tail;
-  int count;
 };
+
+int find_priority(struct playqueue *queue, 
+                  int n, 
+                  struct priority_pointer **ppri);
+int add_priority(struct playqueue *queue,
+                 struct priority_pointer *anchor,
+                 int priority,
+                 struct priority_pointer **new);
+int find_or_add_priority(struct playqueue *queue,
+                         int priority,
+                         struct priority_pointer **ppri);
+int add_song(struct playqueue *queue,
+             int priority,
+             struct song *song);
+struct media *add_media(struct backend *backend,
+                        char *name,
+                        bitflag caching_optional,
+                        bitflag caching_mandatory);
+void remove_song(struct playqueue *queue, struct queue_entry *qe);
+void remove_media(struct playqueue *queue, struct media *media);
+void move_song(struct playqueue *queue,
+              struct queue_entry *qe,
+              signed int count);
 
 #endif
