@@ -10,9 +10,7 @@ $MCFOOCACHE=$ENV{MCFOOCACHE} || '/var/cache/mc-foo';
 
 my $DEFAULT_SCORE=100; # everything starts with 100 points.
 
-sub fail(@) {
-  die "profiles-to-cache: @_\n";
-}
+sub fail(@) { die "update-cache: @_\n"; }
 
 sub dir(&$) {
         my ($grep) = shift;
@@ -26,12 +24,12 @@ sub dir(&$) {
 }
 
 sub get_profiles() {
-  my @d=dir {/\.cdb$/} 'profiles';
+  my @d=dir {/\.cdb$/} "$MCFOODATA/profiles";
   return map {s/\.cdb$//;$_} @d;
 }
 
 sub get_medias() {
-  my @backends=dir {1} 'media';
+  my @backends=dir {1} "$MCFOODATA/media";
   my @medias;
   foreach my $backend (@backends) {
     push @medias, map {"$backend/$_"}
@@ -65,19 +63,21 @@ foreach my $medianame (get_medias()) {
   foreach my $songnumber (1..$media{n}) {
     my $path=$media{$songnumber};
     my %info;
-    foreach (qw(title artist album year genre category)) {
-      $info{$_} = $media{"$_:$path"};
-      defined $info{$_} or delete $info{$_};      
+    if (defined $media{fields}) {
+      foreach (split ' ', $media{fields}) {
+        $info{$_} = $media{"$_:$path"};
+        defined $info{$_} or delete $info{$_};      
+      }
     }
     foreach my $profile (keys %$profiles) {
       $weights{$profile}->{$medianame}+=$DEFAULT_SCORE;
       my $score=0;
-
+      
       foreach (keys %info) {
         my $s=$profiles->{$profile}->{"score:$_:".$info{$_}};
         $score+=$s if defined $s;
       }
-
+      
       if ($score != 0) {
         $mediaprofile{"$profile:$songnumber"} = $score;
         $weights{$profile}->{$medianame} += $score;
