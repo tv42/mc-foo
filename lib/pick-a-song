@@ -109,15 +109,27 @@ sub song_path($$;) {
           if exists $profiles->{$prof}->{$med};
       }
     }
+    if ($weights==0) {
+      # profiles assigned no weights, so take the sum of the number
+      # of songs in all medias, as counted by the mediaprofiles.
+      foreach (keys %$mediaprofs) {
+        $weights+=$mediaprofs->{$_}->{n} * $DEFAULT_SCORE;
+      }
+    }
     my $rand = rand($weights);
     
     my ($selected_media, $selected_media_name);
   out: for my $med (@medias) {
       $selected_media_name=$med;
       $selected_media=$mediaprofs->{$med};
-      for my $prof (keys %$profiles) {
-        last out if $rand <= $profiles->{$prof}->{$med};
-        $rand-=$profiles->{$prof}->{$med};
+      if (keys %$profiles) {
+        for my $prof (keys %$profiles) {
+          last out if $rand <= $profiles->{$prof}->{$med};
+          $rand-=$profiles->{$prof}->{$med};
+        }
+      } else {
+        last out if $rand <= $selected_media->{n} * $DEFAULT_SCORE;
+        $rand-=$selected_media->{n} * $DEFAULT_SCORE;
       }
     }
 
