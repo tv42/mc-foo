@@ -1,9 +1,0 @@
-#!/bin/sh -e
-IDS=$(echo list|nc 0 dj\
-        |sed '/^MULTI /d;/^\.$/d;s/^\([0-9]\+\) /<s:\1>\1 /g'\
-        |iselect --exit-no-select --multi-line \
-                --name='Select songs to remove' \
-                --title='MC Foo')
-if [ "$IDS" ]; then
-        echo "$IDS"|sed 's/^/delete /g'|nc 0 dj
-fi
