@@ -16,23 +16,32 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-I am the support module for making a DJ server with mktap.
+I am the support module for making an Mc Foo DJ server with mktap.
 """
 
 from twisted.python import usage
+import McFoo.config
 
 class Options(usage.Options):
-    synopsis = "Usage: mktap dj [options]"
-    optStrings = [["dir", "d", "/data/music","path to search for songs"],
-                  ]
+    synopsis = "Usage: mktap dj [options] SONGDIR.."
 
     longdesc = "Makes a DJ server."
 
+    songdirs=[]
+    def parseArgs(self, *songdirs):
+        self.songdirs=songdirs
+
+    def postOptions(self):
+        if not self.songdirs:
+            raise usage.error, "wrong number of arguments."
+
+
+    port=McFoo.config.store.port
     def opt_port(self, opt):
         """set the port to listen on
         """
         try:
-	    self.portno = int(opt)
+	    self.port = int(opt)
 	except ValueError:
 	    raise usage.error("Invalid argument to 'port'!")
     opt_p = opt_port
@@ -41,7 +50,7 @@ def getPorts(app, config):
     ports = []
 
     profileTable=McFoo.score.ProfileTable()
-    filler=McFoo.suggest.Suggestions(config.dir, profileTable)
+    filler=McFoo.suggest.Suggestions(config.songdirs, profileTable)
     playqueue = McFoo.playqueue.PlayQueue(filler.get)
     dj = McFoo.dj.Dj(playqueue)
     volume = McFoo.volume.VolumeControl()
@@ -51,14 +60,10 @@ def getPorts(app, config):
     perspective.setService(service)
     perspective.makeIdentity("guest")
 
-    try:
-        portno = config.portno
-    except AttributeError:
-        portno = 25706
-
+    portno = config.port
     prot = pb.BrokerFactory(pb.AuthRoot(app))
 
-    ports.append((int(portno), prot))
+    ports.append((portno, prot))
     return ports
 
 ###########################
