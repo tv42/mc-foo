@@ -28,6 +28,8 @@ typedef enum fd_callback_returns (*fd_callback_t)(struct poll_struct *ps,
                                                   short *events,
                                                   short revents,
                                                   unsigned int flags);
+typedef enum fd_callback_returns (*poll_iterator_t)(void *iter_data,
+						    struct fd_handler *handler);
 
 struct fd_handler {
   fd_callback_t poll_cb;
@@ -36,11 +38,16 @@ struct fd_handler {
 
 #define init_poll_struct() {NULL, NULL, 0, 0}
 
-
 int register_poll_fd(struct poll_struct *ps,
                      int fd, short events,
                      fd_callback_t poll_cb,
                      void *data);
 int do_poll(struct poll_struct *ps, int timeout);
+
+/* func must return >0 to keep iterating. Return value is that of
+   the func that bailed out, or 0 at end. */
+int poll_iterate(struct poll_struct *ps,
+		 poll_iterator_t func,
+		 void *iter_data);
 
 #endif
