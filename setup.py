@@ -3,7 +3,6 @@
 from distutils.core import setup
 
 setup(name="mc-foo",
-      version="0.0.4",
       description="an advanced, learning, mp3 jukebox",
       long_description="""
 MC Foo is an advanced, adaptive and learning mp3 jukebox server.

@@ -1,3 +1,24 @@
+mc-foo (0.0.8) unstable; urgency=low
+
+  * New command "mc-foo pauseorplay" toggles playback.
+  * New commands "mc-foo dislike", "mc-foo hate" to say you
+    don't like a song.
+  * New commands "mc-foo {get,set}{read,write}profile" to say
+    what profiles are active and what profiles are in learning
+    mode.  
+  * New command "mc-foo getscores" dumps the profile as a python
+    dict. No "mc-foo setscores" yet.
+  * New command "mc-foo mousecontrol" (only if you have CVS Twisted),
+    allowing you to control dj with a mouse. Note, this is _raw_ mouse
+    protocol for MouseMan mice only, no support from X or GPM required
+    so you can use it even when your X session is locked, just plug an
+    old mouse into a serial port.
+  * Command "mc-foo next" now takes --dislike or --hate flag to also mark
+    song as disliked.
+  * Fixes a timer-related bug where song playback just would not pause.
+
+ -- Tommi Virtanen <tv@debian.org>  Wed, 10 Jul 2002 00:29:45 +0300
+
 mc-foo (0.0.7) unstable; urgency=low
 
   * No longer use mpg321, python-hip is a python lib to decode mp3s.
