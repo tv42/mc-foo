@@ -6,6 +6,7 @@ stop = 0
 from errno import EADDRINUSE, EINTR
 
 from twisted.spread import pb
+from twisted.python import log
 import twisted.internet.main
 
 def maybeTraceback(tb):
@@ -120,10 +121,14 @@ class DjPerspective(pb.Perspective):
         self.onDetach.append(CallMeLater(self.playqueue.history.unobserve, callback))
 
     def detached(self, reference, identity):
+        log.msg('user %s detached' % identity.name)
         for f in self.onDetach:
             f()
         self.onDetach=[]
-        return pb.Perspective.detached(self, reference, identity)
+
+    def attached(self, reference, identity):
+        log.msg('user %s attached' % identity.name)
+        return self
 
 class server(pb.Service):
     def __init__(self, app, dj, playqueue, volume, profileTable):
