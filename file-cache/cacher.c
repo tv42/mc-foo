@@ -297,6 +297,7 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "cacher: do_poll failed: %s\n", strerror(errno));
       exit(1);
     }
+    fflush(NULL);		/* TODO get rid of stdio */
   }
 
   exit(0);
