@@ -67,5 +67,5 @@ class Song(McFoo.playqueue.Playable, UserDict.UserDict):
         return {'id': self.id,
                 'priority': self.priority,
                 'filename': self.filename,
-                'comment': self.data
+                'data': self.data
                 }
