@@ -106,14 +106,14 @@ install: all
 	install -d -m0755 $(DESTDIR)$(LIBDIR)
 	install -d -m0755 $(DESTDIR)$(CACHERS) \
 	install -d -m0755 $(DESTDIR)$(CMDDIR)
-	install -m0644 README $(DESTDIR)$(DOCDIR)
+	install -m0644 "$(srcdir)/README" $(DESTDIR)$(DOCDIR)
 	install -m0755 dj/dj \
-		commands/[a-z]* $(DESTDIR)$(CMDDIR)
-	install -m0755 turntable/mpg123-remote \
+		"$(srcdir)/commands"/[a-z]* $(DESTDIR)$(CMDDIR)
+	install -m0755 "$(srcdir)/turntable/mpg123-remote" \
 		$(DESTDIR)$(LIBDIR)/turntable
 	install -m0755 file-cache/cacher $(DESTDIR)$(CACHERS)/file
-	install -m0755 libbin/[a-z]* $(DESTDIR)$(LIBDIR)
-	install -m0755 bin/[a-z]* $(DESTDIR)$(BINDIR)
+	install -m0755 "$(srcdir)/libbin"/[a-z]* $(DESTDIR)$(LIBDIR)
+	install -m0755 "$(srcdir)/bin"/[a-z]* $(DESTDIR)$(BINDIR)
 	install -d -m0755 $(DESTDIR)$(CACHEDIR)/mediaprofiles \
 		$(DESTDIR)$(CACHEDIR)/mediaprofiles/file \
 		$(DESTDIR)$(CACHEDIR)/weights \
