@@ -47,21 +47,24 @@ class Ogg:
 class Mp3:
     def __init__(self, filename):
         self.filename=filename
-        self.fd_in=None
-        if not os.path.isfile(filename):
-            raise McFooBackendFileDoesNotExist
+        import hip
+        try:
+            self.hf = hip.hip(filename)
+        except IOError, e:
+            if e.errno == ENOENT:
+                raise McFooBackendFileDoesNotExist
+            else:
+                raise
+        except hip.HIPError, e:
+            if str(e) == "Error opening file: Data is not MPEG data.":
+                # well, it exists but its unusable -> remove from list
+                raise McFooBackendFileDoesNotExist
+            else:
+                raise
     def start_play(self):
-	import popen2
- 	self.fd_in, fd_out = popen2.popen2("mpg321 -s -@ -") #Eww
-        # TODO mpg321 -R - -w /dev/fd/2
-	fd_out.write("%s\n" % self.filename)
-	fd_out.close()
+        pass
     def read(self, size):
-	foo = self.fd_in.read(size)
-	return (foo, len(foo), 0)
-    def __del__(self):
-        if self.fd_in!=None:
-            self.fd_in.close()
+        return self.hf.read(size)
     def comment(self):
         try:
             id3=ID3.ID3(self.filename)
