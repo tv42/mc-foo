@@ -47,14 +47,12 @@ class Mp3:
         if self.fd_in!=None:
             self.fd_in.close()
     def comment(self):
-        c={}
         try:
             id3=ID3.ID3(self.filename)
-        except IOError, (errno, strerror):
-            if errno==ENOENT:
-                pass
-            else:
-                raise
+        except ID3.InvalidTagError:
+            return {}
+
+        c={}
         c['TITLE']=[string.strip(id3.title)]
         c['ARTIST']=[string.strip(id3.artist)]
         c['ALBUM']=[string.strip(id3.album)]
