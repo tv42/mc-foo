@@ -137,6 +137,6 @@ class PlayQueue:
                 if strerror=='got EOS while reading':
                     pass
                 else:
-                    raise
+                    sys.exit('mc-foo fan: %s: exception %s: '%(type, value))
             else:
-                raise
+                sys.exit('mc-foo fan: %s: exception %s: '%(type, value))
