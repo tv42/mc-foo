@@ -27,14 +27,4 @@ ssize_t write_to_child(struct child_bearing *child,
                        const void *buf, 
                        size_t count);
 
-struct split_to_lines_state {
-  size_t curlen;
-  size_t maxlen;
-  char *curline;
-  int (*line_callback)(char *, size_t, void **);
-  void *line_cb_data;
-};
-
-int split_to_lines(void *buf, size_t len, void **data);
-
 #endif
