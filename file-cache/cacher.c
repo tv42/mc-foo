@@ -141,6 +141,7 @@ int add_command(const char *id,
     free(s);
     return -1;
   }
+  unlink(id);
   s->out=open(id, O_WRONLY|O_CREAT|O_EXCL|O_NONBLOCK, S_IRUSR);
   if (s->out==-1) {
     close(s->in);
