@@ -1,8 +1,17 @@
 import oss
+import twisted.spread.pb
+
+class VolumeObserver(twisted.spread.pb.Referenced):
+    def __init__(self):
+        pass
+
+    def remote_change(self, left, right):
+        pass
 
 class VolumeControl:
     def __init__(self):
         self.mixer=oss.open_mixer()
+        self.observers=[]
 
     def get(self, wantstereo=0):
         (left, right) = self.mixer.read_channel(oss.SOUND_MIXER_VOLUME)
@@ -32,6 +41,8 @@ class VolumeControl:
         if right>100:
             right=100
         self.mixer.write_channel(oss.SOUND_MIXER_VOLUME, (left, right))
+        for callback in self.observers:
+            callback.change(left, right)
         return self.get()
 
     def adjust(self, adjust_left=5, adjust_right=None):
@@ -49,3 +60,20 @@ class VolumeControl:
         if adjust==None:
             adjust=-5
         self.adjust(adjust)
+
+    def __getstate__(self):
+        l,r=self.get(wantstereo=1)
+        return {'left':l, 'right':r}
+
+    def __setstate__(self, state):
+        self.__init__()
+        if state.has_key('left'):
+            if state.has_key('right'):
+                self.set(state['left'], state['right'])
+            else:
+                self.set(state['left'])
+
+    def observe(self, callback):
+        l,r=self.get(wantstereo=1)
+        callback.change(l,r)
+        self.observers.append(callback)

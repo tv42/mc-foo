@@ -1,5 +1,6 @@
 import ID3Tag
 import string
+import exceptions
 
 from errno import ENOENT
 
@@ -14,7 +15,15 @@ class Ogg:
     def read(self, size):
         return self.vf.read(size)
     def comment(self):
-        return self.vf.comment().as_dict()
+        r={}
+        try:
+            r=self.vf.comment().as_dict()
+        except exceptions.UnicodeError:
+            pass
+        for key in r.keys():
+            # twisted can't make unicode's persistent
+            r[key]=map(lambda s: s.encode('latin-1'), r[key])
+        return r
     def time_total(self):
         return self.vf.time_total(0)
     def time_tell(self):

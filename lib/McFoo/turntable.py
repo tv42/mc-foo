@@ -83,7 +83,7 @@ class TurntableInput(asyncreadline.asyncreadline):
 	if line and line[-1]=='\015':
 	    line = line[:-1]
 	if line != '':
-            args = string.split(line, ' ', 2)
+            args = string.split(line, ' ', 1)
 
             cmd=args[0]
             args=args[1:]
@@ -139,11 +139,15 @@ class Turntable:
         print "turntable got command", cmd
         if cmd=='play' and args:
             try:
+                print "opening file %s"%args
                 self.file=McFoo.backend.file.audiofilechooser(args)
             except McFoo.backend.file.McFooBackendFileUnknownFormat:
+                print "unknown format"
                 self.file=None
             else:
+                print "old state: %s"%self.state
                 self.state=states[self.state]['got_song']
+                print "new state: %s"%self.state
                 self.file.start_play()
                 self.status.state(self.state)
                 self.status.send("length %s\n"%self.file.time_total())

@@ -3,6 +3,9 @@ import Tkdnd
 import UserList
 import string
 
+def _strlist(l):
+    return map(lambda x: str(x), l)
+
 class DraggedItems(UserList.UserList):
     def __init__(self, source, data=[]):
         UserList.UserList.__init__(self, data)
@@ -21,63 +24,79 @@ class List(UserList.UserList):
     """An extended Tkinter listbox.
 
     All objects put here should be capable of stringifying themselves."""
-    def __init__(self, master, data=[]):
+    def __init__(self, master, data=[], selection_callback=None):
         UserList.UserList.__init__(self, data)
 
         self.frame = Frame(master)
         self.frame.pack(fill=BOTH, expand=1)
 
         self.scrollbar = Scrollbar(self.frame)
-        self.scrollbar.pack(side=RIGHT, fill=Y)
+        self.scrollbar.pack(side=LEFT, fill=Y)
         
         self.listbox=Listbox(self.frame)
-        self.listbox.config(yscrollcommand=self.scrollbar.set)
-        self.listbox.pack(side=LEFT, fill=BOTH, expand=1)
+        self.listbox.config(yscrollcommand=self.scrollbar.set, exportselection=0)
+        self.listbox.pack(side=RIGHT, fill=BOTH, expand=1)
         self.scrollbar.config(command=self.listbox.yview)
 
-        self.redraw()
+        for entry in self.data:
+            self.listbox.insert(END, str(entry))
+
+        self.selection_callback=selection_callback
+        if self.selection_callback:
+            self.selection=None
+            self.poll()
+
+    def poll(self):
+        now = self.listbox.curselection()
+        if now != self.selection:
+            self.selection_callback(self.selected_with_idx())
+            self.selection = now
+        self.listbox.after(250, self.poll)
+        for n in now:
+            self.listbox.select_set(n)
 
     def __setitem__(self, i, item):
         UserList.UserList.__setitem__(self, i, item)
-        self.redraw() #TODO fix listbox intelligently
+        self.listbox.delete(i)
+        self.listbox.insert(i, str(item))
     def __delitem__(self, i):
         UserList.UserList.__delitem__(self, i)
-        self.redraw() #TODO fix listbox intelligently
+        self.listbox.delete(i)
     def append(self, item):
         UserList.UserList.append(self, item)
-        self.redraw() #TODO fix listbox intelligently
+        self.listbox.insert(END, str(item))
     def insert(self, i, item):
         UserList.UserList.insert(self, i, item)
-        self.redraw() #TODO fix listbox intelligently
+        self.listbox.insert(i, str(item))
     def pop(self, i=-1):
         UserList.UserList.pop(self, i)
-        self.redraw() #TODO fix listbox intelligently
-    def remove(self, item):
-        UserList.UserList.remove(self, item)
-        self.redraw() #TODO fix listbox intelligently
-    def reverse(self):
-        UserList.UserList.reverse(self)
-        self.redraw()
-    def sort(self, cmpfunc=None):
-        if cmpfunc==None:
-            UserList.UserList.sort(self)
-        else:
-            UserList.UserList.sort(self, cmpfunc)
-        self.redraw()
+        if i<0:
+            i=self.listbox.size()+i
+        self.listbox.delete(i)
     def extend(self, other):
         UserList.UserList.extend(self, other)
-        self.redraw() #TODO fix listbox intelligently
+        apply(self.listbox.insert, [END]+_strlist(other))
+    def __getslice__(self, i, j):
+        i = max(i, 0); j = max(j, 0)
+        return self.data[i:j]
     def __setslice__(self, i, j, other):
         UserList.UserList.__setslice__(self, i, j, other)
-        self.redraw() #TODO fix listbox intelligently
+        if i<0:
+            i=self.listbox.size()+i
+        if j<0:
+            j=self.listbox.size()+j
+        if j!=0 and i>=j-1:
+            self.listbox.delete(i, j-1)
+        apply(self.listbox.insert, [i]+_strlist(other))
     def __delslice__(self, i, j):
         UserList.UserList.__delslice__(self, i, j)
-        self.redraw() #TODO fix listbox intelligently
-
-    def redraw(self):
-        self.listbox.delete(0, END) # clear
-        for entry in self.data:
-            self.listbox.insert(END, str(entry))
+        if i<0:
+            i=self.listbox.size()+i
+        if j<0:
+            j=self.listbox.size()+j
+        if j!=0 and i>=j-1:
+            print "delslice i=%d, j=%d"%(i,j)
+            self.listbox.delete(i, j-1)
 
     def selected_indexes(self):
         items = self.listbox.curselection()
@@ -122,6 +141,9 @@ class List(UserList.UserList):
             self.insert(idx, items[idx])
             del items[idx]
 
+    def pack(self, *a, **kw):
+        apply(self.frame.pack, a, kw)
+
 class ReorderableList(List):
     """An extended Tkinter.Listbox with d-n-d item reordering.
 
@@ -149,7 +171,7 @@ class ReorderableList(List):
         if not self.listbox.select_includes(near):
             self._dnd_selection(near)
         tuples=self.selected_with_idx()
-        self.del_idx(map(lambda t: t[0], tuples))
+        #XXX# self.del_idx(map(lambda t: t[0], tuples))
         items=DraggedItems(self, tuples)
         Tkdnd.dnd_start(items, event)
         self._dnd_selection(self.listbox.nearest(event.y))
@@ -171,23 +193,28 @@ class ReorderableList(List):
         # is always the infinite priority entry.. (TODO
         # implement that, currently there's no guarantee
         # at the server, and the gui allows dragging it)
-        self[idx:idx]=map(lambda t: t[1], source)
+	#XXX# self[idx:idx]=map(lambda t: t[1], source)
         self.listbox.select_clear(0, END)
         self.listbox.select_set(idx, idx+len(source)-1)
         self.listbox.see(idx)
         if isinstance(source, DraggedItemsCopy):
             if self.notify_copy:
-                self.notify_copy(self.selected_with_idx())
+                # self.notify_copy(self.selected_with_idx())
+                self.notify_copy(map(lambda t, idx=idx:
+                                     (idx, t[1]),
+                                     source))
         else:
             if self.notify_move:
-                self.notify_move(self.selected_with_idx())
+                # self.notify_move(self.selected_with_idx())
+                self.notify_move(map(lambda t, idx=idx:
+                                     (idx, t[1]),
+                                     source))
         if self.notify_drag_end:
             self.notify_drag_end()
 
     def dnd_undo(self, items):
         """Undo the dnd operation, put the items back where they were."""
-        print "dnd_undo"
-        self.add_tuples(items)
+#        self.add_tuples(items)
         self.listbox.select_clear(0, END)
         for i,o in items:
             self.listbox.select_set(i)
@@ -267,6 +294,9 @@ class DraggableLabel(Label):
     def set(self, content=None):
         self.content=content
         self.config(text=content)
+
+    def get(self):
+        return self.content
 
     def _drag_start(self, event):
         if self.content:

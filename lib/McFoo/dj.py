@@ -2,24 +2,40 @@ import os
 import sys
 import string
 
-import asynchat
-import socket_pty
-
 import McFoo.backend.file
 
-class Dj(asynchat.async_chat):
+from errno import EIO
+
+import twisted.internet.process
+import twisted.protocols.basic
+
+class Dj(twisted.internet.process.Process,
+         twisted.protocols.basic.LineReceiver):
+    delimiter = '\n'
+
     def __init__(self, playqueue):
-	asynchat.async_chat.__init__(self, socket_pty.socket_pty())
-	self.set_terminator('\n')
-	self.command = ''
+        twisted.internet.process.Process.__init__(self, "/usr/lib/mc-foo/lib/turntable", ["turntable"], {})
         self.playqueue=playqueue
 
         self.player_state=None
         self.player_songlength=None
         self.player_at=None
 
-        self.ensure_connect()
         self.missing_a_song=1
+
+    def __getstate__(self):
+        return {'playqueue':self.playqueue}
+
+    def __setstate__(self, state):
+        self.__init__(state['playqueue'])
+
+    def startReading(self):
+        twisted.internet.process.Process.startReading(self)
+        self.transport=self.writer
+        self.ensure_music()
+
+    def handleChunk(self, chunk):
+        self.dataReceived(chunk)
 
     def ensure_music(self):
         if (self.missing_a_song
@@ -31,27 +47,12 @@ class Dj(asynchat.async_chat):
     def start_next_song(self):
         next=self.playqueue.pop()
         if next:
-            self.send("play %s\n"%next.filename)
+            self.write("play %s\n"%next.filename)
             self.missing_a_song=0
 
-    def handle_connect(self):
-	pass
-
-    def log(self, message):
-        sys.stderr.write("dj log: "+message+"\n")
-
-    def ensure_connect(self):
-	if not self.socket.connected:
-	    self.connect(("/usr/lib/mc-foo/lib/turntable", ["turntable"]))
-	
-    def collect_incoming_data(self, data):
-	self.command = self.command + data
-
-    def found_terminator(self):
-	if self.command[-1]=='\015':
-	    self.command = self.command[:-1]
-	if self.command != '':
-	    list = string.split(self.command, ' ', 2)
+    def lineReceived(self, line):
+	if line != '':
+	    list = string.split(line, ' ', 2)
             cmd=list[0]
             args=list[1:]
             if args:
@@ -59,7 +60,7 @@ class Dj(asynchat.async_chat):
             try:
                 func=getattr(self, 'do_'+cmd)
             except AttributeError:
-                print "dj: turntable said:", self.command
+                print "dj: turntable said:", line
                 pass
             else:
                 func(args)
@@ -81,14 +82,13 @@ class Dj(asynchat.async_chat):
         self.start_next_song()
         
     def pause(self):
-        self.send("pause\n")
+        self.write("pause\n")
 
     def play(self):
-        self.send("continue\n")
+        self.write("continue\n")
 
     def pauseorplay(self):
-        self.send("toggle_pause\n")
+        self.write("toggle_pause\n")
 
-    def fileno(self):
-        self.ensure_connect()
-        return self.socket.fileno()
+    def handleError(self, text):
+        print "turntable:", text,

@@ -16,7 +16,7 @@ def get_comments(filename):
     return McFoo.backend.file.audiofilechooser(filename).comment()
 
 class Song(McFoo.playqueue.Playable, UserDict.UserDict):
-    cur_songid = 0
+    cur_songid = 1000
 
     def __init__(self, backend, media, name, pri=100):
         UserDict.UserDict.__init__(self)
@@ -35,7 +35,7 @@ class Song(McFoo.playqueue.Playable, UserDict.UserDict):
     def __str__(self):
 	s=str(self.id)+' '+self.filename+'\n'
 	for tag in self.data.keys():
-	    s=s+'  '+self.data[tag]+'\n'
+	    s=s+'  '+str(self.data[tag])+'\n'
 	return s
 
     # this is for python 1.5, kill this when using 2.x
@@ -46,6 +46,9 @@ class Song(McFoo.playqueue.Playable, UserDict.UserDict):
             return 1
 
     def as_data(self):
+        return self.__getstate__()
+
+    def __getstate__(self):
         return {'id': self.id,
                 'priority': self.priority,
                 'backend': self.backend,

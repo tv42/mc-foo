@@ -10,8 +10,8 @@ class GuiSong(UserDict.UserDict):
            and self.data['comment'].has_key('TITLE') \
            and filter(lambda x: x!="", self.data['comment']['ARTIST'])!=[] \
            and filter(lambda x: x!="", self.data['comment']['TITLE'])!=[]:
-            return filter(lambda x: x!="", self.data['comment']['ARTIST'])[0] \
-                   +': '+filter(lambda x: x!="", self.data['comment']['TITLE'])[0]
+            return str(filter(lambda x: x!="", self.data['comment']['ARTIST'])[0]) \
+                   +': '+str(filter(lambda x: x!="", self.data['comment']['TITLE'])[0])
         elif self.data.has_key('name'):
             return self.data['name']
         else:
