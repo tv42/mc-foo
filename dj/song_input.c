@@ -42,7 +42,8 @@ pid_t start_song_input(struct child_bearing *child) {
   child->read_callback=split_to_lines;
   child->read_cb_data=(void*)state;
   
-  if ((tmp=start_by_name(child, "pick-a-song")) ==-1) {
+  if ((tmp=start_by_name(child, "/usr/lib/mc-foo/lib/pick-a-song"))
+      == -1) {
     free(state->curline);
     free(state);
     child->read_cb_data=NULL;
