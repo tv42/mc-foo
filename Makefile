@@ -1,4 +1,9 @@
-default: all
+# make -f DIR/Makefile src=DIR [TARGETS..]
+
+srcdir:=.
+VPATH:=.:$(srcdir)
+
+all: default
 
 BINDIR := /usr/bin
 DATADIR := /var/lib/mc-foo
@@ -8,65 +13,51 @@ LIBDIR := /usr/lib/mc-foo/lib
 CACHERS := /usr/lib/mc-foo/lib/cachers
 CMDDIR := /usr/lib/mc-foo/commands
 
-LIBOBJ:=lib/child-bearer.o lib/poller.o lib/nonblock.o lib/split_to_lines.o
-OBJ := dj/cache.o dj/dj.o dj/playqueue.o \
-	dj/tcp_server.o dj/tcp_listener.o \
-	dj/song_input.o dj/song_output.o turntable/sigchild.o \
-	file-cache/cacher.o dj/cache.o
-CFLAGS := -g -Wall -O2 -Ilib
+SOURCE:=lib/child-bearer.c lib/poller.c lib/nonblock.c lib/split_to_lines.c \
+	dj/cache.c dj/dj.c dj/playqueue.c \
+	dj/tcp_server.c dj/tcp_listener.c \
+	dj/song_input.c dj/song_output.c \
+	file-cache/cacher.c \
+	dj/playqueue.h dj/prof_write.h dj/prof_read.h dj/tcp_listener.h \
+	dj/tcp_server.h dj/song_input.h dj/song_output.h dj/cache.h \
+	lib/split_to_lines.h lib/poller.h lib/child-bearer.h lib/nonblock.h
+
+INCLUDES := -Ilib
+DEPFILES := $(patsubst %.c,%.d, $(filter %.c, $(SOURCE)))
+
+CFLAGS_VPATH := \
+	$(patsubst -I%,-I./%,$(INCLUDES)) \
+	$(patsubst -I%,-I$(srcdir)/%,$(INCLUDES)) \
+	$(filter -I/%,$(INCLUDES)) \
+	$(filter-out -I%,$(INCLUDES))
+
+CFLAGS := -O2 -g \
+	-Wall -Werror \
+	-Winline -Wredundant-decls -Wnested-externs -Wstrict-prototypes \
+	-Waggregate-return -Wpointer-arith \
+	$(CFLAGS_VPATH)
 
 BINS := dj/dj file-cache/cacher
 
-all: $(BINS)
+CXREF_DIR := cxref
 
-clean:
-	rm -f $(OBJ) $(LIBOBJ) $(BINS)
+ifdef src
+ cxref cxref/%:
+	test -d "$(src)"
+	cd "$(src)" && make src="" CXREF_DIR="$(CURDIR)/$(CXREF_DIR)" "$@"
 
-install: all
-	install -d -m0755 $(DESTDIR)$(BINDIR)
-	install -d -m0755 $(DESTDIR)$(DATADIR)
-	install -d -m0755 $(DESTDIR)$(DOCDIR)
-	install -d -m0755 $(DESTDIR)$(CACHEDIR) \
-		$(DESTDIR)$(CACHEDIR)/file \
-		$(DESTDIR)$(CACHEDIR)/file.tmp
-	install -d -m0755 $(DESTDIR)$(LIBDIR)
-	install -d -m0755 $(DESTDIR)$(CACHERS) \
-	install -d -m0755 $(DESTDIR)$(CMDDIR)
-	install -m0644 README $(DESTDIR)$(DOCDIR)
-	install -m0755 dj/dj \
-		commands/[a-z]* $(DESTDIR)$(CMDDIR)
-#	install -m0755 turntable/turntable \
-#		$(DESTDIR)$(LIBDIR)
-	install -m0755 turntable/mpg123-remote \
-		$(DESTDIR)$(LIBDIR)/turntable
-	install -m0755 file-cache/cacher $(DESTDIR)$(CACHERS)/file
-	install -m0755 libbin/[a-z]* $(DESTDIR)$(LIBDIR)
-	install -m0755 bin/[a-z]* $(DESTDIR)$(BINDIR)
-	install -d -m0755 $(DESTDIR)$(CACHEDIR)/mediaprofiles \
-		$(DESTDIR)$(CACHEDIR)/mediaprofiles/file \
-		$(DESTDIR)$(CACHEDIR)/weights \
-		$(DESTDIR)$(DATADIR)/media \
-		$(DESTDIR)$(DATADIR)/media/file \
-		$(DESTDIR)$(DATADIR)/profiles
-	@echo 'Now you should create a group for MC Foo, '
-	@echo 'preferably named "mcfoo", and run'
-	@echo "chgrp -R mcfoo $(DATADIR)/{media,profiles}"
-	@echo "chgrp -R mcfoo $(CACHEDIR)/*"
-	@echo "chmod -R g+s $(DATADIR)/{media,profiles}"
-	@echo "chmod -R g+s $(CACHEDIR)/*"
+ default %:
+	test -d "$(src)"
+	make src="" -I "$(src)" -f "$(src)/Makefile" srcdir="$(src)" "$@"
+else
+ ifeq ($(DEPFILES),$(wildcard $(DEPFILES)))
+  include $(DEPFILES)
+  default: build
+ else
+  default: dep build
+ endif
+ include Makefile.rules
+ include Makefile.deps
+endif
 
-%.o: %.c
-	gcc -c $(CFLAGS) -o $@ $<
-
-dj/dj: dj/dj.o dj/tcp_listener.o dj/tcp_server.o \
-	dj/song_input.o dj/playqueue.o \
-	dj/song_output.o dj/prof_read.o \
-	lib/split_to_lines.o lib/poller.o \
-	lib/child-bearer.o lib/nonblock.o \
-	dj/cache.o
-
-file-cache/cacher: file-cache/cacher.o \
-	lib/split_to_lines.o lib/poller.o \
-	lib/nonblock.o
-
-.PHONY: default all clean install
+.PHONY: default all cxref

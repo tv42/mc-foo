@@ -1,0 +1,20 @@
+# -*- Makefile -*-
+
+dep: $(DEPFILES)
+
+$(DEPFILES): %.d: %.c
+	@echo Creating dependencies for $(@:%.d=%.c)
+	@test -d "$(@D)" || install -d -m0755 "$(@D)"
+	@gcc -MM \
+		-I./$(*D) -I$(srcdir)/$(*D) $(CFLAGS_VPATH) \
+		$(filter-out -I%,$(CFLAGS_$(@:%.d=%.o))) \
+		$(patsubst -I%,-I./%,$(filter -I%,$(CFLAGS_$(@:%.d=%.o)))) \
+		$(patsubst -I%,-I$(srcdir)/%,$(filter -I%,$(CFLAGS_$(@:%.d=%.o)))) \
+		$< \
+		| sed \
+			-e 's@ /[^ ]*@@g' \
+			-e 's@^\(.*\)\.o:@$@ $(@:%.d=%.o) $(@:%.d=cxref/%.c.html):@' \
+		>$@.tmp
+	@mv $@.tmp $@
+
+.PHONY: dep
