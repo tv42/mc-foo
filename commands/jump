@@ -1,12 +1,20 @@
-#!/bin/sh -e
-if [ "$1" = "help" ]; then
-    echo "next - send a skip to next song command to dj"
-    exit 0
-fi
+#!/usr/bin/env python
+#TODO help, usage
+import xmlrpc
+import os
 
-if [ "$1" = "usage" ]; then
-    echo "next"
-    exit 0
-fi
+try:
+    host=os.environ['MCFOOHOST']
+except KeyError:
+    host='localhost'
 
-echo jump "$1"|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"
+try:
+    port=int(os.environ['MCFOOPORT'])
+except KeyError:
+    port=25706
+
+c = xmlrpc.client(host, port)
+import sys
+j=sys.argv[1]
+j=int(j)
+s=c.execute('mcfoo.jump', j)

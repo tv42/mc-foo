@@ -9,12 +9,12 @@ if [ "$1" = "usage" ]; then
     exit 0
 fi
 
-IDS=$(echo list|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}" \
-        |sed '/^MULTI /d;/^\.$/d;s/^\([0-9]\+\) /<s:\1>\1 /g'\
-        |iselect --exit-no-select --multi-line \
-                --name='Select songs to remove' \
-                --title='MC Foo')
-if [ "$IDS" ]; then
-        echo "$IDS"|sed 's/^/delete /g' \
-        |nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"
+if [ "$1" = "" ]; then
+    set -- $(mc-foo list \
+	    |sed 's/^\([0-9]\+\) /<s:\1>\1 /g'\
+	    |iselect --exit-no-select --multi-line \
+		    --name='Select songs to remove' \
+		    --title='MC Foo')
 fi
+
+mc-foo delete "$@"

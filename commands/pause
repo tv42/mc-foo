@@ -1,12 +1,19 @@
-#!/bin/sh -e
-if [ "$1" = "help" ]; then
-    echo "pause - send a pause command to dj"
-    exit 0
-fi
+#!/usr/bin/env python
+#TODO help, usage
+#help: "pause - send a pause command to dj"
+#usage: "pause"
+import xmlrpc
+import os
 
-if [ "$1" = "usage" ]; then
-    echo "pause"
-    exit 0
-fi
+try:
+    host=os.environ['MCFOOHOST']
+except KeyError:
+    host='localhost'
 
-echo pause|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"
+try:
+    port=int(os.environ['MCFOOPORT'])
+except KeyError:
+    port=25706
+
+c = xmlrpc.client(host, port)
+s=c.execute('mcfoo.pause', [])

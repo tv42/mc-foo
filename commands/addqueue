@@ -1,12 +1,30 @@
-#!/bin/sh -e
-if [ "$1" = "help" ]; then
-    echo "addqueue - add songs to dj queue"
-    exit 0
-fi
+#!/usr/bin/env python
+import xmlrpc
+import os
 
-if [ "$1" = "usage" ]; then
-    echo "addqueue <priority> <backend> <media> <file>"
-    exit 0
-fi
+try:
+    host=os.environ['MCFOOHOST']
+except KeyError:
+    host='localhost'
 
-echo "addqueue $1 $2 $(echo "$3"|tr -c a-zA-Z0-9 _) $4"|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"
+try:
+    port=int(os.environ['MCFOOPORT'])
+except KeyError:
+    port=25706
+
+c = xmlrpc.client(host, port)
+
+import sys
+pri=sys.argv[1]
+print  "pri=", pri
+pri=int(pri)
+backend=sys.argv[2]
+media=sys.argv[3]
+
+import sys
+sys.path.append('/usr/lib/mc-foo/lib/python')
+import McFoo.song
+media=McFoo.song.makesafe(media)
+
+file=sys.argv[4]
+s=c.execute('mcfoo.addqueue', [pri, backend, media, file])
