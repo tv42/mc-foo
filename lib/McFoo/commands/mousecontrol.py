@@ -46,11 +46,13 @@ class McFooMouse(mouseman.MouseMan):
         self.client = client
 
     def down_left(self):
-        self.client.remote.callRemote("pauseorplay")
+        if self.client.remote:
+            self.client.remote.callRemote("pauseorplay")
 
     def down_middle(self):
-        self.client.remote.callRemote("next")
+        if self.client.remote:
+            self.client.remote.callRemote("next")
 
     def move(self, x, y):
-        if self.rightbutton:
+        if self.client.remote and self.rightbutton:
             self.client.remote.callRemote("volume_inc", delta=-y)
