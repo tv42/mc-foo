@@ -1,4 +1,5 @@
 #include "playqueue.h"
+#include <assert.h>
 
 /*
  * try to ensure the queue has want playable songs,
@@ -11,7 +12,7 @@ int request_caching_queuehead(struct playqueue *queue, int want, int max) {
   int n=0;
   struct queue_entry *cur;
   if (queue==NULL)
-    return;
+    return -1;
   cur=queue->head;
   while(cur!=NULL && want>0 && n<=max) {
     if (!cur->song.media->cache.caching_mandatory

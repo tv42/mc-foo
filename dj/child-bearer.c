@@ -1,6 +1,9 @@
+#include "child-bearer.h"
+#include "poller.h"
+
 #include <unistd.h>
 #include <errno.h>
-#include "child-bearer.h"
+#include <assert.h>
 
 #define BUFSIZE 1024
 
@@ -34,20 +37,40 @@ ssize_t write_to_child(struct child_bearing *child,
   return tmp;
 }
 
-void read_from_child(struct child_bearing *child, 
-                        void *buf, 
-                        size_t count) {
+enum fd_callback_returns read_from_child(struct poll_struct *ps,
+                                         unsigned int fd,
+                                         void **data,
+                                         short *events,
+                                         short revents,
+                                         unsigned int flags) {
+  struct child_bearing *child;
   char buf[BUFSIZE];
   ssize_t tmp;
-  
-  tmp=read(child->from_fd, buf, sizeof(buf));
-  if (tmp==-1) {
-    close(child->from_fd);
-    child->from_fd=-1;
-  } else if (tmp==0) {
-    close(child->from_fd);
-    child->from_fd=-1;
+
+  assert(ps!=NULL);
+  assert(data!=NULL);
+  assert(*data!=NULL);
+  assert(events!=NULL);
+  assert(fd>=0);
+
+  child=(struct child_bearing*) *data;
+  if (flags&POLL_FLAGS_SHUTDOWN) {
+    //cleanup, close pipe to child, hope it will die.
+    close(child->to_fd);
+    child->to_fd=-1;
+    return fdcb_ok;
   } else {
-    child->read_callback(buf, tmp, child->read_cb_data);
+    tmp=read(fd, buf, sizeof(buf));
+    if (tmp==-1 || tmp==0) {
+      close(fd);
+      return fdcb_remove;
+    } else {
+      if (child->read_callback(buf, tmp, child->read_cb_data)) {
+        return fdcb_ok;
+      } else {
+        close(fd);
+        return fdcb_remove;
+      }      
+    }
   }
 }
