@@ -66,27 +66,27 @@ class Mp3:
             raise
 
         try:
-            c={'TITLE': [string.strip(id3.theTitle())]}
+            c['TITLE']=[string.strip(id3.theTitle())]
         except NameError:
             pass
         try:
-            c={'ARTIST': [string.strip(id3.theArtist())]}
+            c['ARTIST']=[string.strip(id3.theArtist())]
         except NameError:
             pass
         try:
-            c={'ALBUM': [string.strip(id3.theAlbum())]}
+            c['ALBUM']=[string.strip(id3.theAlbum())]
         except NameError:
             pass
         try:
-            c={'YEAR': [string.strip(id3.theYear())]}
+            c['YEAR']=[string.strip(id3.theYear())]
         except NameError:
             pass
         try:
-            c={'GENRE': [id3.theGenre()]}
+            c['GENRE']=[id3.theGenre()]
         except NameError:
             pass
         try:
-            c={'COMMENT': [string.strip(id3.theComment())]}
+            c['COMMENT']=[string.strip(id3.theComment())]
         except NameError:
             pass
         for key in c.keys():
