@@ -14,14 +14,18 @@ class McFooClientSimple:
         if password==None:
             password='guest'
 
+        self.user=user
+        self.password=password
         self.remote = None
+        self.connect()
+
+    def connect(self):
         twisted.spread.pb.connect(
             McFoo.config.store.host,
             McFoo.config.store.port,
-            user, password, "dj"
+            self.user, self.password, "dj"
             ).addCallbacks(self.handle_connect,
                            self.handle_failure)
-
 
     def handle_failure(self, message):
         if not self.stopping:

@@ -41,6 +41,9 @@ class McFooClientMouseControl(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
 
+    def handle_disconnect(self):
+        self.connect()
+
 class McFooMouse(mouseman.MouseMan):
     def __init__(self, client):
         self.client = client
