@@ -49,6 +49,17 @@ class Song(McFoo.playqueue.Playable, UserDict.UserDict):
 	else:
             return 1
 
+    def matchRegExp(self, regexp):
+        if regexp.search(self.filename):
+            return 1
+        for k,vs in self.data.items():
+            if regexp.search(k):
+                return 1
+            for v in vs:
+                if regexp.search(v):
+                    return 1
+        return 0
+
     def as_data(self):
         return self.__getstate__()
 

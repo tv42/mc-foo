@@ -21,4 +21,5 @@ __all__ = [
     "setreadprofiles",
     "hate",
     "dislike",
+    "grep",
     ]

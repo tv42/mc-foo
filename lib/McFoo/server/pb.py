@@ -1,4 +1,4 @@
-import sys
+import sys, re
 import McFoo.song
 
 stop = 0
@@ -72,6 +72,18 @@ class DjPerspective(pb.Perspective):
 
     def perspective_list(self):
         return self.playqueue.as_data()
+
+    def perspective_grep(self, regexp, ignorecase=0, invertmatch=0):
+        flags = 0
+        if ignorecase:
+            flags = flags|re.IGNORECASE
+        reg = re.compile(regexp, flags)
+        l=[]
+        for song in self.playqueue:
+            if song.playable():
+                if song.matchRegExp(reg) ^ invertmatch:
+                    l.append(song.as_data())
+        return l
 
     def perspective_next(self):
         self.dj.next()
