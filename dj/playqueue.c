@@ -343,7 +343,7 @@ int request_song_input(struct playqueue *queue, struct read_profile *prof) {
   struct read_profile *cur;
   static time_t last_time=0;
 
-  if (queue->songs >= 20
+  if (queue->songs >= 100
       || (last_time!=0 && last_time > time(NULL)-2))
     return 0;
 
