@@ -4,10 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdio.h>
+
 int split_to_lines(void *buf, size_t len, void **data) {
   struct split_to_lines_state *state;
-  char *line;
-  char *buf_tmp;
+  void *line;
+  void *buf_tmp;
 
   assert(buf!=NULL);
   assert(len>=0);
@@ -40,7 +42,7 @@ int split_to_lines(void *buf, size_t len, void **data) {
         return -1;
       }
       memcpy(state->curline+state->curlen, buf_tmp, line-buf_tmp);
-      state->curlen=state->curlen+=line-buf_tmp;
+      state->curlen+=line-buf_tmp;
       if (state->line_callback(state->curline, 
                                state->curlen, 
                                &state->line_cb_data) ==-1) {
@@ -52,5 +54,9 @@ int split_to_lines(void *buf, size_t len, void **data) {
     }
     buf_tmp=line+1;
   }
+
+  assert(buf_tmp >= buf);
+  assert(buf_tmp <= buf+len);	/* I think.. */
+  state->curlen = buf+len - buf_tmp;
   return 0;
 }
