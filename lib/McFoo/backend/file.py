@@ -1,4 +1,4 @@
-import ID3Tag
+import ID3
 import string
 import exceptions
 
@@ -48,14 +48,8 @@ class Mp3:
             self.fd_in.close()
     def comment(self):
         c={}
-        id3=ID3Tag.ID3Tag(self.filename)
         try:
-            id3.Read()
-        except ID3Tag.ID3Tag_HasNoID3, (strerror, filename):
-            if strerror=="No TAG header found in MP3 file:":
-                pass
-            else:
-                raise
+            id3=ID3.ID3(self.filename)
         except IOError, (errno, strerror):
             if errno==ENOENT:
                 pass
@@ -66,27 +60,27 @@ class Mp3:
             raise
 
         try:
-            c['TITLE']=[string.strip(id3.theTitle())]
+            c['TITLE']=[string.strip(id3.title)]
         except NameError:
             pass
         try:
-            c['ARTIST']=[string.strip(id3.theArtist())]
+            c['ARTIST']=[string.strip(id3.artist)]
         except NameError:
             pass
         try:
-            c['ALBUM']=[string.strip(id3.theAlbum())]
+            c['ALBUM']=[string.strip(id3.album)]
         except NameError:
             pass
         try:
-            c['YEAR']=[string.strip(id3.theYear())]
+            c['YEAR']=[string.strip(id3.year)]
         except NameError:
             pass
         try:
-            c['GENRE']=[id3.theGenre()]
+            c['GENRE']=[id3.genres[id3.genre]]
         except NameError:
             pass
         try:
-            c['COMMENT']=[string.strip(id3.theComment())]
+            c['COMMENT']=[string.strip(id3.comment)]
         except NameError:
             pass
         for key in c.keys():
