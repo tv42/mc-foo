@@ -1,0 +1,31 @@
+digraph g {
+	start [style=invis]
+	initial
+	initial2
+	moved
+	cut_out
+	commit [shape=doublecircle]
+	undo [shape=doublecircle]
+
+	start -> initial [label="start/-"]
+
+	initial -> initial2 [label="enter, nearest stays/-"]
+	initial -> moved [label="enter, nearest changes/-"]
+	initial -> commit [style=dotted, label="commit/-"]
+	initial -> undo [style=dashed, label="cancel/-"]
+
+	initial2 -> initial2 [label="motion, nearest stays/-"]
+	initial2 -> moved [label="motion, nearest\nchanges/cut-paste"]
+	initial2 -> cut_out [label="leave/cut"]
+	initial2 -> commit [style=dotted, label="commit/-"]
+	initial2 -> undo [style=dashed, label="cancel/-"]
+
+	moved -> moved [label="motion/cut-paste"]
+	moved -> cut_out [label="leave/cut"]
+	moved -> commit [style=dotted, label="commit/-"]
+	moved -> undo [style=dashed, label="cancel/cut-pasteorig"]
+	
+	cut_out -> moved [label="enter/paste"]
+	cut_out -> commit [style=dotted, label="commit/-"]
+	cut_out -> undo [style=dashed, label="cancel/pasteorig"]
+}
