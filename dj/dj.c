@@ -187,7 +187,7 @@ static struct backend backend_file = {
 
 int main(int argc, char *argv[]) {
   struct playqueue queue;
-  struct write_profile wprof;
+  //TODO  struct write_profile wprof;
   struct read_profile rprof;
   struct poll_struct polls=init_poll_struct();
 
