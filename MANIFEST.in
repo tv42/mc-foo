@@ -1,5 +1,5 @@
 include MANIFEST.in
 include TODO
 include bin/mc-foo
-recursive-include lib *.dot
+recursive-include lib *.dot *.tml
 recursive-include debian *
