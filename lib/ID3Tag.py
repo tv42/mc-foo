@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # Downloaded from http://home.earthlink.net/~joecotellese/
 # Modified by Tommi Virtanen <tv@debian.org> to add ID3TagException
 ##    ID3Tag.py - a python class for reading ID3v1 tags
