@@ -1,15 +1,28 @@
 import ID3
 import string
 import exceptions
+import os.path
 
 from errno import ENOENT
 
 McFooBackendFileUnknownFormat='McFooBackendFileUnknownFormat'
+McFooBackendFileDoesNotExist='McFooBackendFileDoesNotExist'
 
 class Ogg:
     def __init__(self, filename):
         import ogg.vorbis
-        self.vf = ogg.vorbis.VorbisFile(filename)
+        try:
+            self.vf = ogg.vorbis.VorbisFile(filename)
+        except IOError, e:
+            # ogg.vorbis.VorbisFile fails to set errno properly! TODO fix it.
+            if e.errno == ENOENT \
+               or (e.errno==None and e.args[0].startswith("Could not open file:")):
+                raise McFooBackendFileDoesNotExist
+            else:
+                print repr(e), dir(e)
+                print e.args
+                print e.errno
+                raise
     def start_play(self):
         pass
     def read(self, size):
@@ -35,9 +48,12 @@ class Mp3:
     def __init__(self, filename):
         self.filename=filename
         self.fd_in=None
+        if not os.path.isfile(filename):
+            raise McFooBackendFileDoesNotExist
     def start_play(self):
 	import popen2
  	self.fd_in, fd_out = popen2.popen2("mpg321 -s -@ -") #Eww
+        # TODO mpg321 -R - -w /dev/fd/2
 	fd_out.write("%s\n" % self.filename)
 	fd_out.close()
     def read(self, size):
@@ -79,7 +95,7 @@ def audiofilechooser(filename):
     import string
     ext = string.lower(filename)[-4:]
     if ext == '.ogg':
-	return Ogg(filename)
+        return Ogg(filename)
     elif ext == '.mp3':
 	return Mp3(filename)
     else:
