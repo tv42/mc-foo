@@ -23,7 +23,7 @@ struct poll_struct {
 #define POLL_FLAGS_SHUTDOWN 1
 
 typedef enum fd_callback_returns (*fd_callback_t)(struct poll_struct *ps,
-                                                  unsigned int fd,
+						  int fd,
                                                   void **data,
                                                   short *events,
                                                   short revents,

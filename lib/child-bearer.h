@@ -10,14 +10,14 @@ struct child_bearing {
   pid_t pid;
   pid_t (*starter)(struct child_bearing *);
   void *starter_data;
-  int (*read_callback)(void *, size_t, void **);
+  int (*read_callback)(char *, size_t, void **);
   void *read_cb_data;
 };
 
 pid_t start_by_name(struct child_bearing *child,
-                    char *const args[]);
+		    char *const args[]);
 enum fd_callback_returns read_from_child(struct poll_struct *ps,
-                                         unsigned int fd,
+                                         int fd,
                                          void **data,
                                          short *events,
                                          short revents,

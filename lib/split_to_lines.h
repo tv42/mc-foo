@@ -11,6 +11,6 @@ struct split_to_lines_state {
   void *line_cb_data;
 };
 
-int split_to_lines(void *buf, size_t len, void **data);
+int split_to_lines(char *buf, size_t len, void **data);
 
 #endif

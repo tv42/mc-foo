@@ -6,10 +6,10 @@
 
 #include <stdio.h>
 
-int split_to_lines(void *buf, size_t len, void **data) {
+int split_to_lines(char *buf, size_t len, void **data) {
   struct split_to_lines_state *state;
-  void *line;
-  void *buf_tmp;
+  char *line;
+  char *buf_tmp;
 
   assert(buf!=NULL);
   assert(len>=0);

@@ -43,7 +43,7 @@ ssize_t write_to_child(struct child_bearing *child,
 }
 
 enum fd_callback_returns read_from_child(struct poll_struct *ps,
-                                         unsigned int fd,
+                                         int fd,
                                          void **data,
                                          short *events,
                                          short revents,
@@ -89,7 +89,7 @@ enum fd_callback_returns read_from_child(struct poll_struct *ps,
 #define PIPE_READ 0
 #define PIPE_WRITE 1
 pid_t start_by_name(struct child_bearing *child,
-                    char *const args[]) {
+		    char *const args[]) {
   pid_t pid;
 
   unsigned int to_child[2];

@@ -11,7 +11,7 @@
 #include <string.h>
 
 struct tcp_server_state {
-  unsigned int fd;
+  int fd;
   struct playqueue *pq;
 };
 
@@ -26,7 +26,7 @@ struct tcp_command {
 
 #define BUFSIZE 1024
 enum fd_callback_returns read_from_socket(struct poll_struct *ps,
-                                          unsigned int fd,
+                                          int fd,
                                           void **data,
                                           short *events,
                                           short revents,
@@ -59,9 +59,9 @@ enum fd_callback_returns read_from_socket(struct poll_struct *ps,
   }
 }
 
-int tcp_server_quit(char *line, 
-		    size_t len, 
-		    struct tcp_server_state *state) {
+static int tcp_server_quit(char *line, 
+			   size_t len, 
+			   struct tcp_server_state *state) {
   assert(state!=NULL);
   assert(state->pq!=NULL);
   shutdown_tcp();
@@ -91,9 +91,9 @@ int tcp_server_next(char *line,
   return 0;
 }
 
-int tcp_server_delete(char *line, 
-                      size_t len, 
-                      struct tcp_server_state *state) {
+static int tcp_server_delete(char *line, 
+			     size_t len, 
+			     struct tcp_server_state *state) {
   struct queue_entry *qe;
   char ids[100];
   songid_t id;
@@ -124,9 +124,9 @@ int tcp_server_delete(char *line,
   return 0;
 }
 
-int tcp_server_move(char *line, 
-                    size_t len, 
-                    struct tcp_server_state *state) {
+static int tcp_server_move(char *line, 
+			   size_t len, 
+			   struct tcp_server_state *state) {
   struct queue_entry *qe;
   char ids[100];
   char *counts;
@@ -173,9 +173,9 @@ int tcp_server_move(char *line,
   return 0;
 }
 
-int tcp_server_list_queue(char *line, 
-                          size_t len, 
-                          struct tcp_server_state *state) {
+static int tcp_server_list_queue(char *line, 
+				 size_t len, 
+				 struct tcp_server_state *state) {
   struct queue_entry *qe;
   char buf[20];
   int tmp;
@@ -217,9 +217,9 @@ int tcp_server_list_queue(char *line,
   return 0;
 }
 
-int tcp_server_status(char *line, 
-                     size_t len, 
-                     struct tcp_server_state *state) {
+static int tcp_server_status(char *line, 
+			     size_t len, 
+			     struct tcp_server_state *state) {
   assert(state!=NULL);
   assert(state->pq!=NULL);
   write(state->fd, 
@@ -239,9 +239,9 @@ int tcp_server_status(char *line,
   return 0;
 }
 
-int tcp_server_pause(char *line, 
-                     size_t len, 
-                     struct tcp_server_state *state) {
+static int tcp_server_pause(char *line, 
+			    size_t len, 
+			    struct tcp_server_state *state) {
   assert(state!=NULL);
   assert(state->pq!=NULL);
   //TODO read id if there is one,
@@ -254,9 +254,9 @@ int tcp_server_pause(char *line,
   return 0;
 }
 
-int tcp_server_continue(char *line, 
-                        size_t len, 
-                        struct tcp_server_state *state) {
+static int tcp_server_continue(char *line, 
+			       size_t len, 
+			       struct tcp_server_state *state) {
   assert(state!=NULL);
   assert(state->pq!=NULL);
   //TODO read id if there is one,
@@ -269,9 +269,9 @@ int tcp_server_continue(char *line,
   return 0;
 }
 
-int tcp_server_addqueue(char *line, 
-			size_t len, 
-			struct tcp_server_state *state) {
+static int tcp_server_addqueue(char *line, 
+			       size_t len, 
+			       struct tcp_server_state *state) {
   size_t i;
   int priority;
 
@@ -309,7 +309,7 @@ int tcp_server_cb(char *line,
   size_t size;
   size_t skip;
   struct tcp_server_state *state;
-  struct tcp_command commands[] = {
+  const struct tcp_command commands[] = {
     { "LIST", tcp_server_list_queue },
     { "NEXT", tcp_server_next },
     { "PAUSE", tcp_server_pause },

@@ -21,7 +21,7 @@ struct tcp_listener_state {
 };
 
 enum fd_callback_returns tcp_listener_cb(struct poll_struct *ps,
-                                         unsigned int fd,
+                                         int fd,
                                          void **data,
                                          short *events,
                                          short revents,

@@ -45,7 +45,7 @@ int move(const char *from, const char *todir) {
 }
 
 enum fd_callback_returns read_from_file(struct poll_struct *ps,
-					unsigned int fd,
+					int fd,
 					void **data,
 					short *events,
 					short revents,
@@ -203,7 +203,7 @@ int command_cb(char *line,
 
 #define BUFSIZE 1024
 enum fd_callback_returns read_stdin(struct poll_struct *ps,
-				    unsigned int fd,
+				    int fd,
 				    void **data,
 				    short *events,
 				    short revents,
