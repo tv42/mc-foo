@@ -46,7 +46,7 @@ ifdef src
 	test -d "$(src)"
 	cd "$(src)" && make src="" CXREF_DIR="$(CURDIR)/$(CXREF_DIR)" "$@"
 
- default %:
+ default install %:
 	test -d "$(src)"
 	make src="" -I "$(src)" -f "$(src)/Makefile" srcdir="$(src)" "$@"
 else
@@ -60,4 +60,4 @@ else
  include Makefile.deps
 endif
 
-.PHONY: default all cxref
+.PHONY: default all cxref install
