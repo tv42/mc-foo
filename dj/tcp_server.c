@@ -82,12 +82,9 @@ int tcp_server_next(const char *line,
           strlen("ERR not playing\n"));
     return 0;
   }
-  if (stop_song_output(state->pq) == -1) {
-    write(state->fd, "ERR cannot stop song output\n", 
-          strlen("ERR cannot stop song output\n"));
-    return 0;
-  }
 
+  remove_song(state->pq, state->pq->head);
+  request_playing(state->pq);
   write(state->fd, "OK next song\n", 
         strlen("OK next song\n"));
   return 0;
