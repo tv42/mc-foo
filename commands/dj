@@ -6,35 +6,40 @@ import McFoo.playqueue
 import McFoo.dj
 import McFoo.inputsong
 import McFoo.server.xrpc
-
-playqueue = McFoo.playqueue.PlayQueue()
-dj = McFoo.dj.Dj()
-inputsong = McFoo.inputsong.InputSong(playqueue)
-
-XMLRPC = McFoo.server.xrpc.server(dj, playqueue)
-XMLRPC.start_listen()
-
 import asyncore
-while 1:
-    if dj.isdone():
-        next = playqueue.pop()
-        if next==None:
-            pass
+
+def main():
+    playqueue = McFoo.playqueue.PlayQueue()
+    dj = McFoo.dj.Dj()
+    inputsong = McFoo.inputsong.InputSong(playqueue)
+
+    XMLRPC = McFoo.server.xrpc.server(dj, playqueue)
+    XMLRPC.start_listen()
+
+    while 1:
+        if dj.isdone():
+            next = playqueue.pop()
+            if next==None:
+                pass
+            else:
+                dj.set_next(next)
+
+        if len(playqueue) < 100:
+            inputsong.wakeup()
+            asyncore.poll(0.001)
         else:
-            dj.set_next(next)
+            asyncore.poll(1)
 
-    if len(playqueue) < 10:
-    	inputsong.wakeup()
-	asyncore.poll(0.001)
-    else:
-	asyncore.poll(1)
+        try:
+            XMLRPC.work(0.01)
+        except:
+            pass
 
-    try:
-        XMLRPC.work(0.01)
-    except:
-        pass
+        if McFoo.server.xrpc.stop:
+            break
 
-    if McFoo.server.xrpc.stop:
-        break
+    XMLRPC.close()
 
-XMLRPC.close()
+
+if __name__ == "__main__":
+    main()
