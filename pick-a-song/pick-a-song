@@ -2,6 +2,12 @@
 use strict;
 use CDB_File;
 
+use vars qw($MCFOOHOME $MCFOODATA $MCFOOCACHE);
+
+$MCFOOHOME=$ENV{MCFOOHOME} || '/usr/lib/mc_foo';
+$MCFOODATA=$ENV{MCFOODATA} || '/var/lib/mc_foo';
+$MCFOOCACHE=$ENV{MCFOOCACHE} || '/var/cache/mc_foo';
+
 my $DEFAULT_SCORE=100; # everything starts with 100 points.
 
 sub usage() {
@@ -20,7 +26,9 @@ sub dir(&$) {
         return () unless defined $grep;
         my ($dir) = shift;
         return () unless defined $dir;
-        opendir DIR, $dir or warn("Cannot open dir $dir"), return ();
+        opendir DIR, $dir
+          or warn("pick-a-song: Cannot open dir $dir\n"),
+          return ();
         my (@r) = sort grep {!/^\./} readdir DIR;
         closedir DIR;
         return grep { &$grep } @r;
@@ -31,7 +39,7 @@ sub get_medias() {
   my @medias;
   foreach my $backend (@backends) {
     push @medias, map {"$backend/$_"}
-      dir {1} "media/$backend"; #TODO filter only ones with current etc
+      dir {1} "$MCFOODATA/media/$backend"; #TODO filter only ones with current etc
   }
   return @medias;
 }
@@ -39,7 +47,7 @@ sub get_medias() {
 sub openweight($;) {
   my ($profilename) = @_;
   my %weight;
-  tie %weight, 'CDB_File', "cache/weights/$profilename.cdb"
+  tie %weight, 'CDB_File', "$MCFOOCACHE/weights/$profilename.cdb"
     or return undef;
   return \%weight;
 }
@@ -47,7 +55,7 @@ sub openweight($;) {
 sub openmediaprofile($;) {
   my ($media) = @_;
   my %med;
-  tie %med, 'CDB_File', "cache/mediaprofiles/$media.cdb"
+  tie %med, 'CDB_File', "$MCFOOCACHE/mediaprofiles/$media.cdb"
     or return undef;
   return \%med;
 }
@@ -74,9 +82,9 @@ sub freshen($$@) {
 sub song_path($$;) {
   my ($media, $num) = @_;
   my %m;
-  tie %m, 'CDB_File', "media/$media/current" or die;
+  tie %m, 'CDB_File', "$MCFOODATA/media/$media/current" or die;
   exists $m{$num} or return undef;
-  my $path=readlink("media/$media/path") or die;
+  my $path=readlink("$MCFOODATA/media/$media/path") or die;
   return $path.'/'.$m{$num};
 }
 
@@ -139,7 +147,7 @@ sub main($) {
     $profiles=freshen($profiles, \&openweight, split ' ');
     for(1..$num) {
       my $tmp=suggestions($profiles)
-        or die "$0: suggestions failed\n";
+        or die "pick-a-song: suggestions failed\n";
       print join(' ', @$tmp), "\n";
     }
   }

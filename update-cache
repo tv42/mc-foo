@@ -2,6 +2,12 @@
 use strict;
 use CDB_File;
 
+use vars qw($MCFOOHOME $MCFOODATA $MCFOOCACHE);
+
+$MCFOOHOME=$ENV{MCFOOHOME} || '/usr/lib/mc_foo';
+$MCFOODATA=$ENV{MCFOODATA} || '/var/lib/mc_foo';
+$MCFOOCACHE=$ENV{MCFOOCACHE} || '/var/cache/mc_foo';
+
 my $DEFAULT_SCORE=100; # everything starts with 100 points.
 
 sub fail(@) {
@@ -29,7 +35,8 @@ sub get_medias() {
   my @medias;
   foreach my $backend (@backends) {
     push @medias, map {"$backend/$_"}
-      dir {1} "media/$backend"; #TODO filter only ones with current etc
+      dir {1} "$MCFOODATA/media/$backend";
+    #TODO filter only ones with current etc
   }
   return @medias;
 }
@@ -38,8 +45,8 @@ sub open_all_profiles() {
   my %p;
   foreach (get_profiles()) {
     my %h;
-    tie %h, 'CDB_File', "profiles/$_.cdb"
-      or fail "unable to open profiles/$_.cdb: $!";
+    tie %h, 'CDB_File', "$MCFOODATA/profiles/$_.cdb"
+      or fail "unable to open $MCFOODATA/profiles/$_.cdb: $!";
     $p{$_}=\%h;
   }
   return \%p;
@@ -50,8 +57,8 @@ my %weights;
 
 foreach my $medianame (get_medias()) {
   my %media;
-  tie %media, 'CDB_File', "media/$medianame/current"
-    or fail "cannot open media/$medianame/current: $!";
+  tie %media, 'CDB_File', "$MCFOODATA/media/$medianame/current"
+    or fail "cannot open $MCFOODATA/media/$medianame/current: $!";
 
   my %mediaprofile;
 
@@ -80,14 +87,14 @@ foreach my $medianame (get_medias()) {
   # write mediaprofile
   $mediaprofile{n} = $media{n};
   CDB_File::create(%mediaprofile, 
-                   "cache/mediaprofiles/$medianame.cdb", 
-                   "cache/mediaprofiles/$medianame.tmp.$$")
+                   "$MCFOOCACHE/mediaprofiles/$medianame.cdb", 
+                   "$MCFOOCACHE/mediaprofiles/$medianame.tmp.$$")
     or die; #TODO
 }
 # write weights
 foreach (keys %weights) {
   CDB_File::create(%{$weights{$_}},
-                   "cache/weights/$_.cdb", 
-                   "cache/weights/$_.tmp.$$")
+                   "$MCFOOCACHE/weights/$_.cdb", 
+                   "$MCFOOCACHE/weights/$_.tmp.$$")
     or die; #TODO
 }
