@@ -13,7 +13,10 @@ def makesafe(s):
 
 def get_comments(filename):
     import McFoo.backend.file
-    return McFoo.backend.file.audiofilechooser(filename).comment()
+    try:
+        return McFoo.backend.file.audiofilechooser(filename).comment()
+    except McFoo.backend.file.McFooBackendFileUnknownFormat:
+        return {}
 
 class Song(McFoo.playqueue.Playable, UserDict.UserDict):
     cur_songid = 1000
