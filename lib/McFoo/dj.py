@@ -58,7 +58,7 @@ class Dj(pb.Service):
         return McFoo.server.pb.DjPerspective(name, "Nobody", self, self.playqueue, self.volume, self.profileTable)
     delimiter = '\n'
 
-    def next(self):
+    def _next(self):
         self.file=None
         while 1:
             next=self.playqueue.pop()
@@ -75,6 +75,9 @@ class Dj(pb.Service):
                 break
             
         self.file.start_play()
+
+    def next(self):
+        self._next()
         self.play()
 
     def play(self):
@@ -96,7 +99,7 @@ class Dj(pb.Service):
 
         (buff, bytes, bit) = self.file.read(SIZE)
         if bytes == 0:
-            self.next()
+            self._next()
         self._audio_dev.play(buff, bytes)
         self.timer = reactor.callLater(0, self._tick)
 
