@@ -23,8 +23,8 @@ class DjObserver(McFoo.observe.Observer):
         pass
 
 class Dj(pb.Service):
-    def __init__(self, app, playqueue, volume, profileTable):
-        pb.Service.__init__(self, "dj", app)
+    def __init__(self, app, authorizer, playqueue, volume, profileTable):
+        pb.Service.__init__(self, "dj", app, authorizer)
         self.playqueue = playqueue
         self.volume = volume
         self.profileTable = profileTable
@@ -36,6 +36,11 @@ class Dj(pb.Service):
 
         self.timer=None
         self.next()
+
+    def __getstate__(self):
+        r=pb.Service.__getstate__(self)
+        r['timer']=None
+        return r
 
     def startService(self):
         if self.file:
