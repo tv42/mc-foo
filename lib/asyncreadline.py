@@ -10,7 +10,11 @@ class asyncreadline(asynchat.async_chat):
 	self.line = self.line + data
 
     def found_terminator(self):
-        self.process(self.line)
+        try:
+            self.process(self.line)
+        except:
+            self.line = ''
+            raise
         self.line = ''
 
     def process(self, line):
