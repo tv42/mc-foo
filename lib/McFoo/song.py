@@ -15,7 +15,8 @@ def get_comments(filename):
     import McFoo.backend.file
     try:
         return McFoo.backend.file.audiofilechooser(filename).comment()
-    except McFoo.backend.file.McFooBackendFileUnknownFormat:
+    except (McFoo.backend.file.McFooBackendFileDoesNotExist,
+            McFoo.backend.file.McFooBackendFileUnknownFormat):
         return {}
 
 class Song(McFoo.playqueue.Playable, UserDict.UserDict):
