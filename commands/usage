@@ -1,0 +1,29 @@
+#!/bin/sh -e
+if [ "$1" = "help" -a "$#" = "1" ]; then
+    echo "usage - show usage summary of mc-foo subcommands"
+    exit 0
+fi
+if [ "$1" = "usage" -a "$#" = "1" ]; then
+    echo "usage [command..]"
+    exit 0
+fi
+
+CMDPATH="${MCFOOHOME:-/usr/lib/mc-foo}/commands"
+
+if [ "$1" ]; then
+    while [ "$1" ]; do
+	if [ -x "$CMDPATH/$1" ]; then
+	    "$CMDPATH/$1" usage
+	else
+	    echo "mc-foo usage: $1: no such command."
+	fi
+	shift
+    done
+    exit 0
+fi
+
+for cmd in "$CMDPATH"/*; do
+	if [ -x "$cmd" ]; then
+		"$cmd" usage
+	fi
+done

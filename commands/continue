@@ -1,2 +1,12 @@
 #!/bin/sh -e
+if [ "$1" = "help" ]; then
+    echo "continue - send a continue paused song command to dj"
+    exit 0
+fi
+
+if [ "$1" = "usage" ]; then
+    echo "continue"
+    exit 0
+fi
+
 echo continue|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"

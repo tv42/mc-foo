@@ -1,2 +1,12 @@
 #!/bin/sh -e
+if [ "$1" = "help" ]; then
+    echo "pause - send a pause command to dj"
+    exit 0
+fi
+
+if [ "$1" = "usage" ]; then
+    echo "pause"
+    exit 0
+fi
+
 echo pause|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}"

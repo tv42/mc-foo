@@ -3,6 +3,9 @@ MCFOOHOME="${MCFOOHOME:-/usr/lib/mc-foo}"
 
 if [ "$1" = "" ]; then
     echo "usage: mc-foo <command> [arguments]"
+    echo "  All commands understand arguments 'help' and 'usage'."
+    echo "  Try mc-foo help for a list of command or mc-foo usage"
+    echo "  for a usage summary."
     exit 0
 fi
 

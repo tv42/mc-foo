@@ -7,8 +7,9 @@ $MCFOOHOME=$ENV{MCFOOHOME} || '/usr/lib/mc-foo';
 $MCFOODATA=$ENV{MCFOODATA} || '/var/lib/mc-foo';
 $MCFOOCACHE=$ENV{MCFOOCACHE} || '/var/cache/mc-foo';
 
+my $USAGE = "import <backend> <path> [volume]";
 sub usage() {
-  die "usage: $0 <backend> <path> [volume]\n";
+  die "usage: \n$USAGE\n";
 }
 sub fail(@) { die "$0: @_\n"; }
 
@@ -16,6 +17,15 @@ sub munge($;) {
   my ($a) = @_;
   $a=~tr{a-zA-Z0-9}{_}c;
   return $a;
+}
+
+if ($ARGV[0] eq 'help') {
+  print "import - import songs to mc-foo media database\n";
+  exit 0;
+}
+if ($ARGV[0] eq 'usage') {
+  print "$USAGE\n";
+  exit 0;
 }
 
 usage() if @ARGV < 2 or @ARGV > 3;

@@ -1,4 +1,14 @@
 #!/bin/sh -e
+if [ "$1" = "help" ]; then
+    echo "queue-del - interactively remove songs from the playqueue"
+    exit 0
+fi
+
+if [ "$1" = "usage" ]; then
+    echo "queue-del"
+    exit 0
+fi
+
 IDS=$(echo list|nc "${MCFOOHOST:-0}" "${MCFOOPORT:-25706}" \
         |sed '/^MULTI /d;/^\.$/d;s/^\([0-9]\+\) /<s:\1>\1 /g'\
         |iselect --exit-no-select --multi-line \
