@@ -1,5 +1,5 @@
 /*
- * $Id: Howto.cook,v 1.6 1999/12/06 17:18:50 tv42 Exp $
+ * $Id: Howto.cook,v 1.7 2000/01/16 12:53:58 tv42 Exp $
  */
 
 source_files_latte = index.latte authors.latte faq.latte
@@ -46,8 +46,7 @@ extra_latte_path = latte-include;
 
 %0%.fig.png: %0%.fig
 {
-  fig2dev -L ps %0%.fig %0%.fig.eps.tmp;
-  convert "eps:%0%.fig.eps.tmp" "png:%0%.fig.png.tmp";
+  fig2dev -L png %0%.fig %0%.fig.png.tmp;
   mv %0%.fig.png.tmp %0%.fig.png;
 }
 
