@@ -20,83 +20,71 @@ MC Foo is distributed under the GNU General Public License.
 How to get started
 ------------------
 
-After installing, the mc-foo data dirs are writable by group mcfoo.
-Make your user id be a member of this group (gpasswd -a userid mcfoo,
-re-login or newgrp mcfoo to activate). This gives you seamless write
-access to the song database.
+Using Mc Foo is currently a two step process:
 
-To import your mp3 collection for use in MC Foo:
+1. Create a tap file
 
-mc-foo import file ~/mp3
-# insert CD 1
-mount /cdrom
-mc-foo import file /cdrom my-music-volume1
-umount /cdrom
-# insert CD 2
-mount /cdrom
-mc-foo import file /cdrom my-music-volume2
+A tap file is a persistent description of a Twisted server. To create
+a tap file for Mc Foo, run "mc-foo mktap /path", where "/path" is a
+directory tree containing .ogg and .mp3 files. It will create a file
+named "dj-start.tap".
 
-The first form is for permanent, non-removable medias. The latter ones
-are for removable medias; the same path can contain multiple alternate
-medias. Later you can switch between the two discs by running 
+2. Start a server using the tap file
 
-mc-foo change-media file /cdrom my-music-volumeN
+Servers are actually started with the program "twistd". To start a
+server stored in the file "dj-start.tap", with logging to stdout and
+no daemonization, run "twistd -l- -n -f dj-start.tap".
 
-To start and stop the music:
+You can now stop the server by pressing Control-C. When stopped, the
+server will write its current state into the file "dj-shutdown.tap". 
+You can use this file, instead of "dj-start.tap", the next time you
+start Mc Foo. This will allow you to keep the same playlist from one
+run to another.
 
-mc-foo dj
-(yes, it does not daemonize, and spews a lot of debug output. Yes, you
- have to control-c it to make it exit)
 
-mc-foo pause
-mc-foo continue
+Controlling the server
+----------------------
 
-To control the queue:
+Run "mc-foo" to get a brief usage message. In general, you give
+commands to mc-foo by just typing them as the first argument on the
+command line. Anything after the command name is taken to be extra
+options or arguments for the command.
 
-mc-foo next
-mc-foo queue-del
-(use arrows, space and enter)
+To stop and continue the music:
+
+"mc-foo pause"
+"mc-foo continue"
+
+To list and control the queue:
+
+"mc-foo list"
+"mc-foo next"
+"mc-foo fan" (a Tkinter GUI will start up)
 
 
 Environment variables
 ---------------------
                 Default value
-MCFOOHOME       /usr/lib/mc-foo
-MCFOODATA       /var/lib/mc-foo
-MCFOOCACHE      /var/cache/mc-foo
-
-MCFOOHOST       0 (localhost)
+MCFOOHOST       localhost
 MCFOOPORT       25706 ('d'<<8+'j')
-        - these tell the location of the dj server, for
-          mc-foo next, mc-foo queue-del etc.
-          Note that dj itself does not currently honor
-          the port env.var.
+        - these tell the location of the dj server for
+	  the client programs, or the port to listen to,
+	  for "mktap".
 
 
 Known problems
 --------------
 
-Sometimes mpg123 complains about /dev/dsp and doesn't play the song. 
-This is a heisenbug that seems to go away when straced, so finding the
-cause is quite hard.
-
-mc-foo next causes both the previous and next song to to play for a
-short while. This is caused by buffering in Esound.
-
-The profile system is not operational yet; the profiles are taken into
-consideration when the playqueue is filled, but there is no easy way of
-inputting your preferences.
-
-The TCP server "list"-command shows bogus values for the informational
-fields. They will be replaced with the song attributes (ID3 etc) and
-profile information. They are there to demonstrate the protocol
-format.
+The profile system is not fully functional yet; interacting with it is
+currently very tedious.
 
 
 More information
 ----------------
 
 The project web page is at http://mc-foo.sourceforge.net/
-The bug tracking system is at  https://sourceforge.net/bugs/?group_id=256
 
-If you have any questions, please email me at tv@debian.org.
+The bug tracking system is at
+https://sourceforge.net/bugs/?group_id=256
+
+If you have any questions, please email me at tv@debian.org
