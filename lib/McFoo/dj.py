@@ -9,11 +9,9 @@ from errno import EIO
 
 import twisted.internet.process
 import twisted.protocols.basic
+import McFoo.observe
 
-class DjObserver(twisted.spread.pb.Referenceable):
-    def __init__(self):
-        pass
-
+class DjObserver(McFoo.observe.Observer):
     def remote_change(self, at):
         pass
 

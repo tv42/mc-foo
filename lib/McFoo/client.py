@@ -37,10 +37,14 @@ class McFooClientSimple:
             twisted.internet.main.shutDown()
 
     def handle_connect(self, perspective):
+        perspective.broker.notifyOnDisconnect(self.handle_disconnect)
         self.remote = perspective
         self.handle_login(perspective)
 
     def handle_login(self, perspective):
+        pass
+
+    def handle_disconnect(self):
         pass
 
     def __call__(self):

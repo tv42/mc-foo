@@ -2,10 +2,7 @@ import oss
 import twisted.spread.pb
 import McFoo.observe
 
-class VolumeObserver(twisted.spread.pb.Referenceable):
-    def __init__(self):
-        pass
-
+class VolumeObserver(McFoo.observe.Observer):
     def remote_change(self, left, right):
         pass
 

@@ -17,12 +17,13 @@ class McFooClientFan(McFoo.client.McFooClientSimple):
         pq.queue.listbox.config(selectmode=EXTENDED)
         self.root.deiconify()
 
-    def handle_disconnect(self):
-        McFoo.client.McFooClientSimple.handle_disconnect(self)
+    def handle_failure(self, message):
+        McFoo.client.McFooClientSimple.handle_failure(self, message)
         self.root.quit()
 
-    def handle_loginfailure(self):
-        McFoo.client.McFooClientSimple.handle_loginfailure(self)
+    def handle_disconnect(self):
+        McFoo.client.McFooClientSimple.handle_disconnect(self)
+        print "Disconnected."
         self.root.quit()
 
 from Tkinter import *
