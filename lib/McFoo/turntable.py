@@ -130,8 +130,7 @@ class TurntableStatus(asyncore.dispatcher_with_send):
 
 class Turntable:
     def __init__(self):
-        self._audio_id = ao.get_driver_id('oss')
-        self._audio_dev = ao.AudioDevice(self._audio_id)
+        self._audio_dev = ao.AudioDevice('oss')
         self.file=None
         self._command=None
         self.state='waiting'
