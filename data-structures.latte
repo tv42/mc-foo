@@ -20,12 +20,11 @@
  }
 
  {\header 2 {Media backends}
-  (e.g. "hard disk", "cdrom-id3", "cdrom-names", "http-linklist")
+  (e.g. "file", "cdrom", "http")
 
-  {\header 3 {Hard disk}
-   media/hd/<collection-path-munged>.cdb contains information like
+  {\header 3 {file}
+   media/file/<collection-path-munged>/current contains information like
    {\pre
-    path -> <real path>
     n -> <number of songs>
     <n> -> <relative pathname to mp3>
     title:<pathname> -> <title>
@@ -38,9 +37,39 @@
     category:<pathname> -> <category>
     }
 
-   etc.. All backends speak the same API, so some of the information
-   may be generated on the fly.
+   media/file/<collection-path-munged>/path points to the real
+   location (unmunged).
    }
-  }
+  
+
+  {\header 3 {cdrom}
+   media/cdrom/<mount-point-munged>/current is a symlink to
+   cd-catalog/<label-munged-or-some-id>.cdb.
+
+   File media/cdrom/<mount-point-munged>/path contains unmunged path
+   of mount point.
+
+   Existence of file media/cdrom/<mount-point-munged>/cache means
+   files should be cached on local disk before playing.
+   }
+
+  {\header 3 {http}
+   media/http/<identifier>/current contains information like
+   {\pre
+    n -> <number of songs>
+    <n> -> <url of mp3>
+    title:<url> -> <title>
+    artist:<url> -> <artist>
+    album:<url> -> <album>
+    year:<url> -> <year>
+    genre:<url> -> <genre>
+    volume:<url> -> <volume>
+    import-date:<url> -> <import>
+    category:<url> -> <category>
+    }
+   }
+
+  {
+ 
 
  }
