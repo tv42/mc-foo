@@ -14,7 +14,8 @@ struct child_bearing {
   void *read_cb_data;
 };
 
-pid_t start_by_name(struct child_bearing *child);
+pid_t start_by_name(struct child_bearing *child,
+                    const char *prog);
 enum fd_callback_returns read_from_child(struct poll_struct *ps,
                                          unsigned int fd,
                                          void **data,
@@ -27,7 +28,8 @@ ssize_t write_to_child(struct child_bearing *child,
                        size_t count);
 
 struct split_to_lines_state {
-  size_t linelen;
+  size_t curlen;
+  size_t maxlen;
   char *curline;
   int (*line_callback)(const char *, size_t, void **);
   void *line_cb_data;

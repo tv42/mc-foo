@@ -134,6 +134,7 @@ sub song_path($$;) {
 sub main($) {
   my ($num) = shift;
   my ($profiles);
+  $|=1;
   while (<STDIN>) {
     $profiles=freshen($profiles, \&openweight, split ' ');
     for(1..$num) {

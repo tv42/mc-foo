@@ -1,6 +1,7 @@
 #include "poller.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <errno.h>
 
 int register_poll_fd(struct poll_struct *ps,
                      int fd, short events,
@@ -61,12 +62,15 @@ int do_poll(struct poll_struct *ps, int timeout) {
   assert(ps->nfds>0);
   assert(ps->nfds_top>0);
   assert(ps->nfds<=ps->nfds_top);
-  n=poll(ps->pollfds, ps->nfds, timeout);
+  do {
+    n=poll(ps->pollfds, ps->nfds, timeout);
+  } while (n==-1 && errno==EINTR);
   if (n<0)
     return n;
   assert(timeout!=0 || n>=0);
   for (n=0;n<ps->nfds;n++) {
-    if (ps->pollfds[n].fd==-1)
+    if (ps->pollfds[n].fd==-1
+        || ps->pollfds[n].revents==0)
       continue;
     assert(ps->fd_handlers[n].poll_cb!=NULL);
     switch (ps->fd_handlers[n].poll_cb(ps,

@@ -2,6 +2,9 @@
 #include <errno.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
 int find_priority(struct playqueue *queue, 
                   int n, 
@@ -114,9 +117,18 @@ int add_song(struct playqueue *queue,
   qe->cache.state=not_requested;
   qe->priority=NULL;
   qe->song=*song;
-
-  if (find_or_add_priority(queue, priority, &(qe->priority)) == -1)
+  qe->song.path=malloc(strlen(song->path)+1);
+  if (qe->song.path==NULL) {
+    free(qe);
     return -1;
+  }
+  strcpy(qe->song.path, song->path); /* safe, see the malloc above */
+
+  if (find_or_add_priority(queue, priority, &(qe->priority)) == -1) {
+    free(qe->song.path);
+    free(qe);
+    return -1;
+  }
 
   qe->prev=qe->priority->insertion_point;
   qe->priority->insertion_point=qe;
@@ -132,6 +144,7 @@ int add_song(struct playqueue *queue,
   }
   if (qe->prev!=NULL)
     qe->prev->next=qe;
+  queue->songs++;
   return 0;
 }
 
@@ -205,6 +218,7 @@ void remove_song(struct playqueue *queue, struct queue_entry *qe) {
   }
   free(qe->song.path);
   free(qe);
+  queue->songs--;
 }
 
 void remove_media(struct playqueue *queue, struct media *media) {
@@ -312,9 +326,20 @@ void move_song(struct playqueue *queue,
 }
 
 int request_song_input(struct playqueue *queue) {
-  //TODO write profiles with 
-  //write_to_child(queue->song_input, "foo", strlen(foo+1))
-  exit(1);
+  char *profiles="user.tv\n";
+  static time_t last_time=0;
+
+  if (queue->songs >= 20
+      || last_time > time(NULL)-2)
+    return 0;
+
+  last_time=time(NULL);
+
+  if (write_to_child(queue->song_input, profiles, strlen(profiles))==-1) {
+    perror("dj: song_input");
+    return -1;
+  }
+  return 0;
 }
 
 void playqueue_init(struct playqueue *pq) {
@@ -322,4 +347,140 @@ void playqueue_init(struct playqueue *pq) {
   pq->head=pq->tail=NULL;
   pq->priorities=pq->priority_tail=NULL;
   pq->song_input=NULL;
+  pq->songs=0;
+  pq->backends=NULL;
+}
+
+struct backend *add_backend(struct playqueue *pq,
+                            struct poll_struct *ps,
+                            const char *name) {
+  struct backend *be;
+
+  be=malloc(sizeof(struct backend));
+  if (be==NULL)
+    return NULL;
+  be->name=malloc(strlen(name)+1);
+  if (be->name==NULL) {
+    free(be);
+    return NULL;
+  }
+  strcpy(be->name, name);
+  be->medias=NULL;
+  be->cache.request_cache=NULL;
+  be->cache.cancel_cache=NULL;
+  be->cache.remove_cache=NULL;
+  be->cache.child.ps=ps;
+  be->cache.child.to_fd=-1;
+  be->cache.child.pid=0;
+  be->cache.child.starter=NULL;
+  be->cache.child.starter_data=NULL;
+  be->cache.child.read_callback=NULL;
+  be->cache.child.read_cb_data=NULL;
+  //TODO caches
+  if (pq->backends==NULL) {
+    be->next=be;
+    pq->backends=be;
+  } else {
+    be->next=pq->backends;
+    pq->backends=be;
+  }
+  return be;
+}
+
+struct backend *find_backend(struct playqueue *pq, const char *name) {
+  struct backend *be, *be_anchor;
+
+  assert(pq!=NULL);
+  if (pq->backends==NULL)
+    return NULL;
+
+  be_anchor=be=pq->backends;
+  do {
+    assert(be->name!=NULL);
+    if (strcmp(be->name, name)==0)
+      return be;
+    be=be->next;
+    assert(be!=NULL);
+  } while(be_anchor!=be);
+  return NULL;
+}
+
+struct media *find_media(struct backend *be, 
+                         const char *name) {
+  struct media *m, *m_anchor;
+  assert(be!=NULL);
+  if (be->medias==NULL)
+    return NULL;
+
+  m_anchor=m=be->medias;
+  do {
+    assert(m->name!=NULL);
+    if (strcmp(m->name, name)==0)
+      return m;
+    m=m->next;
+    assert(m!=NULL);
+  } while(m_anchor!=m);
+  return NULL;
+}
+
+int add_song_media_and_backend(struct playqueue *queue,
+                               struct poll_struct *ps,
+                               int priority,
+                               const char *bms,
+                               size_t len) {
+  char *slash, *space;
+  char *backend, *media, *song;
+  struct backend *be;
+  struct media *m;
+  struct song s;
+
+  slash=memchr(bms, '/', len);
+  if (slash==NULL || slash==bms)
+    return -1;
+  backend=malloc(slash-bms+1);
+  if (backend==NULL)
+    return -1;
+  memcpy(backend, bms, slash-bms);
+  backend[slash-bms]='\0';  
+  be=find_backend(queue, backend);
+  if (be==NULL) {
+    be=add_backend(queue, ps, backend);
+    if (be==NULL) {
+      free(backend);
+      return -1;
+    }
+  }
+  free(backend);
+  slash++;
+  space=memchr(slash, ' ', len-(slash-bms+1));
+  if (space==NULL || space==slash)
+    return -1;
+  media=malloc(space-slash+1);
+  if (media==NULL)
+    return -1;
+  memcpy(media, slash, space-slash);
+  media[space-slash]='\0';
+  m=find_media(be, media);
+  if (m==NULL) {
+    m=add_media(be, media, 0, 0); //TODO bitflags
+    if (m==NULL) {
+      perror("dj: add_media");
+      free(media);
+      return -1;
+    }
+  }
+  free(media);
+  space++;
+  s.media=m;
+  song=malloc(len-(space-bms)+1);
+  if (song==NULL)
+    return -1;
+  memcpy(song, space, len-(space-bms));
+  song[len-(space-bms)]='\0';
+  s.path=song;
+  if (add_song(queue, priority, &s) ==-1) {
+    free(song);
+    return -1;
+  }
+  return 0;
 }
