@@ -2,7 +2,7 @@
 
 import McFoo.client
 import sys, os.path
-import twisted.internet.main
+from twisted.internet import reactor
 from twisted.python import usage
 
 class Options(usage.Options):
@@ -21,4 +21,4 @@ class Options(usage.Options):
 class McFooClientLike(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
         McFoo.client.McFooClientSimple.handle_login(self, perspective)
-        self.remote.callRemote("like").addCallback(twisted.internet.main.shutDown)
+        self.remote.callRemote("like").addCallback(reactor.stop)

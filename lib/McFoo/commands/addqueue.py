@@ -2,7 +2,7 @@
 
 import McFoo.client
 import sys, os.path
-import twisted.internet.main
+from twisted.internet import reactor
 from twisted.python import usage
 from twisted.python.defer import DeferredList
 
@@ -43,5 +43,5 @@ class McFooClientAddqueue(McFoo.client.McFooClientSimple):
             d = self.remote.callRemote("addqueue", file, self.pri)
             deferreds.append(d)
         dl = DeferredList(deferreds)
-        dl.addCallback(twisted.internet.main.shutDown)
+        dl.addCallback(reactor.stop)
         dl.arm()

@@ -2,7 +2,7 @@
 
 import McFoo.client
 import sys, os.path
-import twisted.internet.main
+from twisted.internet import reactor
 from twisted.python import usage
 from errno import EPIPE
 
@@ -20,7 +20,7 @@ def ShowList(l):
     for s in l:
         if s.has_key('id') and s.has_key('filename'):
             print "%-3d %s" % (s['id'], s['filename'])
-    twisted.internet.main.shutDown()
+    reactor.stop()
 
 class McFooClientList(McFoo.client.McFooClientSimple):
     def handle_login(self, perspective):
