@@ -57,11 +57,6 @@ mc-foo next
 mc-foo queue-del
 (use arrows, space and enter)
 
-(there's also a move command, but no frontend for it;
- try nc 0 25706, and type in "list" to see the queue,
- note the number in front of the songs; then type
- "move 13 +7" and a new "list" to see the changes)
-
 
 Environment variables
 ---------------------
