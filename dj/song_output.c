@@ -88,10 +88,6 @@ int song_output(const char *line, size_t len, void **data) {
   assert(*data!=NULL);
   pq=*data;
 
-  if (len<3) {
-    fprintf(stderr, "dj: len<3\n");
-    return -1;
-  }
   //TODO if len<strlen("PLAYING ") etc..
   if (strncmp(line, "@I ", strlen("@I "))==0) {
     //TODO read id, check with head, assert equality..
@@ -111,9 +107,11 @@ int song_output(const char *line, size_t len, void **data) {
     fprintf(stderr, "turntable had trouble: %s\n", line);
     remove_song(pq, pq->head);
     request_playing(pq);
-  } else if (strncmp(line, "@P 0", strlen("@P 0"))==0) {
-    fprintf(stderr, "turntable finished song\n");
+  } else if ((strncmp(line, "@P 0", strlen("@P 0"))==0)
+	     || (strncmp(line, "@R ", strlen("@R "))==0)) {
+    fprintf(stderr, "turntable finished song or restarted\n");
     pq->playing=0;
+    pq->requestedplay=0;
     remove_song(pq, pq->head);
     if (pq->wantplaying)
       request_playing(pq);
