@@ -133,8 +133,13 @@ class ReorderableList(List):
         self.listbox.dnd_enter=self.dnd_enter
         self.listbox.dnd_leave=self.dnd_leave
         self.listbox.dnd_motion=self.dnd_motion
+        self.notify_move=None
+        self.notify_drag_start=None
+        self.notify_drag_end=None
 
     def _drag_start(self, event):
+        if self.notify_drag_start:
+            self.notify_drag_start()
         near=self.listbox.nearest(event.y)
         if not self.listbox.select_includes(near):
             self._dnd_selection(near)
@@ -159,11 +164,15 @@ class ReorderableList(List):
         # start playing, and the last item in the playqueue
         # is always the infinite priority entry.. (TODO
         # implement that, currently there's no guarantee
-        # at the server)
+        # at the server, and the gui allows dragging it)
         self[idx:idx]=map(lambda t: t[1], source)
         self.listbox.select_clear(0, END)
         self.listbox.select_set(idx, idx+len(source)-1)
         self.listbox.see(idx)
+        if self.notify_move:
+            self.notify_move(self.selected_with_idx())
+        if self.notify_drag_end:
+            self.notify_drag_end()
 
     def dnd_undo(self, items):
         """Undo the dnd operation, put the items back where they were."""
@@ -173,6 +182,8 @@ class ReorderableList(List):
         for i,o in items:
             self.listbox.select_set(i)
         #TODO restore ANCHOR etc?
+        if self.notify_drag_end:
+            self.notify_drag_end()
 
     def _dnd_selection(self, idx=None):
         self.listbox.select_clear(0, END)
