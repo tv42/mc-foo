@@ -24,7 +24,7 @@ class PlayqueueObserver(McFoo.observe.Observer):
 
 class Queueable:
     def playable(self):
-	raise "Queueable base class method playable called"
+        raise NotImplementedError
 
 class Playable(Queueable):
     id=None

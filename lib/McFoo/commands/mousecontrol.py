@@ -32,6 +32,9 @@ class SerialPort(abstract.FileDescriptor):
         from twisted.internet import fdesc
         return fdesc.readFromFD(self.fileno(), self.protocol.dataReceived)
 
+class TwistedTooOld(usage.UsageError):
+    pass
+
 class Options(usage.Options):
     synopsis = "Usage: %s [options] mousecontrol [--file=FILE]" % os.path.basename(sys.argv[0])
     optParameters = [['file', 'f', '/dev/tts/0']]
@@ -41,7 +44,7 @@ class Options(usage.Options):
         
     def postOptions(self):
         if hasattr(MouseMan, 'FAKE'):
-            raise "Your twisted is too old to contain twisted.protocols.mice"
+            raise TwistedTooOld, "Your twisted is too old to contain twisted.protocols.mice"
         c = McFooClientMouseControl()
         transport = SerialPort(self.opts['file'])
         transport.protocol = McFooMouse(c)
