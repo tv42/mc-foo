@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "error.h"
 
 /*
@@ -24,6 +26,7 @@
 int sigchild[2];
 
 void sigchld_handler(int signal, siginfo_t *siginfo, void *data) {
+  waitpid(-1, NULL, WNOHANG);
   switch (siginfo->si_code) {
   case CLD_EXITED:              /* exited normally */
   case CLD_KILLED:              /* was killed */
