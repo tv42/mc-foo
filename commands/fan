@@ -2,7 +2,7 @@
 import McFoo.client
 
 class McFooClientFan(McFoo.client.McFooClientSimple):
-    def __init__(self, TkRoot=None, user='guest', password='guest',
+    def __init__(self, TkRoot=None, user=None, password=None,
                  host=None, port=None):
         McFoo.client.McFooClientSimple.__init__(self,
                                                 user, password,
@@ -15,7 +15,15 @@ class McFooClientFan(McFoo.client.McFooClientSimple):
         
         pq.history.listbox.config(selectmode=EXTENDED)
         pq.queue.listbox.config(selectmode=EXTENDED)
-        # self.remote.next(McFoo.client.McFooClientExitWhenDone())
+        self.root.deiconify()
+
+    def handle_disconnect(self):
+        McFoo.client.McFooClientSimple.handle_disconnect(self)
+        self.root.quit()
+
+    def handle_loginfailure(self):
+        McFoo.client.McFooClientSimple.handle_loginfailure(self)
+        self.root.quit()
 
 from Tkinter import *
 
@@ -26,6 +34,7 @@ import os
 
 def main():
     root = Tk()
+    root.withdraw()
     twisted.internet.tkinternet.install(root)
     c = McFooClientFan(TkRoot=root)
 
