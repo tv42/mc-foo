@@ -1,7 +1,6 @@
 import os
 import fcntl
 import struct
-import FCNTL
 import errno
 
 class AudioDevice:
@@ -10,7 +9,7 @@ class AudioDevice:
 
         # make sure it's blocking.
         flags = fcntl.fcntl(self.dsp, fcntl.F_GETFL)
-        flags = flags & ~FCNTL.O_NONBLOCK
+        flags = flags & ~os.O_NONBLOCK
         fcntl.fcntl(self.dsp, fcntl.F_SETFL, flags)
         
         # A horrible, ugly kludge. These values are from
