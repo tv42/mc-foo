@@ -82,7 +82,10 @@ class Mp3:
         pass
     def read(self, size):
         buf=self.mf.read(size)
-        return (buf, len(buf), 0)
+        if buf==None:
+            return ('', 0, 0)
+        else:
+            return (buf, len(buf), 0)
     def comment(self):
         try:
             id3=ID3.ID3(self.filename)
