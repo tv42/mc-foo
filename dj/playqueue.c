@@ -111,6 +111,8 @@ int add_song(struct playqueue *queue,
              struct song *song) {
   struct queue_entry *qe;
 
+  assert(song!=NULL);
+  assert(song->path!=NULL);
   qe=(struct queue_entry *)malloc(sizeof(struct queue_entry));
   if (qe==NULL)
     return -1;
@@ -184,24 +186,34 @@ struct media *add_media(struct backend *backend,
 }
 
 void remove_song(struct playqueue *queue, struct queue_entry *qe) {
+  struct priority_pointer *pri;
+
   assert(queue!=NULL);
   assert(qe!=NULL);
   assert(qe->song.path!=NULL);
   assert(queue->tail!=NULL);
   assert(qe->priority!=NULL);
 
-  if (queue->tail==qe)
+  if (qe->next==NULL)
     queue->tail=qe->prev;
 
   if (qe->next!=NULL)
     qe->next->prev=qe->prev;
   if (qe->prev!=NULL) {
     qe->prev->next=qe->next;
+    for (pri=queue->priorities; pri!=NULL; pri=pri->next) {
+      if (pri->insertion_point==qe)
+        pri->insertion_point=qe->prev;
+    }
   } else {
     /* currently playing one, if playback is on */
     //TODO stop playing and move to next?
     
     queue->head=qe->next;
+    for (pri=queue->priorities; pri!=NULL; pri=pri->next) {
+      if (pri->insertion_point==qe)
+        pri->insertion_point=queue->head;
+    }
   }
 
   switch (qe->cache.state) {
@@ -510,4 +522,14 @@ struct queue_entry *find_id(struct playqueue *pq, songid_t id) {
 
 songid_t stringtoid(const char *s) {
   return strtoul(s, NULL, 0); 
+}
+
+unsigned int debug_count_songs(struct playqueue *queue) {
+  unsigned int n=0;
+  struct queue_entry *qe=queue->head;
+  while(qe!=NULL) {
+    n++;
+    qe=qe->next;
+  }
+  return n;
 }
