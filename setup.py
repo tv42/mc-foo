@@ -31,5 +31,4 @@ everything works yet.
     "twisted.tap",
     ],
       scripts=["bin/mc-foo", "libbin/turntable"],
-      data_files=["TODO"],
       )
