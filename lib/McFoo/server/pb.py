@@ -66,7 +66,7 @@ class DjPerspective(pb.Perspective):
             self.playqueue.insert(idx, song)
 
     def perspective_jump(self, args):
-        #TODO
+        self.dj.jump(args)
         pass
 
     def perspective_volume_inc(self, delta=None):
@@ -84,6 +84,9 @@ class DjPerspective(pb.Perspective):
 
     def perspective_observe_volume(self, callback):
         self.volume.observe(callback)
+        
+    def perspective_observe_location(self, callback):
+        self.dj.observe(callback)
         
     def perspective_observe_playqueue(self, callback):
         self.playqueue.observe(callback)

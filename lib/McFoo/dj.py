@@ -3,11 +3,19 @@ import sys
 import string
 
 import McFoo.backend.file
+import McFoo.observe
 
 from errno import EIO
 
 import twisted.internet.process
 import twisted.protocols.basic
+
+class DjObserver(twisted.spread.pb.Referenceable):
+    def __init__(self):
+        pass
+
+    def remote_change(self, at):
+        pass
 
 class Dj(twisted.internet.process.Process,
          twisted.protocols.basic.LineReceiver):
@@ -19,6 +27,7 @@ class Dj(twisted.internet.process.Process,
         self.player_state=None
         self.player_songlength=None
         self.player_at=None
+        self.observers=McFoo.observe.Observers()
 
         self.missing_a_song=1
 
@@ -78,7 +87,12 @@ class Dj(twisted.internet.process.Process,
         self.player_songlength=float(args)
 
     def do_at(self, args):
-        self.player_at=args
+        self.player_at=float(args)
+        if self.player_songlength:
+            at=self.player_at/self.player_songlength
+            self.observers('change', at)
+        else:
+            self.observers('change', 0.0)
 
     def next(self):
         self.start_next_song()
@@ -91,6 +105,24 @@ class Dj(twisted.internet.process.Process,
 
     def pauseorplay(self):
         self.write("toggle_pause\n")
+
+    def jump(self, to):
+        if self.player_songlength:
+            self.write("jump %f\n"
+                       %(to*self.player_songlength))
+        else:
+            # no, you can't jump around in this song
+            self.observers('change', 0.0)
+
+    def observe(self, callback):
+        if self.player_songlength:
+            at=((self.player_at or 0.0)
+                /self.player_songlength)
+        else:
+            at=0.0
+        self.observers.append_and_call(callback,
+                                       'change',
+                                       at)
 
     def handleError(self, text):
         print "turntable:", text,

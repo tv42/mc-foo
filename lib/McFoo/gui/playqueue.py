@@ -3,6 +3,7 @@ import McFoo.gui.list
 import McFoo.gui.song
 import McFoo.volume
 import McFoo.playqueue
+import McFoo.dj
 
 import Pmw
 
@@ -13,6 +14,14 @@ class VolumeObserverFan(McFoo.volume.VolumeObserver):
 
     def remote_change(self, left, right):
         self.callback((left+right)/2.0)
+
+class DjObserverFan(McFoo.dj.DjObserver):
+    def __init__(self, callback):
+        McFoo.dj.DjObserver.__init__(self)
+        self.callback=callback
+
+    def remote_change(self, at):
+        self.callback(at)
 
 class HistoryObserverFan(McFoo.playqueue.HistoryObserver):
     maxlen=10
@@ -87,6 +96,10 @@ class PlayQueue:
         self.volume = Scale(buttonbar, orient=HORIZONTAL, bigincrement=1, \
                             showvalue=0, command=self.set_volume)
         self.volume.pack(side=LEFT)
+        self.location = Scale(buttonbar, orient=HORIZONTAL,
+                              showvalue=0, resolution=0.01, to=1.0,
+                              command=self.set_location) #TODO bigincrement?
+        self.location.pack(side=LEFT, fill=X, expand=1)
         self.trash_button = Button(buttonbar, text="Trash", command=self.trash)
         self.trash_button.pack(side=RIGHT)
         buttonbar.pack(fill=X)
@@ -97,6 +110,8 @@ class PlayQueue:
 
         self._last_volume=None
         self.remote.observe_volume(VolumeObserverFan(self.volume.set))
+        self._last_location=None
+        self.remote.observe_location(DjObserverFan(self.see_location))
         self.remote.observe_playqueue(PlayqueueObserverFan(self.queue))
         self.remote.observe_history(HistoryObserverFan(self.history, self.playing))
 
@@ -105,6 +120,15 @@ class PlayQueue:
         if self._last_volume!=None and self._last_volume!=vol:
             self.remote.volume_set(vol)
         self._last_volume=vol
+
+    def see_location(self, at):
+        self._last_location="%0.2f"%at
+        self.location.set(at)
+
+    def set_location(self, at):
+        if self._last_location!=None and self._last_location!=at:
+            self.remote.jump(float(at))
+        self._last_location=at
 
     def pause(self):
         self.remote.pauseorplay()
