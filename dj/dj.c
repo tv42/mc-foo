@@ -40,6 +40,7 @@ int main(void) {
   }
 
   while(1) {
+    printf("songs=%u, count=%d\n", queue.songs, debug_count_songs(&queue));
     request_song_input(&queue);
     fprintf(stderr, "request song output\n");
     request_song_output(&queue);
