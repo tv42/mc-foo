@@ -1,6 +1,41 @@
 {\load-library mc_foo-include.latte}
 {\page {MC Foo - FAQ}
 
+ {\header 2 {First you said it's C, now you claim it's Python? What's
+	     up with that?}
+
+  The project started as part of our studies. That led to the C
+  implementation -- choice of language was dictated by the lecturer.
+
+  Since the course, I got bored of debugging C, and decided I need to
+  learn Python. Five hours later, I had reimplemented the core parts
+  of MC Foo in Python. I still had to debug the line-based network
+  interface. I ported it to use XML-RPC. That wasn't really
+  satisfactory. I started spending time on #python on
+  irc.openprojects.net, and saw this group of hackers putting together
+  an asynchronic input/output framework (and more) in Python. You can
+  see the results of their work at {\url
+  \href=http://www.twistedmatrix.com/ www.twistedmatrix.com}. Five
+  hours later, MC Foo was ported to use {\em twisted.spread.pb}.
+
+  }
+
+ {\header 2 {What's with the five hours?}
+  \; ( emacs sucks
+  You can do anything with Python in five hours, including learning it ;)
+  
+  Other software originally created in five hours, with Python:
+
+  {\list
+
+   {{\url \href=http://toursst.sourceforge.net/ TouRSSt}, a TouRSSt
+   tours the web so you don't have to. Run frequently, it pulls new
+   RSS news items from a number of channels and puts them where you
+   want.}
+
+   }
+  }
+
  {\header 2 {Why all this?}
   
   Because we always hated the limits inherent in many players
@@ -13,12 +48,14 @@
 
  {\header 2 {When will it actually work?}
 
-  Our deadline is 1.2.2000. If it doesn't work by then, we won't get
-  our credits. 
+  It works already, but I won't create a new snapshot until some
+  critical features are a bit more user-friendly. You can still {\url
+  \href=http://sourceforge.net/cvs/?group_id=256 grab a snapshot from
+  CVS}.
 
   }
 
- {\header 2 {What will the license be?}
+ {\header 2 {What is the license?}
 
   GNU General Public License.
 

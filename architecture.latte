@@ -1,13 +1,25 @@
 {\load-library mc_foo-include.latte}
 {\page {MC Foo - Architecture}
 
- {\header 2 {General}
+ {\header 2 {Introduction}
   
-  The base system will be implemented in C, the trivial utilities in
-  perl.
+  MC Foo is implemented in Python, heavily using the {\url
+  \href=http://www.twistedmatrix.com/ Twisted} framework.
 
-  We will use existing MP3 players as backend, and will never touch
-  file contents or sound hardware ourselves.
+  We will use existing Ogg/MP3 libraries as backend, and will never
+  touch file contents or decompression ourselves. Where
+  Python-accessible free libraries are not available, a suitable
+  players will be used in batch mode. (That is mpg321, for now. Anyone
+  know of a free Python MP3 library?)
+
+  {\todo The rest of this document is {\strong obsolete}, and will be
+  rewritten. Dj is a Twisted "tap" now, and forks only to run mpg321
+  -- as soon as a suitable free Python-accessible MP3 decoding is
+  found, it will be replaced.}
+
+  }
+
+ {\header 2 {General}
 
   It may be useful to keep 
   {\url \href=process-overview.fig.png this picture} open in another
