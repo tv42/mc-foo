@@ -74,10 +74,19 @@ int request_playing(struct playqueue *pq) {
   if (pq->requestedplay)
     return 0;
   pq->requestedplay=1;
-  n=snprintf(buf, 1024, "LOAD /var/lib/mc-foo/media/%s/%s/path/%s\n", 
-	     pq->head->song.media->backend->name,
-	     pq->head->song.media->name,	     
-	     pq->head->song.path);
+  if (pq->head->cache.state == done) {
+    n=snprintf(buf, 1024, "LOAD /var/cache/mc-foo/file/%lu\n", 
+	       pq->head->id);
+  } else {
+    if (pq->head->cache.state == requested
+	&& pq->head->song.media->backend->cache.ops.cancel_cache) {
+      pq->head->song.media->backend->cache.ops.cancel_cache(pq->head);
+    }
+    n=snprintf(buf, 1024, "LOAD /var/lib/mc-foo/media/%s/%s/path/%s\n", 
+	       pq->head->song.media->backend->name,
+	       pq->head->song.media->name,	     
+	       pq->head->song.path);
+  }
   if (n<0 || n>=1024)
     return -1;                  /* too long */
   fprintf(stderr, "dj -> turntable: %s", buf);
