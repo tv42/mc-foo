@@ -2,6 +2,7 @@ import asynchat
 import socket_pty
 import McFoo.song
 import string
+import time
 
 class InputSong(asynchat.async_chat):
     def __init__(self, playqueue):
@@ -10,7 +11,7 @@ class InputSong(asynchat.async_chat):
 	self.command = ''
 	self.last=None
         self.playqueue=playqueue
-        self.outstanding=0
+        self.last=time.time()
 
     def handle_connect(self):
 	pass
@@ -20,10 +21,12 @@ class InputSong(asynchat.async_chat):
 	    self.connect(("/usr/lib/mc-foo/lib/pick-a-song", ["pick-a-song"]))
 	
     def wakeup(self):
-	self.ensure_connect()
-        if not self.outstanding:
-            self.outstanding=self.outstanding+1
-	    self.push("\n")
+        self.ensure_connect()
+        now=time.time()
+        if now>self.last+1:
+            self.ensure_connect()
+            self.push("\n")
+            self.last=now
 
     def collect_incoming_data(self, data):
 	self.command = self.command + data
@@ -32,7 +35,6 @@ class InputSong(asynchat.async_chat):
 	if self.command[-1]=='\015':
 	    self.command = self.command[:-1]
 	if self.command != '':
-            self.outstanding=self.outstanding-1
 	    list = string.split(self.command, ' ', 2)
 	    self.command = ''
-	    self.playqueue.add(McFoo.song.Song('/var/lib/mc-foo/media/%s/%s/path/%s' % (list[0], list[1], list[2])))
+            self.playqueue.add(McFoo.song.Song(list[0], list[1], list[2]))

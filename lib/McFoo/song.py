@@ -1,20 +1,28 @@
 import UserDict
 import McFoo.playqueue
+
+import string
+safetable = string.maketrans('','')
+allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+for i in range(256):
+    if safetable[i] not in allowed:
+        safetable=string.replace(safetable, safetable[i], '_')
+
+def makesafe(s):
+    return string.translate(s, safetable)
+
 class Song(McFoo.playqueue.Playable, UserDict.UserDict):
     cur_songid = 0
 
-    def __init__(self, filename, pri=100):
+    def __init__(self, backend, media, name, pri=100):
 	self.priority=pri
-	self.filename=filename
+        self.backend=backend
+        self.media=makesafe(media)
+        self.name=name
+	self.filename='/var/lib/mc-foo/media/%s/%s/path/%s' % (self.backend, self.media, self.name)
 	Song.cur_songid=Song.cur_songid+1
 	self.id=Song.cur_songid
 	self.data={} #TODO tags
-
-#    def random(self):
-#        import random
-#        import linecache
-#        s=random.choice(linecache.getlines("/data/music/oggs"))
-#        return s[:-1]
 
     def __repr__(self):
 	return '<song id:%s pri:%s filename:%s>' % (self.id, self.priority, self.filename)
@@ -31,3 +39,11 @@ class Song(McFoo.playqueue.Playable, UserDict.UserDict):
             return cmp(self.id, other.id)
 	else:
             return 1
+
+    def as_data(self):
+        return {'id': self.id,
+                'priority': self.priority,
+                'backend': self.backend,
+                'media': self.media,
+                'name': self.name,
+                }
