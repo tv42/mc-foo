@@ -1,0 +1,151 @@
+# -*- Makefile -*-
+
+#
+# cpp only searches for include files from the directory where the
+# source file is; however, this can be either the sandbox dir or
+# the source dir, and the includes can be in either one.
+#
+# So we need to manually add both the sandboxed and the source
+# version of the directory where the source file is. And if we do
+# that, we might as well stop cpp from doing it, with -I-.
+#
+# This cannot be added to *CFLAGS, as it depends on the source file.
+#
+# -I./$(*D) is sandbox dir and the dir where the matching file is
+# -I$(srcdir)/$(*D) is the source dir and the dir where the matching file is
+#
+#
+# The filter-out, patsubst, patsubst trick is there to make
+# CFLAGS_path/to/target.o=-Ifoo work with VPATH.
+$(patsubst %.c,%.o,$(filter %.c, $(SOURCE))): %.o: %.c
+	$(CC) -I./$(*D) -I$(srcdir)/$(*D) $(CFLAGS) \
+	$(filter-out -I%,$(CFLAGS_$@)) \
+	$(patsubst -I%,-I./%,$(filter-out -I/%,$(filter -I%,$(CFLAGS_$@)))) \
+	$(patsubst -I%,-I$(srcdir)/%,$(filter-out -I/%,$(filter -I%,$(CFLAGS_$@)))) \
+	$(filter -I/%,$(CFLAGS_$@)) \
+	-c -o $@ $<
+
+%.o:
+	@echo "Error: Don't rely on make implicit rules to generate $@"
+	@exit 1
+
+(%.o):
+	@echo "Error: don't use .a's, they break parallel builds."
+	@exit 1
+
+CXREF_XREF:= \
+	$(CXREF_DIR)/cxref.include $(CXREF_DIR)/cxref.typedef \
+	$(CXREF_DIR)/cxref.function $(CXREF_DIR)/cxref.variable
+
+CXREF_DOC_H:=$(patsubst %.h,$(CXREF_DIR)/%.h.html,$(filter %.h,$(SOURCE)))
+CXREF_DOC_C:=$(patsubst %.c,$(CXREF_DIR)/%.c.html,$(filter %.c,$(SOURCE)))
+
+$(CXREF_XREF): $(SOURCE)
+	@test -d "$(CXREF_DIR)" || mkdir "$(CXREF_DIR)"
+	@echo Cross-reference indexing "$?"
+	@cxref -xref-all -warn-index -O$(CXREF_DIR) \
+	$? \
+	-I./$(*D) -I$(srcdir)/$(*D) \
+	$(filter -I%,$(CFLAGS_VPATH)) $(filter -D%,$(CFLAGS)) \
+	-I/usr/lib/gcc-lib/i386-linux/2.95.2/include
+
+cxref: $(CXREF_XREF) $(CXREF_DOC_H) $(CXREF_DOC_C)
+
+$(CXREF_DOC_C): \
+	$(CXREF_DIR)/%.c.html: %.c
+	@test -d "$(CXREF_DIR)" || mkdir "$(CXREF_DIR)"
+	@echo Cross-referencing "$?"
+	@cxref -xref-all -warn-index -O$(CXREF_DIR) -html32 \
+	$< \
+	-I./$(*D) -I$(srcdir)/$(*D) \
+	$(filter -I%,$(CFLAGS_VPATH)) $(filter -D%,$(CFLAGS)) \
+	$(filter -D%,$(CFLAGS_$(<:.c=.o))) \
+	$(patsubst -I%,-I./%,$(filter-out -I/%,$(filter -I%,$(CFLAGS_$(<:.c=.o))))) \
+	$(patsubst -I%,-I$(srcdir)/%,$(filter-out -I/%,$(filter -I%,$(CFLAGS_$(<:.c=.o))))) \
+	$(filter -I/%,$(CFLAGS_$(<:.c=.o))) \
+	-I/usr/lib/gcc-lib/i386-linux/2.95.2/include
+
+$(CXREF_DOC_H): \
+	$(CXREF_DIR)/%.h.html: %.h
+	@test -d "$(CXREF_DIR)" || mkdir "$(CXREF_DIR)"
+	@echo Cross-referencing "$?"
+	@cxref -xref-all -warn-index -O$(CXREF_DIR) -html32 \
+	$< \
+	-I./$(*D) -I$(srcdir)/$(*D) \
+	$(filter -I%,$(CFLAGS_VPATH)) $(filter -D%,$(CFLAGS)) \
+	-I/usr/lib/gcc-lib/i386-linux/2.95.2/include
+
+$(CXREF_DIR)/cxref.%.ps: $(CXREF_DIR)/cxref.%.dot
+	dot -Tps -o$@.tmp $<
+	mv $@.tmp $@
+
+$(CXREF_DIR)/cxref.function.dot: $(CXREF_DIR)/cxref.function
+	$(srcdir)/util/cxref-analyze-function $< >$@.tmp
+	mv $@.tmp $@
+
+#$(CXREF_DIR)/cxref.include.dot: $(CXREF_DIR)/cxref.include
+
+#$(CXREF_DIR)/cxref.variable.dot: $(CXREF_DIR)/cxref.variable
+
+build: $(BINS)
+
+clean:
+	rm -f $(patsubst %.c,%.o,$(filter %.c,$(SOURCE))) $(BINS)
+
+realclean: clean
+	rm -f $(DEPFILES) TAGS
+	rm -rf cxref
+
+install: all
+	install -d -m0755 $(DESTDIR)$(BINDIR)
+	install -d -m0755 $(DESTDIR)$(DATADIR)
+	install -d -m0755 $(DESTDIR)$(DOCDIR)
+	install -d -m0755 $(DESTDIR)$(CACHEDIR) \
+		$(DESTDIR)$(CACHEDIR)/file \
+		$(DESTDIR)$(CACHEDIR)/file.tmp
+	install -d -m0755 $(DESTDIR)$(LIBDIR)
+	install -d -m0755 $(DESTDIR)$(CACHERS) \
+	install -d -m0755 $(DESTDIR)$(CMDDIR)
+	install -m0644 README $(DESTDIR)$(DOCDIR)
+	install -m0755 dj/dj \
+		commands/[a-z]* $(DESTDIR)$(CMDDIR)
+	install -m0755 turntable/mpg123-remote \
+		$(DESTDIR)$(LIBDIR)/turntable
+	install -m0755 file-cache/cacher $(DESTDIR)$(CACHERS)/file
+	install -m0755 libbin/[a-z]* $(DESTDIR)$(LIBDIR)
+	install -m0755 bin/[a-z]* $(DESTDIR)$(BINDIR)
+	install -d -m0755 $(DESTDIR)$(CACHEDIR)/mediaprofiles \
+		$(DESTDIR)$(CACHEDIR)/mediaprofiles/file \
+		$(DESTDIR)$(CACHEDIR)/weights \
+		$(DESTDIR)$(DATADIR)/media \
+		$(DESTDIR)$(DATADIR)/media/file \
+		$(DESTDIR)$(DATADIR)/profiles
+	@echo 'Now you should create a group for MC Foo, '
+	@echo 'preferably named "mcfoo", and run'
+	@echo "chgrp -R mcfoo $(DATADIR)/{media,profiles}"
+	@echo "chgrp -R mcfoo $(CACHEDIR)/*"
+	@echo "chmod -R g+s $(DATADIR)/{media,profiles}"
+	@echo "chmod -R g+s $(CACHEDIR)/*"
+
+#%.o: %.c
+#	@test -d "$(@D)" || install -d -m0755 "$(@D)"
+#	gcc -c $(CFLAGS) -o $@ $<
+
+dj/dj: dj/dj.o dj/tcp_listener.o dj/tcp_server.o \
+	dj/song_input.o dj/playqueue.o \
+	dj/song_output.o dj/prof_read.o \
+	lib/split_to_lines.o lib/poller.o \
+	lib/child-bearer.o lib/nonblock.o \
+	dj/cache.o
+
+file-cache/cacher: file-cache/cacher.o \
+	lib/split_to_lines.o lib/poller.o \
+	lib/nonblock.o
+
+TAGS:
+	rm -f TAGS.tmp
+	find $(srcdir) \( -name '*.c' -o -name '*.h' \) -print0 \
+	| xargs -0 etags --append --output=TAGS.tmp
+	mv TAGS.tmp TAGS
+
+.PHONY: clean realclean install cxref build
