@@ -11,7 +11,7 @@
   }
  
  {\header 2 {Server}
-  {\b {\todo serverprogramname}} is a separate program running on a
+  {\b dj} is a separate program running on a
   sound-enabled machine. It listens on a network socket for incoming 
   connections. Sockets are the primary way of controlling the 
   server.
@@ -22,42 +22,42 @@
   queue.
 
   {\header 3 {Keeping the playqueue from draining}
-   {\b {\todo utilityname}} is executed by the server and left
+   {\b pick-a-song} is executed by the server and left
    running. It uses stdin and stdout to communicate with the server. 
    On stdin, it receives the list of active profiles (on one line,
    separated by spaces). The server sends this list whenever the
    queue starts to drain. On stdout, it writes 0..n song paths. The
    server can not rely on the number of songs returned by 
-   {\b {\todo utilityname}}. If {\b {\todo utilityname}} exits,
+   {\b pick-a-song}. If {\b pick-a-song} exits,
    the server will start a new one.}
 
   {\header 3 {Making permanent profile changes}
-   {\b {\todo utilityname}} is executed by the server whenever it
+   {\b remember-profiles} is executed by the server whenever it
    wishes to make the current, adapted, profile permanent. This can
    happen e.g. once per minute or when requested. It is given 1..n
    profile names on the command line, and the changed preferences on
-   stdin. {\b {\todo utilityname}} reports error by its exit status.
+   stdin. {\b remember-profiles} reports error by its exit status.
    {\todo The protocol used on stdin needs to be defined.}
-   {\b {\todo utilityname}} splits the preferences evenly between
+   {\b remember-profiles} splits the preferences evenly between
    all listed profiles.}
 
   {\header 3 {Caching a song to faster media}
-   {\b {\todo utilityname}} is executed by the server and left
+   {\b file-cache} is executed by the server and left
    running. It uses stdin and stdout to communicate with the server. 
    On stdin, it receives a song path. It starts an asynchronous copy
    of the song to faster media, if deemed necessary. On stdout, it
    writes the song paths of succesfully cached songs. If 
-   {\b {\todo utilityname}} exits, the server will start a new one.
+   {\b file-cache} exits, the server will start a new one.
    {\todo Needs more information on stdin?}}
 
   {\header 3 {Play the song}
-   {\b {\todo utilityname}} is executed by the server and left
+   {\b turntable} is executed by the server and left
    running. It uses stdin and stdout to communicate with the server. 
    On stdin, it receives commands 
    {\todo (specify what commands and the format)}, on stdout it
    gives responses to these commands {\todo (specify)}. It can e.g.
    pause the music, skip to next song, fast forward, etc. If 
-   {\b {\todo utilityname}} exits, the server will start a new one.}
+   {\b turntable} exits, the server will start a new one.}
 
   {\header 3 {List all (or only available) songs}
    {\b {\todo utilityname}} gives the client programs a way of finding

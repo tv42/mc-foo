@@ -1,5 +1,5 @@
 /*
- * $Id: Howto.cook,v 1.1 1999/11/20 19:38:06 tv42 Exp $
+ * $Id: Howto.cook,v 1.2 1999/11/28 16:27:04 tv42 Exp $
  */
 
 source_files_latte = index.latte authors.latte faq.latte
@@ -27,12 +27,9 @@ test: [html]
 	weblint [html];
 }
 
-install:
+install: [files]
 {
-}
-
-uninstall:
-{
+  scp -B [files] "tv42@shell1.sourceforge.net:www/mc-foo";
 }
 
 extra_latte_path = latte-include;
